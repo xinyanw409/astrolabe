@@ -9,6 +9,19 @@ type ProtectedEntityID struct {
 	snapshotID ProtectedEntitySnapshotID
 }
 
+func NewProtectedEntityID(peType string, id string) (ProtectedEntityID) {
+	return NewProtectedEntityIDWithSnapshotID(peType, id, ProtectedEntitySnapshotID{})
+}
+
+func NewProtectedEntityIDWithSnapshotID(peType string, id string, snapshotID ProtectedEntitySnapshotID) (ProtectedEntityID) {
+	newID := ProtectedEntityID {
+		peType: peType,
+		id: id,
+		snapshotID: snapshotID,
+	}
+	return newID
+}
+
 func NewProtectedEntityIDFromString(peiString string) (returnPEI ProtectedEntityID, returnError error) {
 	components := strings.Split(peiString, ":")
 	if (len(components) > 1) {

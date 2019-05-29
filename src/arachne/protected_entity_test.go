@@ -24,3 +24,4 @@ func TestProtectedEntityIDFromString(t *testing.T) {
 	assert.Equal(t, test2Str, test2ID.String())
 	t.Log("test2ID = " + test2ID.String())
 }
+
