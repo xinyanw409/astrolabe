@@ -1,7 +1,9 @@
 package arachne
 
 import ("strings"
-		"errors")
+		"errors"
+		"context"
+)
 
 type ProtectedEntityID struct {
 	peType     string
@@ -28,7 +30,7 @@ func NewProtectedEntityIDFromString(peiString string) (returnPEI ProtectedEntity
 		returnPEI.peType = components[0]
 		returnPEI.id = components[1]
 		if (len(components) == 3) {
-			returnPEI.snapshotID = NewProtectedEntitySnapshotID(components[2])
+			returnPEI.snapshotID = *NewProtectedEntitySnapshotID(components[2])
 		}
 	} else {
 		returnError = errors.New("arachne: '" + peiString+"' is not a valid protected entity ID")
@@ -36,20 +38,20 @@ func NewProtectedEntityIDFromString(peiString string) (returnPEI ProtectedEntity
 	return returnPEI, returnError
 }
 
-func (peid *ProtectedEntityID) GetID() string {
+func (peid ProtectedEntityID) GetID() string {
 	return peid.id
 }
 
-func (peid *ProtectedEntityID) GetPeType() string {
+func (peid ProtectedEntityID) GetPeType() string {
 	return peid.peType
 }
 
-func (peid *ProtectedEntityID) GetSnapshotID() ProtectedEntitySnapshotID {
+func (peid ProtectedEntityID) GetSnapshotID() ProtectedEntitySnapshotID {
 	return peid.snapshotID
 
 }
 
-func (peid *ProtectedEntityID) String() string {
+func (peid ProtectedEntityID) String() string {
 	var returnString string
 		returnString = peid.peType + ":" + peid.id
 	if (peid.snapshotID) != (ProtectedEntitySnapshotID{}) {
@@ -62,9 +64,11 @@ type ProtectedEntitySnapshotID struct {
 	id string
 }
 
-func NewProtectedEntitySnapshotID(pesiString string) (returnPESI ProtectedEntitySnapshotID) {
-	returnPESI.id = pesiString
-	return returnPESI
+func NewProtectedEntitySnapshotID(pesiString string) (*ProtectedEntitySnapshotID) {
+	returnPESI := ProtectedEntitySnapshotID {
+		id: pesiString,
+	}
+	return &returnPESI
 }
 
 func (pesid *ProtectedEntitySnapshotID) GetID() string {
@@ -77,15 +81,15 @@ func (pesid *ProtectedEntitySnapshotID) String() string {
 
 type ProtectedEntity interface {
 	GetInfo() ProtectedEntityInfo
-	GetCombinedInfo() []ProtectedEntityInfo
+	GetCombinedInfo(ctx context.Context) ([]ProtectedEntityInfo, error)
 	/*
 	 * Snapshot APIs
 	 */
-	Snapshot() ProtectedEntitySnapshotID
-	ListSnapshots() []ProtectedEntitySnapshotID
-	DeleteSnapshot(snapshotToDelete ProtectedEntitySnapshotID) bool
-	GetInfoForSnapshot(snapshotID ProtectedEntitySnapshotID) ProtectedEntityInfo
+	Snapshot(ctx context.Context) (*ProtectedEntitySnapshotID, error)
+	ListSnapshots(ctx context.Context) ([]ProtectedEntitySnapshotID, error)
+	DeleteSnapshot(ctx context.Context, snapshotToDelete ProtectedEntitySnapshotID) (bool, error)
+	GetInfoForSnapshot(ctx context.Context, snapshotID ProtectedEntitySnapshotID) (*ProtectedEntityInfo, error)
 
-	GetComponents() []ProtectedEntity
+	GetComponents(ctx context.Context) []ProtectedEntity
 	GetID() ProtectedEntityID
 }
