@@ -1,7 +1,7 @@
 package ivd
 
 import (
-	"arachne"
+	"github.com/vmware/arachne"
 	vim "github.com/vmware/govmomi/vim25/types"
 //	"github.com/vmware/govmomi/vslm"
 	"context"

@@ -1,7 +1,7 @@
 package ivd
 
 import (
-	"arachne"
+	"github.com/vmware/arachne"
 	"context"
 	govmomi "github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/vslm"
@@ -44,7 +44,7 @@ func (ipetm *IVDProtectedEntityTypeManager) GetTypeName() string {
 	return "ivd"
 }
 
-func (ipetm *IVDProtectedEntityTypeManager) GetProtectedEntity(id arachne.ProtectedEntityID) (arachne.ProtectedEntity, error) {
+func (ipetm *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (arachne.ProtectedEntity, error) {
 	return nil, nil
 }
 
