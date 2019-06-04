@@ -34,11 +34,11 @@ type protectedEntityInfoJSON struct {
 	ComponentIDs []ProtectedEntityID `json:"componentIDs"`
 }
 
-func (this *ProtectedEntityInfoImpl) GetID() ProtectedEntityID {
+func (this ProtectedEntityInfoImpl) GetID() ProtectedEntityID {
 	return this.Id
 }
 
-func (this *ProtectedEntityInfoImpl) GetName() string {
+func (this ProtectedEntityInfoImpl) GetName() string {
 	return this.Name
 }
 
@@ -109,14 +109,14 @@ func (this *ProtectedEntityInfoImpl) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (this *ProtectedEntityInfoImpl) GetDataURLs() []url.URL {
+func (this ProtectedEntityInfoImpl) GetDataURLs() []url.URL {
 	return this.DataURLs
 }
 
-func (this *ProtectedEntityInfoImpl) GetCombinedURLs() []url.URL {
+func (this ProtectedEntityInfoImpl) GetCombinedURLs() []url.URL {
 	return this.CombinedURLs
 }
 
-func (this *ProtectedEntityInfoImpl) GetComponentIDs() []ProtectedEntityID {
+func (this ProtectedEntityInfoImpl) GetComponentIDs() []ProtectedEntityID {
 	return this.ComponentIDs
 }

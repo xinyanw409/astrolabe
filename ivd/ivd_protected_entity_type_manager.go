@@ -1,8 +1,9 @@
 package ivd
 
 import (
-	"github.com/vmware/arachne"
 	"context"
+	"github.com/pkg/errors"
+	"github.com/vmware/arachne"
 	govmomi "github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/vslm"
 	"net/url"
@@ -11,6 +12,32 @@ import (
 type IVDProtectedEntityTypeManager struct {
 	client *govmomi.Client
 	vsom   *vslm.VslmObjectManager
+}
+
+func NewIVDProtectedEntityTypeManagerFromConfig(params map[string]interface{}) (*IVDProtectedEntityTypeManager, error) {
+	var vcURL url.URL
+	vcHostStr, ok := params["vcHost"].(string)
+	if !ok {
+		return nil, errors.New("Missing vcHost param, cannot initialize IVDProtectedEntityTypeManager")
+	}
+	vcURL.Scheme = "https"
+	vcURL.Host = vcHostStr
+	insecure := false
+	insecureStr, ok := params["insecureVC"].(string)
+	if ok && (insecureStr == "Y" || insecureStr == "y") {
+		insecure = true
+	}
+	vcUser, ok := params["vcUser"].(string)
+	if !ok {
+		return nil, errors.New("Missing vcUser param, cannot initialize IVDProtectedEntityTypeManager")
+	}
+	vcPassword, ok := params["vcPassword"].(string)
+	if !ok {
+		return nil, errors.New("Missing vcPassword param, cannot initialize IVDProtectedEntityTypeManager")
+	}
+	vcURL.User = url.UserPassword(vcUser, vcPassword)
+	vcURL.Path = "/sdk"
+	return NewIVDProtectedEntityTypeManagerFromURL(&vcURL, insecure)
 }
 
 func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, insecure bool) (*IVDProtectedEntityTypeManager, error) {
@@ -25,7 +52,7 @@ func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, insecure bool) (*IVDP
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return NewIVDProtectedEntityTypeManagerWithClient(client, vslmClient)
 }
 
@@ -44,20 +71,24 @@ func (ipetm *IVDProtectedEntityTypeManager) GetTypeName() string {
 	return "ivd"
 }
 
-func (ipetm *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (arachne.ProtectedEntity, error) {
-	return nil, nil
+func (this *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (arachne.ProtectedEntity, error) {
+	retIPE, err := newIVDProtectedEntity(this, id)
+	if err != nil {
+		return nil, err
+	}
+	return retIPE, nil
 }
 
 func (ipetm *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntity, error) {
 	res, err := ipetm.vsom.ListVStorageObjectForSpec(ctx, nil, 1000)
-	if (err != nil) {
+	if err != nil {
 		return nil, err
 	}
 	var retEntities []arachne.ProtectedEntity
 	for _, curVSOID := range res.Id {
 		arachneId := newProtectedEntityID(curVSOID)
 		newIPE, err := newIVDProtectedEntity(ipetm, arachneId)
-		if (err != nil) {
+		if err != nil {
 			return nil, err
 		}
 		retEntities = append(retEntities, &newIPE)

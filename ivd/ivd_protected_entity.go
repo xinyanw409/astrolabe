@@ -6,12 +6,13 @@ import (
 	//	"github.com/vmware/govmomi/vslm"
 	"context"
 	"time"
+	"net/url"
+	"github.com/pkg/errors"
 )
 
 type IVDProtectedEntity struct {
 	ipetm *IVDProtectedEntityTypeManager
 	id    arachne.ProtectedEntityID
-	info  arachne.ProtectedEntityInfo
 }
 
 func newProtectedEntityID(id vim.ID) arachne.ProtectedEntityID {
@@ -29,49 +30,83 @@ func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.Prot
 	}
 	return newIPE, nil
 }
-func (ipe *IVDProtectedEntity) GetInfo() arachne.ProtectedEntityInfo {
-	return ipe.info
+func (this IVDProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEntityInfo, error) {
+	vsoID := vim.ID {
+		Id: this.id.GetID(),
+	}
+	vso, err := this.ipetm.vsom.RetrieveVStorageObject(ctx, vsoID)
+	if (err != nil) {
+		return nil, errors.Wrap(err, "RetrieveVStorageObject failed")
+	}
+	retVal:= arachne.ProtectedEntityInfoImpl{
+		Id: this.id,
+		Name: vso.Config.Name,
+		CombinedURLs: []url.URL{},
+		DataURLs: []url.URL{},
+		MetadataURLs: []url.URL{},
+		ComponentIDs: []arachne.ProtectedEntityID{},
+	}
+	return retVal, nil
 }
-func (ipe *IVDProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.ProtectedEntityInfo, error) {
-	return make([]arachne.ProtectedEntityInfo, 0), nil
+
+func (this IVDProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.ProtectedEntityInfo, error) {
+	ivdIPE, err := this.GetInfo(ctx)
+	if (err != nil) {
+		return nil, err
+	}
+	return []arachne.ProtectedEntityInfo{ivdIPE}, nil
 }
 
 /*
  * Snapshot APIs
  */
-func (ipe *IVDProtectedEntity) Snapshot(ctx context.Context) (*arachne.ProtectedEntitySnapshotID, error) {
-	vslmTask, err := ipe.ipetm.vsom.CreateSnapshot(ctx, NewIDFromString(ipe.GetID().GetID()), "ArachneSnapshot")
+func (this IVDProtectedEntity) Snapshot(ctx context.Context) (*arachne.ProtectedEntitySnapshotID, error) {
+	vslmTask, err := this.ipetm.vsom.CreateSnapshot(ctx, NewVimIDFromPEID(this.GetID()), "ArachneSnapshot")
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Snapshot failed")
 	}
 	ivdSnapshotIDAny, err := vslmTask.Wait(ctx, 60*time.Second)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Wait failed")
 	}
-	ivdSnapshotID := ivdSnapshotIDAny.(arachne.ProtectedEntitySnapshotID)
-	return arachne.NewProtectedEntitySnapshotID(ivdSnapshotID.String()), nil
+	ivdSnapshotID := ivdSnapshotIDAny.(vim.ID)
+	return arachne.NewProtectedEntitySnapshotID(ivdSnapshotID.Id), nil
 }
 
-func (ipe *IVDProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
-	return make([]arachne.ProtectedEntitySnapshotID, 0), nil
+func (this IVDProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
+	snapshotInfo, err:= this.ipetm.vsom.RetrieveSnapshotInfo(ctx, NewVimIDFromPEID(this.GetID()))
+	if err != nil {
+		return nil, errors.Wrap(err, "RetrieveSnapshotInfo failed")
+	}
+	peSnapshotIDs := []arachne.ProtectedEntitySnapshotID{}
+	for _, curSnapshotInfo := range snapshotInfo {
+		peSnapshotIDs = append(peSnapshotIDs, *arachne.NewProtectedEntitySnapshotID(curSnapshotInfo.Id.Id))
+	}
+	return peSnapshotIDs, nil
 }
-func (ipe *IVDProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
+func (this IVDProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
 	return true, nil
 }
-func (ipe *IVDProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotID arachne.ProtectedEntitySnapshotID) (*arachne.ProtectedEntityInfo, error) {
+func (this IVDProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotID arachne.ProtectedEntitySnapshotID) (*arachne.ProtectedEntityInfo, error) {
 	return nil, nil
 }
 
-func (ipe *IVDProtectedEntity) GetComponents(ctx context.Context) []arachne.ProtectedEntity {
+func (this IVDProtectedEntity) GetComponents(ctx context.Context) []arachne.ProtectedEntity {
 	return make([]arachne.ProtectedEntity, 0)
 }
 
-func (ipe *IVDProtectedEntity) GetID() arachne.ProtectedEntityID {
-	return ipe.id
+func (this IVDProtectedEntity) GetID() arachne.ProtectedEntityID {
+	return this.id
 }
 
 func NewIDFromString(idStr string) vim.ID {
 	return vim.ID{
 		Id: idStr,
+	}
+}
+
+func NewVimIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
+		return vim.ID{
+		Id: peid.GetID(),
 	}
 }

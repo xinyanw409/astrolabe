@@ -113,7 +113,7 @@ func (pesid *ProtectedEntitySnapshotID) String() string {
 }
 
 type ProtectedEntity interface {
-	GetInfo() ProtectedEntityInfo
+	GetInfo(ctx context.Context) (ProtectedEntityInfo, error)
 	GetCombinedInfo(ctx context.Context) ([]ProtectedEntityInfo, error)
 	/*
 	 * Snapshot APIs
