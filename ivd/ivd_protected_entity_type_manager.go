@@ -11,7 +11,7 @@ import (
 
 type IVDProtectedEntityTypeManager struct {
 	client *govmomi.Client
-	vsom   *vslm.VslmObjectManager
+	vsom   *vslm.GlobalObjectManager
 }
 
 func NewIVDProtectedEntityTypeManagerFromConfig(params map[string]interface{}) (*IVDProtectedEntityTypeManager, error) {
@@ -58,7 +58,7 @@ func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, insecure bool) (*IVDP
 
 func NewIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, vslmClient *vslm.Client) (*IVDProtectedEntityTypeManager, error) {
 
-	vsom := vslm.NewVslmObjectManager(vslmClient)
+	vsom := vslm.NewGlobalObjectManager(vslmClient)
 
 	retVal := IVDProtectedEntityTypeManager{
 		client: client,
@@ -80,7 +80,7 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Contex
 }
 
 func (ipetm *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntity, error) {
-	res, err := ipetm.vsom.ListVStorageObjectForSpec(ctx, nil, 1000)
+	res, err := ipetm.vsom.ListObjectsForSpec(ctx, nil, 1000)
 	if err != nil {
 		return nil, err
 	}

@@ -34,9 +34,9 @@ func (this IVDProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEn
 	vsoID := vim.ID {
 		Id: this.id.GetID(),
 	}
-	vso, err := this.ipetm.vsom.RetrieveVStorageObject(ctx, vsoID)
+	vso, err := this.ipetm.vsom.Retrieve(ctx, vsoID)
 	if (err != nil) {
-		return nil, errors.Wrap(err, "RetrieveVStorageObject failed")
+		return nil, errors.Wrap(err, "Retrieve failed")
 	}
 	retVal:= arachne.ProtectedEntityInfoImpl{
 		Id: this.id,
