@@ -67,7 +67,7 @@ func NewIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, vslmClie
 	return &retVal, nil
 }
 
-func (ipetm *IVDProtectedEntityTypeManager) GetTypeName() string {
+func (this *IVDProtectedEntityTypeManager) GetTypeName() string {
 	return "ivd"
 }
 
@@ -79,15 +79,15 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Contex
 	return retIPE, nil
 }
 
-func (ipetm *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntity, error) {
-	res, err := ipetm.vsom.ListObjectsForSpec(ctx, nil, 1000)
+func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntity, error) {
+	res, err := this.vsom.ListObjectsForSpec(ctx, nil, 1000)
 	if err != nil {
 		return nil, err
 	}
 	var retEntities []arachne.ProtectedEntity
 	for _, curVSOID := range res.Id {
 		arachneId := newProtectedEntityID(curVSOID)
-		newIPE, err := newIVDProtectedEntity(ipetm, arachneId)
+		newIPE, err := newIVDProtectedEntity(this, arachneId)
 		if err != nil {
 			return nil, err
 		}

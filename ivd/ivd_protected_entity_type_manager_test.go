@@ -1,10 +1,9 @@
 package ivd
 
 import (
-	"testing"
-//	"gotest.tools/assert"
-	"net/url"
 	"context"
+	"net/url"
+	"testing"
 )
 
 func TestProtectedEntityTypeManager(t *testing.T) {
@@ -15,14 +14,13 @@ func TestProtectedEntityTypeManager(t *testing.T) {
 	vcUrl.Path = "/sdk"
 
 	t.Logf("%s\n", vcUrl.String())
-	
+
 	ivdPETM, err := NewIVDProtectedEntityTypeManagerFromURL(&vcUrl, true)
 	ctx := context.Background()
-	
+
 	pes, err := ivdPETM.GetProtectedEntities(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("# of PEs returned = %d\n", len(pes))
 }
-

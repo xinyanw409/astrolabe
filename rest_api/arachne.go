@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/vmware/arachne"
 	"github.com/vmware/arachne/ivd"
+	"github.com/vmware/arachne/kubernetes"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -33,10 +34,12 @@ func NewArachne(confDirPath string) *Arachne {
 		switch serviceName {
 		case "ivd":
 			curService, err = ivd.NewIVDProtectedEntityTypeManagerFromConfig(params)
+		case "k8sns":
+			curService, err = kubernetes.NewKubernetesNamespaceProtectedEntityTypeManagerFromConfig(params)
 		default:
 
 		}
-		if (err != nil) {
+		if err != nil {
 			log.Printf("Could not start service %s err=%v", serviceName, err)
 			continue
 		}
@@ -54,7 +57,7 @@ func NewArachne(confDirPath string) *Arachne {
 func (this *Arachne) Get(c echo.Context) error {
 	var servicesList strings.Builder
 	needsComma := false
-	for serviceName, _ := range this.services {
+	for serviceName := range this.services {
 		if needsComma {
 			servicesList.WriteString(",")
 		}

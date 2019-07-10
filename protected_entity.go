@@ -2,10 +2,10 @@ package arachne
 
 import (
 	"context"
-	"errors"
-	"strings"
 	"encoding/json"
+	"errors"
 	"log"
+	"strings"
 )
 
 type ProtectedEntityID struct {
@@ -29,23 +29,23 @@ func NewProtectedEntityIDWithSnapshotID(peType string, id string, snapshotID Pro
 
 func NewProtectedEntityIDFromString(peiString string) (returnPEI ProtectedEntityID, returnError error) {
 	/*
-	components := strings.Split(peiString, ":")
-	if len(components) > 1 {
-		returnPEI.peType = components[0]
-		returnPEI.id = components[1]
-		if len(components) == 3 {
-			returnPEI.snapshotID = *NewProtectedEntitySnapshotID(components[2])
+		components := strings.Split(peiString, ":")
+		if len(components) > 1 {
+			returnPEI.peType = components[0]
+			returnPEI.id = components[1]
+			if len(components) == 3 {
+				returnPEI.snapshotID = *NewProtectedEntitySnapshotID(components[2])
+			}
+		} else {
+			returnError = errors.New("arachne: '" + peiString + "' is not a valid protected entity ID")
 		}
-	} else {
-		returnError = errors.New("arachne: '" + peiString + "' is not a valid protected entity ID")
-	}
-	return returnPEI, returnError
+		return returnPEI, returnError
 	*/
 	returnError = fillInProtectedEntityIDFromString(&returnPEI, peiString)
 	return returnPEI, returnError
 }
 
-func fillInProtectedEntityIDFromString(pei * ProtectedEntityID, peiString string) error {
+func fillInProtectedEntityIDFromString(pei *ProtectedEntityID, peiString string) error {
 	components := strings.Split(peiString, ":")
 	if len(components) > 1 {
 		pei.peType = components[0]
@@ -53,7 +53,7 @@ func fillInProtectedEntityIDFromString(pei * ProtectedEntityID, peiString string
 		if len(components) == 3 {
 			pei.snapshotID = *NewProtectedEntitySnapshotID(components[2])
 		}
-		log.Print("pei = "+pei.String())
+		log.Print("pei = " + pei.String())
 	} else {
 		return errors.New("arachne: '" + peiString + "' is not a valid protected entity ID")
 	}
@@ -82,13 +82,13 @@ func (peid ProtectedEntityID) String() string {
 }
 
 func (this ProtectedEntityID) MarshalJSON() ([]byte, error) {
-	return json.Marshal(this.String())	// Use marshal to make sure encoding happens
+	return json.Marshal(this.String()) // Use marshal to make sure encoding happens
 }
 
 func (this *ProtectedEntityID) UnmarshalJSON(b []byte) error {
 	var idStr string
-	json.Unmarshal(b, &idStr)	// Use unmarshall to make sure decoding happens
-	log.Print("UnmarshalJSON idStr = "+idStr)
+	json.Unmarshal(b, &idStr) // Use unmarshall to make sure decoding happens
+	log.Print("UnmarshalJSON idStr = " + idStr)
 	return fillInProtectedEntityIDFromString(this, idStr)
 }
 
@@ -123,6 +123,6 @@ type ProtectedEntity interface {
 	DeleteSnapshot(ctx context.Context, snapshotToDelete ProtectedEntitySnapshotID) (bool, error)
 	GetInfoForSnapshot(ctx context.Context, snapshotID ProtectedEntitySnapshotID) (*ProtectedEntityInfo, error)
 
-	GetComponents(ctx context.Context) []ProtectedEntity
+	GetComponents(ctx context.Context) ([]ProtectedEntity, error)
 	GetID() ProtectedEntityID
 }

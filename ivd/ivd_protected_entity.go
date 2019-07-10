@@ -5,9 +5,9 @@ import (
 	vim "github.com/vmware/govmomi/vim25/types"
 	//	"github.com/vmware/govmomi/vslm"
 	"context"
-	"time"
-	"net/url"
 	"github.com/pkg/errors"
+	"net/url"
+	"time"
 )
 
 type IVDProtectedEntity struct {
@@ -31,18 +31,18 @@ func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.Prot
 	return newIPE, nil
 }
 func (this IVDProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEntityInfo, error) {
-	vsoID := vim.ID {
+	vsoID := vim.ID{
 		Id: this.id.GetID(),
 	}
 	vso, err := this.ipetm.vsom.Retrieve(ctx, vsoID)
-	if (err != nil) {
+	if err != nil {
 		return nil, errors.Wrap(err, "Retrieve failed")
 	}
-	retVal:= arachne.ProtectedEntityInfoImpl{
-		Id: this.id,
-		Name: vso.Config.Name,
+	retVal := arachne.ProtectedEntityInfoImpl{
+		Id:           this.id,
+		Name:         vso.Config.Name,
 		CombinedURLs: []url.URL{},
-		DataURLs: []url.URL{},
+		DataURLs:     []url.URL{},
 		MetadataURLs: []url.URL{},
 		ComponentIDs: []arachne.ProtectedEntityID{},
 	}
@@ -51,7 +51,7 @@ func (this IVDProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEn
 
 func (this IVDProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.ProtectedEntityInfo, error) {
 	ivdIPE, err := this.GetInfo(ctx)
-	if (err != nil) {
+	if err != nil {
 		return nil, err
 	}
 	return []arachne.ProtectedEntityInfo{ivdIPE}, nil
@@ -74,7 +74,7 @@ func (this IVDProtectedEntity) Snapshot(ctx context.Context) (*arachne.Protected
 }
 
 func (this IVDProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
-	snapshotInfo, err:= this.ipetm.vsom.RetrieveSnapshotInfo(ctx, NewVimIDFromPEID(this.GetID()))
+	snapshotInfo, err := this.ipetm.vsom.RetrieveSnapshotInfo(ctx, NewVimIDFromPEID(this.GetID()))
 	if err != nil {
 		return nil, errors.Wrap(err, "RetrieveSnapshotInfo failed")
 	}
@@ -91,8 +91,8 @@ func (this IVDProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotI
 	return nil, nil
 }
 
-func (this IVDProtectedEntity) GetComponents(ctx context.Context) []arachne.ProtectedEntity {
-	return make([]arachne.ProtectedEntity, 0)
+func (this IVDProtectedEntity) GetComponents(ctx context.Context) ([]arachne.ProtectedEntity, error) {
+	return make([]arachne.ProtectedEntity, 0), nil
 }
 
 func (this IVDProtectedEntity) GetID() arachne.ProtectedEntityID {
@@ -106,7 +106,7 @@ func NewIDFromString(idStr string) vim.ID {
 }
 
 func NewVimIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
-		return vim.ID{
+	return vim.ID{
 		Id: peid.GetID(),
 	}
 }
