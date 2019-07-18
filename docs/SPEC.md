@@ -1,5 +1,5 @@
 Arachne Specification
-#Overview
+# Overview
 Arachne is a framework for data protection.
 It provides an abstraction designed for data protection.  Arachne abstracts the different
 objects to be backed up as *Protected Entities*.  All Protected Entities implement the same
@@ -21,29 +21,29 @@ Arachne provides APIs and data access end points to support backup, remote repli
 disaster recovery and other data protection use cases.  Arachne provides a single model
 for discovery and control for all of these use cases ensuring that there will be no gaps.
 
-#Objects
-##Services
+# Objects
+## Services
 A *service* in Arachne is a class of Protected Entities.
-##Protected Entities
+## Protected Entities
 Protected Entities represent objects that can be protected.  A Protected Entity can be a simple entity, with no components, or a complex entity with component protected entities referenced by it.  
-###Protected Entity Graph
+### Protected Entity Graph
 A Protected Entity Graph is defined as a root Protected Entity and all of its component Protected Entities.  Component Pes are 
-###IDs
+### IDs
 Protected Entities are identified by Protected Entity IDs.  The ID specifies a type, object ID and, optionally, a snapshot ID.  If the snapshot ID is not specified, the current version of the protected entity is specified.
 The object ID and snapshot ID formats are controlled by the service and can consist of [A-Z][a-z][0-9][-][/][_][.]  Any other non-alphanumeric characters are forbidden.  In the event that a service’s native object ID or snapshot ID needs a special character, the service should use an encoding format such as UUENCODE to translate to strict alpha-numerics.
 A Protected Entity ID is written as <type>:<object ID>[:snapshot ID]
-####vSphere IVD Example
+#### vSphere IVD Example
 For example, a virtual disk is referred to as:
 ivd:e1c3cb20-db88-4c1c-9f02-5f5347e435d5
 A snapshot on that disk can be identified as:
 ivd:e1c3cb20-db88-4c1c-9f02-5f5347e435d5:67469e1c-50a8-4f63-9a6a-ad8a2265197c
-####Kubernetes namespace example
+#### Kubernetes namespace example
 A Kubernetes namespace is referred to as:
 k8s:nginx-example
 With a snapshot, it can be referred to as:
 k8s:nginx-example:0ce7b1ca-43cc-4ec2-8ed7-cf58ce0951aa
 
-###JSON Format
+### JSON Format
 A protected entity JSON describes a protected entity from the Arachne point-of-view.  This JSON can be viewed as a description of the state of the protected entity at a point in time.  This state is used both for backup and restore.
 ```
 {  
@@ -84,18 +84,18 @@ This would be the JSON for a single Kubernetes namespace
    ]
 }
 ```
-###Required supported data types
+### Required supported data types
 The following data types are required to be supported:
-####S3
+#### S3
 Takes an S3 URL.
 Care should be taken by the Arachne implementation to control where URIs can be
 directed.  Since the Arachne server will often be running within a datacenter
 firewall, it may have access to many RESTful services which could be triggered 
 via URIs.
-####zip
+#### zip
 These URIs are relative to a ZIP file that the JSON has been embedded in.  If the JSON is not in a Zip file these URIs are invalid
 zip://<path within zip file>
-###Zip file format
+### Zip file format
 Combined information for a protected entity including the PE info JSON, metadata,
 data and component combined information is returned in a ZIP file
 (https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT).
@@ -131,24 +131,24 @@ this protected entity.
 
     /components/<component PE ID>.zip
 
-#Server Types
+# Server Types
 All Arachne servers support both the control and data paths.  There are two styles of 
 server defined currently, Active and Repository
-##Active Archne Server
+## Active Archne Server
 An Active Arachne Server provides an interface to one or more services.  The services are
 backed by the real service and will usually be providing the actual service,
 such as virtual disk, virtual machines, or Kubernetes.  Changes to the state of the
 Services and Protected Entities can occur independent of the Arachne APIs and server.
-##Repository Arachne Server
+## Repository Arachne Server
 A Repository Arachne Server is a passive store for Protected Entity states.  A PE's
 state can be copied into the repository but once there it will not change unless
 actions are taken via the Arachne APIs.  A Repository server may be able to store
 all Protected Entity types.  In that case, the Arachne List Services API may return a
 single service, "*" (it may also list other named services as well).
-#APIs
-##Control Path
-###Arachne
-####List Services
+# APIs
+## Control Path
+### Arachne
+#### List Services
 This returns the list of services that this Arachne server supports
 
 REST API
@@ -161,13 +161,13 @@ Returns a JSON formatted as:
 }
 ```
 Repository servers 
-###Service
-####List Protected Entities
+### Service
+#### List Protected Entities
 This lists the protected entities available from this service by ID.  The list is returned in ID order.  The number of results returned is limited and pagination is accomplished by specifying the previous ending ID
 REST API
 
     GET /arachne/<service>?maxResults=<max results to return>&idsAfter=<starting ID, non-inclusive>
-####Copy
+#### Copy
 Copy will update or create an based on a ProtectedEntity JSON. The data paths must be specified in the JSON.   
 There is no option to embed data on this path, for a self-contained or partially self-contained object, 
 use the restore from zip file option in the S3 API
@@ -196,13 +196,13 @@ is restored.  Component PEs may have metadata that is assigned by their
 parent and may even be used by the parent to identify their components.
 On restore, there is no generic mechanism for replacing metadata.  How can we
 reset metadata appropriately to avoid confusing higher layers?
-###Protected Entity
+### Protected Entity
 Protected Entities are identified by a Protected Entity ID.
 Protected Entities are designed to be a reflection of an underlying
 system, therefore Create/Delete/Update operations for Protected
 Entities are not defined.  It is possible to create a Protected Entity
 via the Restore path.
-####Retrieve Info
+#### Retrieve Info
 This retrieves the information for a Protected Entity or
 snapshot of a ProtectedEntity.
 
@@ -210,7 +210,7 @@ REST API
 
     GET /arachne/<service>/<protected entity ID>
 Returns the Protected Entity's JSON (defined above)
-####Create Snapshot
+#### Create Snapshot
 Takes a snapshot of a Protected Entity.
 
 REST API
@@ -226,18 +226,18 @@ Open Questions:
 Are snapshots independent entities in this model?  CSI takes that approach, as does EBS.
 vSphere treats snapshots as dependents of the virtual devices.
 
-####Delete Snapshot
+#### Delete Snapshot
 Deletes a snapshot of a Protected Entity
 
 REST API
 GET /arachne/<service>/<protected entity ID>?action=snapshot
-####List Snapshots
+#### List Snapshots
 Lists snapshots of a Protected Entity
 ###Task
 Tasks are created for long-running actions.  Tasks are identified by UUIDs.
 After completion, tasks must be retained for at least 1 hour to give the client time to
 get the status.
-####Get status
+#### Get status
 Retrieves the status of the task
 
 REST API
@@ -254,19 +254,19 @@ Returns the task's JSON.
 }
 ```
 Localization for details??
-####Cancel
+#### Cancel
 Cancels a running task
 
 REST API
 
     GET /arachne/tasks/<task ID>?action=cancel
 
-##Data Path
+## Data Path
 Arachne supports multiple data protocols per Protected Entity.  Which protocols
 are supported is different for each type and can be different for individual
 Protected Entities within a type.  The S3 API is required for all Protected Entities
 to ensure access.
-###S3 API
+### S3 API
 The Arachne S3 server provides access to data, metadata and combined data for
 protected entities.  The S3 server may be implemented in the same process
 as the API server or separately.  For the most part, the data provided by the S3
@@ -298,12 +298,12 @@ reconstituted.  The data for the entities may be contained in the zip file or it
 may be accessed via URIs defined in the JSONs for the protected entities.
 
 
-###Other paths
+### Other paths
 Arachne supports multiple data paths per Protected Entity.  All data paths should provide
 the same data, though it may be formatted differently.  Each path will be specified by a
 separate data section
-#Workflows
-##Backup Kubernetes namespace
+# Workflows
+## Backup Kubernetes namespace
 Via the unified stream API
 
 Create snapshot
