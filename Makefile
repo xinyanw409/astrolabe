@@ -1,12 +1,12 @@
 all: build
 
-build: core ivd kubernetes rest_api
+build: arachne ivd kubernetes rest_api
 
 cmd:
 	cd cmd/server; go get; go install
 
-core:
-	cd pkg/core; go get; go install
+arachne:
+	cd pkg/arachne; go get; go install
 
 ivd:
 	cd pkg/ivd; go get; go install
