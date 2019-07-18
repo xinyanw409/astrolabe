@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	"github.com/vmware/arachne/pkg/core"
+	"github.com/vmware/arachne/pkg/arachne"
 	"github.com/vmware/arachne/pkg/ivd"
 	"github.com/vmware/arachne/pkg/kubernetes"
 	"io/ioutil"
@@ -30,7 +30,7 @@ func NewArachne(confDirPath string) *Arachne {
 	}
 
 	for serviceName, params := range configMap {
-		var curService core.ProtectedEntityTypeManager
+		var curService arachne.ProtectedEntityTypeManager
 		switch serviceName {
 		case "ivd":
 			curService, err = ivd.NewIVDProtectedEntityTypeManagerFromConfig(params)
@@ -125,7 +125,7 @@ func readConfigFile(confFile string) (map[string]interface{}, error) {
 	return result, nil
 }
 
-func InitIVDService(ctx context.Context) (core.ProtectedEntityTypeManager, error) {
+func InitIVDService(ctx context.Context) (arachne.ProtectedEntityTypeManager, error) {
 	var vcUrl url.URL
 	vcUrl.Scheme = "https"
 	vcUrl.Host = "10.160.127.39"

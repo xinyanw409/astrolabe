@@ -2,19 +2,19 @@ package kubernetes
 
 import (
 	"context"
-	"github.com/vmware/arachne/pkg/core"
+	"github.com/vmware/arachne/pkg/arachne"
 	v1 "k8s.io/api/core/v1"
 )
 
 type KubernetesNamespaceProtectedEntity struct {
 	knpetm    *KubernetesNamespaceProtectedEntityTypeManager
-	id        core.ProtectedEntityID
+	id        arachne.ProtectedEntityID
 	namespace *v1.Namespace
 }
 
 func NewKubernetesNamespaceProtectedEntity(knpetm *KubernetesNamespaceProtectedEntityTypeManager,
 	namespace *v1.Namespace) (*KubernetesNamespaceProtectedEntity, error) {
-	nsPEID := core.NewProtectedEntityID("k8sns", namespace.Name)
+	nsPEID := arachne.NewProtectedEntityID("k8sns", namespace.Name)
 	returnPE := KubernetesNamespaceProtectedEntity{
 		knpetm:    knpetm,
 		id:        nsPEID,
@@ -23,38 +23,38 @@ func NewKubernetesNamespaceProtectedEntity(knpetm *KubernetesNamespaceProtectedE
 	return &returnPE, nil
 }
 
-func (this *KubernetesNamespaceProtectedEntity) GetInfo(ctx context.Context) (core.ProtectedEntityInfo, error) {
+func (this *KubernetesNamespaceProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEntityInfo, error) {
 	return nil, nil
 }
-func (this *KubernetesNamespaceProtectedEntity) GetCombinedInfo(ctx context.Context) ([]core.ProtectedEntityInfo, error) {
-	return nil, nil
-
-}
-
-func (this *KubernetesNamespaceProtectedEntity) Snapshot(ctx context.Context) (*core.ProtectedEntitySnapshotID, error) {
+func (this *KubernetesNamespaceProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.ProtectedEntityInfo, error) {
 	return nil, nil
 
 }
-func (this *KubernetesNamespaceProtectedEntity) ListSnapshots(ctx context.Context) ([]core.ProtectedEntitySnapshotID, error) {
+
+func (this *KubernetesNamespaceProtectedEntity) Snapshot(ctx context.Context) (*arachne.ProtectedEntitySnapshotID, error) {
+	return nil, nil
+
+}
+func (this *KubernetesNamespaceProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
 	return nil, nil
 
 }
 func (this *KubernetesNamespaceProtectedEntity) DeleteSnapshot(ctx context.Context,
-	snapshotToDelete core.ProtectedEntitySnapshotID) (bool, error) {
+	snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
 	return false, nil
 
 }
 func (this *KubernetesNamespaceProtectedEntity) GetInfoForSnapshot(ctx context.Context,
-	snapshotID core.ProtectedEntitySnapshotID) (*core.ProtectedEntityInfo, error) {
+	snapshotID arachne.ProtectedEntitySnapshotID) (*arachne.ProtectedEntityInfo, error) {
 	return nil, nil
 
 }
 
-func (this *KubernetesNamespaceProtectedEntity) GetComponents(ctx context.Context) ([]core.ProtectedEntity, error) {
+func (this *KubernetesNamespaceProtectedEntity) GetComponents(ctx context.Context) ([]arachne.ProtectedEntity, error) {
 	return nil, nil
 
 }
 
-func (this *KubernetesNamespaceProtectedEntity) GetID() core.ProtectedEntityID {
+func (this *KubernetesNamespaceProtectedEntity) GetID() arachne.ProtectedEntityID {
 	return this.id
 }

@@ -3,15 +3,15 @@ package rest_api
 import (
 	"context"
 	"github.com/labstack/echo"
-	"github.com/vmware/arachne/pkg/core"
+	"github.com/vmware/arachne/pkg/arachne"
 	"net/http"
 )
 
 type ServiceAPI struct {
-	petm *core.ProtectedEntityTypeManager
+	petm *arachne.ProtectedEntityTypeManager
 }
 
-func NewServiceAPI(petm *core.ProtectedEntityTypeManager) *ServiceAPI {
+func NewServiceAPI(petm *arachne.ProtectedEntityTypeManager) *ServiceAPI {
 	return &ServiceAPI{
 		petm: petm,
 	}
@@ -61,12 +61,12 @@ func (this *ServiceAPI) handleObjectRequest(echoContext echo.Context) error {
 	return nil
 }
 
-func (this *ServiceAPI) getProtectedEntityForIDStr(idStr string, echoContext echo.Context) (core.ProtectedEntityID, core.ProtectedEntity, error) {
-	var id core.ProtectedEntityID
-	var pe core.ProtectedEntity
+func (this *ServiceAPI) getProtectedEntityForIDStr(idStr string, echoContext echo.Context) (arachne.ProtectedEntityID, arachne.ProtectedEntity, error) {
+	var id arachne.ProtectedEntityID
+	var pe arachne.ProtectedEntity
 	var err error
 
-	id, err = core.NewProtectedEntityIDFromString(idStr)
+	id, err = arachne.NewProtectedEntityIDFromString(idStr)
 	if err != nil {
 		echoContext.String(http.StatusBadRequest, "id = "+idStr+" is invalid "+err.Error())
 		return id, pe, err
