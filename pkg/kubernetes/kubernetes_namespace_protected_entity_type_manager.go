@@ -2,8 +2,8 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/vmware/arachne/pkg/core"
 
-	"github.com/vmware/arachne"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -40,13 +40,13 @@ func (this *KubernetesNamespaceProtectedEntityTypeManager) GetTypeName() string 
 	return "kubernetes-ns"
 }
 
-func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (
-	arachne.ProtectedEntity, error) {
+func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id core.ProtectedEntityID) (
+	core.ProtectedEntity, error) {
 	return nil, nil
 }
 
-func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntity, error) {
-	protectedEntities := make([]arachne.ProtectedEntity, 0, len(this.namespaces))
+func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]core.ProtectedEntity, error) {
+	protectedEntities := make([]core.ProtectedEntity, 0, len(this.namespaces))
 
 	for _, pe := range this.namespaces {
 		protectedEntities = append(protectedEntities, pe)

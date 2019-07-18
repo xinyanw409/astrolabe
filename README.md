@@ -12,7 +12,7 @@ go install
 To run the Arachne server
 $GOPATH/bin/arachne_server -confDir=<your configuration dir> [-port=<desired port number>]
 
-The default path for the server is 1323
+The default port for the server is 1323
 
 Access via <ip>:/api/arachne
 

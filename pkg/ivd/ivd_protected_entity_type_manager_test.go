@@ -18,7 +18,7 @@ func TestProtectedEntityTypeManager(t *testing.T) {
 	ivdPETM, err := NewIVDProtectedEntityTypeManagerFromURL(&vcUrl, true)
 	ctx := context.Background()
 
-	pes, err := ivdPETM.GetProtectedEntities(ctx)
+	pes, err := GetProtectedEntities(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}

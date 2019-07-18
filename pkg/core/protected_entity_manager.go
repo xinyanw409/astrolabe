@@ -1,8 +1,4 @@
-package arachne
-
-import (
-
-)
+package core
 
 type ProtectedEntityManager struct {
 	typeManager map[string]ProtectedEntityTypeManager

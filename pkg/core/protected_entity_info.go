@@ -1,4 +1,4 @@
-package arachne
+package core
 
 import (
 	"bytes"
@@ -14,6 +14,8 @@ type ProtectedEntityInfo interface {
 	GetDataURLs() []url.URL
 	GetCombinedURLs() []url.URL
 	GetComponentIDs() []ProtectedEntityID
+	MarshalJSON() ([]byte, error)
+	UnmarshalJSON(data []byte) error
 }
 
 type ProtectedEntityInfoImpl struct {
@@ -86,7 +88,7 @@ func appendJSON(buffer *bytes.Buffer, key string, value interface{}) error {
 	return nil
 }
 
-func (this *ProtectedEntityInfoImpl) UnmarshalJSON(data []byte) error {
+func (this ProtectedEntityInfoImpl) UnmarshalJSON(data []byte) error {
 	jsonStruct := protectedEntityInfoJSON{}
 	err := json.Unmarshal(data, &jsonStruct)
 	if err != nil {

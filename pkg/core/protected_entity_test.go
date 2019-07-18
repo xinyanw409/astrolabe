@@ -1,4 +1,4 @@
-package arachne
+package core
 
 import (
 	"encoding/json"
@@ -13,9 +13,9 @@ func TestProtectedEntityIDFromString(t *testing.T) {
 	if test1Err != nil {
 		t.Error("Got error " + test1Err.Error())
 	}
-	t.Log("test1ID = " + test1ID.String())
+	t.Log("test1ID = " + String())
 
-	assert.Equal(t, test1Str, test1ID.String())
+	assert.Equal(t, test1Str, String())
 
 	// Test with ivd with snapshot
 	const test2Str = "ivd:e1c3cb20-db88-4c1c-9f02-5f5347e435d5:67469e1c-50a8-4f63-9a6a-ad8a2265197c"
@@ -23,8 +23,8 @@ func TestProtectedEntityIDFromString(t *testing.T) {
 	if test2Err != nil {
 		t.Error("Got error " + test2Err.Error())
 	}
-	assert.Equal(t, test2Str, test2ID.String())
-	t.Log("test2ID = " + test2ID.String())
+	assert.Equal(t, test2Str, String())
+	t.Log("test2ID = " + String())
 }
 
 func TestProtectedEntityIDJSON(t *testing.T) {
@@ -41,7 +41,7 @@ func TestProtectedEntityIDJSON(t *testing.T) {
 	jsonString := string(jsonBuffer)
 
 	t.Log("test1Str = " + test1Str)
-	t.Log("test1ID.String() = " + test1ID.String())
+	t.Log("test1ID.String() = " + String())
 	t.Log("jsonStr = " + jsonString)
 
 	unmarshalledID := ProtectedEntityID{}
@@ -51,7 +51,7 @@ func TestProtectedEntityIDJSON(t *testing.T) {
 		t.Error("Got error " + test1Err.Error())
 	}
 	
-	t.Log("unmarshalledID = " + unmarshalledID.String())
+	t.Log("unmarshalledID = " + String())
 	
 	assert.Equal(t, test1ID, unmarshalledID, "Unmarshalled ID does not match test1 ID")	
 }

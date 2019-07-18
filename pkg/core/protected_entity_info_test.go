@@ -1,11 +1,11 @@
-package arachne
+package core
 
 import (
 	"encoding/json"
 	"gotest.tools/assert"
 	"net/url"
-	"testing"
 	"reflect"
+	"testing"
 )
 
 func TestProtectedEntityInfoJSON(t *testing.T) {

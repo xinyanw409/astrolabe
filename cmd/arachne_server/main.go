@@ -1,4 +1,4 @@
-package main 
+package main
 
 import (
 	"flag"
@@ -6,7 +6,7 @@ import (
 	"log"
 	//"net/http"
 	"github.com/labstack/echo"
-	"github.com/vmware/arachne/rest_api"
+	"github.com/vmware/arachne/pkg/rest_api"
 )
 
 func main() {
