@@ -95,3 +95,7 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Cont
 	}
 	return retEntities, nil
 }
+
+func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) error {
+	return nil
+}

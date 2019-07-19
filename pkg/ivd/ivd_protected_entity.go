@@ -70,6 +70,12 @@ func (this IVDProtectedEntity) Snapshot(ctx context.Context) (*arachne.Protected
 		return nil, errors.Wrap(err, "Wait failed")
 	}
 	ivdSnapshotID := ivdSnapshotIDAny.(vim.ID)
+	/*
+		ivdSnapshotStr := ivdSnapshotIDAny.(string)
+		ivdSnapshotID := vim.ID{
+			Id: ivdSnapshotStr,
+		}
+	*/
 	return arachne.NewProtectedEntitySnapshotID(ivdSnapshotID.Id), nil
 }
 
