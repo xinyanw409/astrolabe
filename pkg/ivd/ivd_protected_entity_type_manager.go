@@ -99,3 +99,7 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Cont
 func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) error {
 	return nil
 }
+
+func (this *IVDProtectedEntityTypeManager) getDataTransports(entity IVDProtectedEntity) ([]arachne.DataTransport, error) {
+	return nil, nil
+}

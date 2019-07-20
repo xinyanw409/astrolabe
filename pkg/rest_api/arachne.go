@@ -68,12 +68,12 @@ func (this *Arachne) Get(c echo.Context) error {
 }
 
 func (this *Arachne) ConnectArachneAPIToEcho(echo *echo.Echo) error {
-	echo.GET("/api/arachne", this.Get)
+	echo.GET("/arachne", this.Get)
 
 	for serviceName, service := range this.services {
-		echo.GET("/api/arachne/"+serviceName, service.listObjects)
-		echo.GET("/api/arachne/"+serviceName+"/:id", service.handleObjectRequest)
-		echo.GET("/api/arachne/"+serviceName+"/:id/snapshots", service.handleSnapshotListRequest)
+		echo.GET("/arachne/"+serviceName, service.listObjects)
+		echo.GET("/arachne/"+serviceName+"/:id", service.handleObjectRequest)
+		echo.GET("/arachne/"+serviceName+"/:id/snapshots", service.handleSnapshotListRequest)
 
 	}
 	return nil

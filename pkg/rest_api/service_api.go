@@ -38,17 +38,15 @@ func (this *ServiceAPI) handleObjectRequest(echoContext echo.Context) error {
 		return nil
 	}
 
-	if _, ok := echoContext.Request().URL.Query()["snapshot"]; ok {
-		snapshotID, err := pe.Snapshot(context.Background())
-		if err != nil {
-			echoContext.String(http.StatusNotFound, "Snapshot failed for id "+id.String()+" error = "+err.Error())
-			return nil
+	if action, ok := echoContext.Request().URL.Query()["action"]; ok {
+		switch action[0] {
+		case "snapshot":
+			this.snapshot(echoContext, pe)
+		case "deleteSnapshot":
+			this.deleteSnapshot(echoContext, pe)
+		default:
+			echoContext.String(http.StatusBadRequest, "Action "+action[0]+" not understood")
 		}
-		if snapshotID == nil {
-			echoContext.String(http.StatusInternalServerError, "snapshotID was nil for "+id.String())
-			return nil
-		}
-		echoContext.String(http.StatusOK, snapshotID.String())
 		return nil
 	}
 	info, err := pe.GetInfo(context.Background())
@@ -61,6 +59,36 @@ func (this *ServiceAPI) handleObjectRequest(echoContext echo.Context) error {
 	return nil
 }
 
+func (this *ServiceAPI) snapshot(echoContext echo.Context, pe arachne.ProtectedEntity) {
+	snapshotID, err := pe.Snapshot(context.Background())
+	if err != nil {
+		echoContext.String(http.StatusNotFound, "Snapshot failed for id "+pe.GetID().String()+" error = "+err.Error())
+		return
+	}
+	if snapshotID == nil {
+		echoContext.String(http.StatusInternalServerError, "snapshotID was nil for "+pe.GetID().String())
+		return
+	}
+	echoContext.String(http.StatusOK, snapshotID.String())
+}
+
+func (this *ServiceAPI) deleteSnapshot(echoContext echo.Context, pe arachne.ProtectedEntity) {
+	snapshotID := pe.GetID().GetSnapshotID()
+	if snapshotID.GetID() == "" {
+		echoContext.String(http.StatusBadRequest, "No snapshot ID specified in id "+pe.GetID().String()+" for delete")
+		return
+	}
+	deleted, err := pe.DeleteSnapshot(context.Background(), snapshotID)
+	if err != nil {
+		echoContext.String(http.StatusNotFound, "Snapshot delete failed for id "+pe.GetID().String()+" error = "+err.Error())
+		return
+	}
+	if deleted == false {
+		echoContext.String(http.StatusInternalServerError, "Could not delete snapshot "+pe.GetID().String())
+		return
+	}
+	echoContext.String(http.StatusOK, snapshotID.String())
+}
 func (this *ServiceAPI) getProtectedEntityForIDStr(idStr string, echoContext echo.Context) (arachne.ProtectedEntityID, arachne.ProtectedEntity, error) {
 	var id arachne.ProtectedEntityID
 	var pe arachne.ProtectedEntity

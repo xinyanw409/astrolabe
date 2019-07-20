@@ -4,15 +4,24 @@ import (
 	"github.com/pkg/errors"
 	"github.com/vmware/arachne/pkg/arachne"
 	vim "github.com/vmware/govmomi/vim25/types"
+	"io"
+
 	//	"github.com/vmware/govmomi/vslm"
 	"context"
-	"net/url"
 	"time"
 )
 
 type IVDProtectedEntity struct {
 	ipetm *IVDProtectedEntityTypeManager
 	id    arachne.ProtectedEntityID
+}
+
+func (this IVDProtectedEntity) GetDataReader() (io.Reader, error) {
+	return nil, nil
+}
+
+func (this IVDProtectedEntity) GetMetadataReader() (io.Reader, error) {
+	return nil, nil
 }
 
 func newProtectedEntityID(id vim.ID) arachne.ProtectedEntityID {
@@ -38,14 +47,14 @@ func (this IVDProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEn
 	if err != nil {
 		return nil, errors.Wrap(err, "Retrieve failed")
 	}
-	retVal := arachne.ProtectedEntityInfoImpl{
-		Id:           this.id,
-		Name:         vso.Config.Name,
-		CombinedURLs: []url.URL{},
-		DataURLs:     []url.URL{},
-		MetadataURLs: []url.URL{},
-		ComponentIDs: []arachne.ProtectedEntityID{},
-	}
+
+	retVal := arachne.NewProtectedEntityInfo(
+		this.id,
+		vso.Config.Name,
+		[]arachne.DataTransport{},
+		[]arachne.DataTransport{},
+		[]arachne.DataTransport{},
+		[]arachne.ProtectedEntityID{})
 	return retVal, nil
 }
 
@@ -73,7 +82,7 @@ func (this IVDProtectedEntity) Snapshot(ctx context.Context) (*arachne.Protected
 	/*
 		ivdSnapshotStr := ivdSnapshotIDAny.(string)
 		ivdSnapshotID := vim.ID{
-			Id: ivdSnapshotStr,
+			id: ivdSnapshotStr,
 		}
 	*/
 	return arachne.NewProtectedEntitySnapshotID(ivdSnapshotID.Id), nil

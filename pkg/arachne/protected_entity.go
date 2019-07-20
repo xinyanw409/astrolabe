@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"strings"
 )
@@ -125,4 +126,14 @@ type ProtectedEntity interface {
 
 	GetComponents(ctx context.Context) ([]ProtectedEntity, error)
 	GetID() ProtectedEntityID
+
+	// GetDataReader returns a reader for the data of the ProtectedEntity.  The ProtectedEntity will pick the
+	// best data path to provide the Reader stream.  If the ProtectedEntity does not have any data, nil will be
+	// returned
+	GetDataReader() (io.Reader, error)
+
+	// GetMetadataReader returns a reader for the metadata of the ProtectedEntity.  The ProtectedEntity will pick the
+	// best data path to provide the Reader stream.  If the ProtectedEntity does not have any metadata, nil will be
+	// returned
+	GetMetadataReader() (io.Reader, error)
 }

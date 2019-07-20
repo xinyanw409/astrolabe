@@ -4,44 +4,54 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	//	"log"
 	"net/url"
 )
 
 type ProtectedEntityInfo interface {
 	GetID() ProtectedEntityID
 	GetName() string
-	GetDataURLs() []url.URL
-	GetCombinedURLs() []url.URL
+	GetDataTransports() [] DataTransport
+	GetMetadataTransports() [] DataTransport
+	GetCombinedTransports() [] DataTransport
 	GetComponentIDs() []ProtectedEntityID
-	MarshalJSON() ([]byte, error)
-	UnmarshalJSON(data []byte) error
 }
 
 type ProtectedEntityInfoImpl struct {
-	Id           ProtectedEntityID   `json:"id"`
-	Name         string              `json:"name"`
-	DataURLs     []url.URL           `json:"dataURLs"`
-	MetadataURLs []url.URL           `json:"metadataURLs"`
-	CombinedURLs []url.URL           `json:"combinedURLs"`
-	ComponentIDs []ProtectedEntityID `json:"componentIDs"`
+	id                 ProtectedEntityID
+	name               string
+	dataTransports     []DataTransport
+	metadataTransports []DataTransport
+	combinedTransports []DataTransport
+	componentIDs       []ProtectedEntityID
+}
+
+func NewProtectedEntityInfo(id ProtectedEntityID, name string, dataTransports []DataTransport, metadataTransports []DataTransport,
+	combinedTransports []DataTransport, componentIDs []ProtectedEntityID) ProtectedEntityInfo {
+	return ProtectedEntityInfoImpl{
+		id:                 id,
+		name:               name,
+		dataTransports:     dataTransports,
+		metadataTransports: metadataTransports,
+		combinedTransports: combinedTransports,
+		componentIDs:       componentIDs,
+	}
 }
 
 type protectedEntityInfoJSON struct {
-	Id           ProtectedEntityID   `json:"id"`
-	Name         string              `json:"name"`
-	DataURLs     []string            `json:"dataURLs"`
-	MetadataURLs []string            `json:"metadataURLs"`
-	CombinedURLs []string            `json:"combinedURLs"`
-	ComponentIDs []ProtectedEntityID `json:"componentIDs"`
+	Id                 ProtectedEntityID   `json:"id"`
+	Name               string              `json:"name"`
+	DataTransports     []DataTransport     `json:"dataTransports"`
+	MetadataTransports []DataTransport     `json:"metadataTransports"`
+	CombinedTransports []DataTransport     `json:"combinedTransports"`
+	ComponentIDs       []ProtectedEntityID `json:"componentIDs"`
 }
 
 func (this ProtectedEntityInfoImpl) GetID() ProtectedEntityID {
-	return this.Id
+	return this.id
 }
 
 func (this ProtectedEntityInfoImpl) GetName() string {
-	return this.Name
+	return this.name
 }
 
 func stringsToURLs(urlStrs []string) ([]url.URL, error) {
@@ -68,12 +78,12 @@ func urlsToStrings(urls []url.URL) []string {
 func (this ProtectedEntityInfoImpl) MarshalJSON() ([]byte, error) {
 
 	jsonStruct := protectedEntityInfoJSON{
-		Id:           this.Id,
-		Name:         this.Name,
-		DataURLs:     urlsToStrings(this.DataURLs),
-		CombinedURLs: urlsToStrings(this.CombinedURLs),
-		MetadataURLs: urlsToStrings(this.MetadataURLs),
-		ComponentIDs: this.ComponentIDs,
+		Id:                 this.id,
+		Name:               this.name,
+		DataTransports:     this.dataTransports,
+		MetadataTransports: this.metadataTransports,
+		CombinedTransports: this.combinedTransports,
+		ComponentIDs:       this.componentIDs,
 	}
 
 	return json.Marshal(jsonStruct)
@@ -88,37 +98,33 @@ func appendJSON(buffer *bytes.Buffer, key string, value interface{}) error {
 	return nil
 }
 
-func (this ProtectedEntityInfoImpl) UnmarshalJSON(data []byte) error {
+func (this *ProtectedEntityInfoImpl) UnmarshalJSON(data []byte) error {
 	jsonStruct := protectedEntityInfoJSON{}
 	err := json.Unmarshal(data, &jsonStruct)
 	if err != nil {
 		return err
 	}
-	this.Id = jsonStruct.Id
-	this.Name = jsonStruct.Name
-	this.DataURLs, err = stringsToURLs(jsonStruct.DataURLs)
-	if err != nil {
-		return err
-	}
-
-	this.CombinedURLs, err = stringsToURLs(jsonStruct.CombinedURLs)
-	if err != nil {
-		return err
-	}
-	
-	this.MetadataURLs, err = stringsToURLs(jsonStruct.MetadataURLs)
-	this.ComponentIDs = jsonStruct.ComponentIDs
+	this.id = jsonStruct.Id
+	this.name = jsonStruct.Name
+	this.dataTransports = jsonStruct.DataTransports
+	this.metadataTransports = jsonStruct.MetadataTransports
+	this.combinedTransports = jsonStruct.CombinedTransports
+	this.componentIDs = jsonStruct.ComponentIDs
 	return nil
 }
 
-func (this ProtectedEntityInfoImpl) GetDataURLs() []url.URL {
-	return this.DataURLs
+func (this ProtectedEntityInfoImpl) GetDataTransports() []DataTransport {
+	return this.dataTransports
 }
 
-func (this ProtectedEntityInfoImpl) GetCombinedURLs() []url.URL {
-	return this.CombinedURLs
+func (this ProtectedEntityInfoImpl) GetMetadataTransports() []DataTransport {
+	return this.metadataTransports
+}
+
+func (this ProtectedEntityInfoImpl) GetCombinedTransports() []DataTransport {
+	return this.dataTransports
 }
 
 func (this ProtectedEntityInfoImpl) GetComponentIDs() []ProtectedEntityID {
-	return this.ComponentIDs
+	return this.componentIDs
 }

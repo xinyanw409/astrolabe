@@ -3,6 +3,7 @@ package arachne
 import (
 	"archive/zip"
 	"context"
+	"encoding/json"
 	"io"
 )
 
@@ -12,7 +13,7 @@ func ZipProtectedEntity(ctx context.Context, entity ProtectedEntity, writer io.W
 	if (err != nil) {
 		return err
 	}
-	jsonBuf, err := peInfo.MarshalJSON()
+	jsonBuf, err := json.Marshal(peInfo)
 	if (err != nil) {
 		return err
 	}

@@ -3,7 +3,6 @@ package arachne
 import (
 	"encoding/json"
 	"gotest.tools/assert"
-	"net/url"
 	"reflect"
 	"testing"
 )
@@ -15,35 +14,24 @@ func TestProtectedEntityInfoJSON(t *testing.T) {
 	if test1Err != nil {
 		t.Fatal("Got error " + test1Err.Error())
 	}
-	dataURL, test1Err := url.Parse("https://data1")
-	if test1Err != nil {
-		t.Fatal("Got error " + test1Err.Error())
-	}
-	dataURLs := []url.URL{*dataURL}
-
-	metadataURL, test1Err := url.Parse("https://meta1")
-	if test1Err != nil {
-		t.Fatal("Got error " + test1Err.Error())
-	}
-	metadataURLs := []url.URL{*metadataURL}
-
-	combinedURL, test1Err := url.Parse("https://combined1")
-	if test1Err != nil {
-		t.Fatal("Got error " + test1Err.Error())
-	}
-	combinedURLs := []url.URL{*combinedURL}
 
 	component1ID, test1Err := NewProtectedEntityIDFromString("ivd:aa-bbb-cc")
 	if test1Err != nil {
 		t.Fatal("Got error " + test1Err.Error())
 	}
 	peii := ProtectedEntityInfoImpl{
-		Id:           test1ID,
-		Name:         "peiiTestJSON",
-		DataURLs:     dataURLs,
-		MetadataURLs: metadataURLs,
-		CombinedURLs: combinedURLs,
-		ComponentIDs: []ProtectedEntityID{component1ID},
+		id:           test1ID,
+		name:         "peiiTestJSON",
+		dataTransports:     []DataTransport {
+			NewDataTransportForS3("http://localhost/s3/data1"),
+		},
+		metadataTransports: []DataTransport {
+			NewDataTransportForS3("http://localhost/s3/metadata1"),
+		},
+		combinedTransports: []DataTransport {
+			NewDataTransportForS3("http://localhost/s3/combined1"),
+		},
+		componentIDs: []ProtectedEntityID{component1ID},
 	}
 
 	jsonBuffer, test1Err := json.Marshal(peii)

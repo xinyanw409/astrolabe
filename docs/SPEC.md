@@ -215,7 +215,7 @@ Takes a snapshot of a Protected Entity.
 
 REST API
 
-    GET /arachne/<service>/<protected entity ID>?action=snapshot
+    GET /arachne/<service>/<protected entity ID>:<snapshot ID>?action=deleteSnapshot
 If the snapshot can be completed immediately, a 201 CREATED
 response is given with the path of the new
 Protected Entity (see below).  If it cannot be completed
@@ -230,7 +230,8 @@ vSphere treats snapshots as dependents of the virtual devices.
 Deletes a snapshot of a Protected Entity
 
 REST API
-GET /arachne/<service>/<protected entity ID>?action=snapshot
+
+    GET /arachne/<service>/<protected entity ID>?action=snapshot
 ####List Snapshots
 Lists snapshots of a Protected Entity
 ###Task
@@ -269,7 +270,13 @@ to ensure access.
 ###S3 API
 The Arachne S3 server provides access to data, metadata and combined data for
 protected entities.  The S3 server may be implemented in the same process
-as the API server or separately.  For the most part, the data provided by the S3
+as the API server or separately.  The S3 server API specified here is *optional*.  The URLs given
+should not be assumed, instead the S3 transport type URL for a protected entity should be used.
+If this API is not implemented, the copy function will not be available.  The S3 data path is
+required but buckets and IDs can be structured differently.  This allows for the use of an external
+S3 server as the data repository.
+
+For the most part, the data provided by the S3
 server is not a copy of existing data but just another way to access.
 For example, accessing a virtual disk (IVD) through the S3 API actually
 reads the data from the virtual disk using the VADP APIs.
@@ -284,18 +291,20 @@ Protected entity data is accessed as:
 
 Raw data for the object
 
-    /arachne/s3/<service>/<service id>
+    /s3/<service>/<service id>
     
 Combined zip file including metadata, PE info, raw data and combined zip files from all component PEs
 
-     /arachne/s3/<service>/<service id>.zip
+     /s3/<service>/<service id>.zip
 Metadata for the object (this is service specific, not the PE info)
 
-     /arachne/s3/<service>/<service id>.md
-The S3 API also provides a restore interface.  Uploading a zip file into the
-restore bucket will cause the protected entities described in the zip file to be
+     /s3/<service>/<service id>.md
+The S3 API also provides a copy interface.  Uploading a zip file into the
+copy bucket will cause the protected entities described in the zip file to be
 reconstituted.  The data for the entities may be contained in the zip file or it
 may be accessed via URIs defined in the JSONs for the protected entities.
+
+### S3 Features
 
 
 ###Other paths

@@ -3,6 +3,7 @@ package kubernetes
 import (
 	"context"
 	"github.com/vmware/arachne/pkg/arachne"
+	"io"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -10,6 +11,14 @@ type KubernetesNamespaceProtectedEntity struct {
 	knpetm    *KubernetesNamespaceProtectedEntityTypeManager
 	id        arachne.ProtectedEntityID
 	namespace *v1.Namespace
+}
+
+func (this *KubernetesNamespaceProtectedEntity) GetDataReader() (io.Reader, error) {
+	return nil, nil
+}
+
+func (this *KubernetesNamespaceProtectedEntity) GetMetadataReader() (io.Reader, error) {
+	return nil, nil
 }
 
 func NewKubernetesNamespaceProtectedEntity(knpetm *KubernetesNamespaceProtectedEntityTypeManager,
