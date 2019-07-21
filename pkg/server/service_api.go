@@ -1,4 +1,4 @@
-package rest_api
+package server
 
 import (
 	"context"
@@ -33,7 +33,7 @@ func (this *ServiceAPI) listObjects(echoContext echo.Context) error {
 
 func (this *ServiceAPI) handleObjectRequest(echoContext echo.Context) error {
 	idStr := echoContext.Param("id")
-	id, pe, err := this.getProtectedEntityForIDStr(idStr, echoContext)
+	id, pe, err := getProtectedEntityForIDStr(*this.petm, idStr, echoContext)
 	if err != nil {
 		return nil
 	}
@@ -89,35 +89,10 @@ func (this *ServiceAPI) deleteSnapshot(echoContext echo.Context, pe arachne.Prot
 	}
 	echoContext.String(http.StatusOK, snapshotID.String())
 }
-func (this *ServiceAPI) getProtectedEntityForIDStr(idStr string, echoContext echo.Context) (arachne.ProtectedEntityID, arachne.ProtectedEntity, error) {
-	var id arachne.ProtectedEntityID
-	var pe arachne.ProtectedEntity
-	var err error
-
-	id, err = arachne.NewProtectedEntityIDFromString(idStr)
-	if err != nil {
-		echoContext.String(http.StatusBadRequest, "id = "+idStr+" is invalid "+err.Error())
-		return id, pe, err
-	}
-	if id.GetPeType() != (*this.petm).GetTypeName() {
-		echoContext.String(http.StatusBadRequest, "id = "+idStr+" is not type "+(*this.petm).GetTypeName())
-		return id, pe, err
-	}
-	pe, err = (*this.petm).GetProtectedEntity(context.Background(), id)
-	if err != nil {
-		echoContext.String(http.StatusNotFound, "Could not retrieve id "+id.String()+" error = "+err.Error())
-		return id, pe, err
-	}
-	if pe == nil {
-		echoContext.String(http.StatusInternalServerError, "pe was nil for "+id.String())
-		return id, pe, err
-	}
-	return id, pe, nil
-}
 
 func (this *ServiceAPI) handleSnapshotListRequest(echoContext echo.Context) error {
 	idStr := echoContext.Param("id")
-	id, pe, err := this.getProtectedEntityForIDStr(idStr, echoContext)
+	id, pe, err := getProtectedEntityForIDStr(*this.petm, idStr, echoContext)
 	if err != nil {
 		return nil
 	}

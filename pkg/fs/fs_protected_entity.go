@@ -15,10 +15,13 @@ import (
 )
 
 type FSProtectedEntity struct {
-	fspetm *FSProtectedEntityTypeManager
-	id     arachne.ProtectedEntityID
-	name   string
-	root   string
+	fspetm   *FSProtectedEntityTypeManager
+	id       arachne.ProtectedEntityID
+	name     string
+	root     string
+	data     []arachne.DataTransport
+	metadata []arachne.DataTransport
+	combined []arachne.DataTransport
 }
 
 func newProtectedEntityID(id vim.ID) arachne.ProtectedEntityID {
@@ -27,11 +30,18 @@ func newProtectedEntityID(id vim.ID) arachne.ProtectedEntityID {
 
 func newFSProtectedEntity(fspetm *FSProtectedEntityTypeManager, id arachne.ProtectedEntityID,
 	name string, root string) (FSProtectedEntity, error) {
+	data, metadata, combined, err := fspetm.getDataTransports(id)
+	if err != nil {
+		return FSProtectedEntity{}, err
+	}
 	newFSPE := FSProtectedEntity{
-		fspetm: fspetm,
-		id:     id,
-		name:	name,
-		root:	root,
+		fspetm:   fspetm,
+		id:       id,
+		name:     name,
+		root:     root,
+		data:     data,
+		metadata: metadata,
+		combined: combined,
 	}
 	return newFSPE, nil
 }
@@ -39,9 +49,9 @@ func (this FSProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEnt
 	retVal := arachne.NewProtectedEntityInfo(
 		this.id,
 		this.name,
-		[]arachne.DataTransport{},
-		[]arachne.DataTransport{},
-		[]arachne.DataTransport{},
+		this.data,
+		this.metadata,
+		this.combined,
 		[]arachne.ProtectedEntityID{})
 	return retVal, nil
 }
@@ -91,14 +101,14 @@ func NewVimIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
 	}
 }
 
-func (this *FSProtectedEntity) GetDataReader() (io.Reader, error) {
+func (this FSProtectedEntity) GetDataReader() (io.Reader, error) {
 	reader, writer := io.Pipe()
 	go runTar(this.root, writer) // Ignore errors until we figure out how to propagate
 	return reader, nil
 
 }
 
-func (this *FSProtectedEntity) GetMetadataReader() (io.Reader, error) {
+func (this FSProtectedEntity) GetMetadataReader() (io.Reader, error) {
 	return nil, nil
 }
 
@@ -139,7 +149,9 @@ func tarDir(src string, writer io.Writer) error {
 
 		// update the name to correctly reflect the desired destination when untaring
 		header.Name = strings.TrimPrefix(strings.Replace(file, src, "", -1), string(filepath.Separator))
-
+		if (header.Name == "") {
+			return nil	// Don't put an empty record for the root
+		}
 		// write the header
 		if err := tw.WriteHeader(header); err != nil {
 			return err
@@ -169,4 +181,26 @@ func tarDir(src string, writer io.Writer) error {
 		fmt.Printf("Finished writing file %s\n", file)
 		return nil
 	})
+}
+
+func (this *FSProtectedEntityTypeManager) getDataTransports(id arachne.ProtectedEntityID) ([]arachne.DataTransport,
+	[]arachne.DataTransport,
+	[]arachne.DataTransport, error) {
+	dataS3URL := this.s3URLBase + "fs/" + id.String()
+	data := []arachne.DataTransport{
+		arachne.NewDataTransportForS3(dataS3URL),
+	}
+
+	mdS3URL := dataS3URL + ".md"
+
+	md := []arachne.DataTransport{
+		arachne.NewDataTransportForS3(mdS3URL),
+	}
+
+	combinedS3URL := dataS3URL + ".zip"
+	combined := []arachne.DataTransport{
+		arachne.NewDataTransportForS3(combinedS3URL),
+	}
+
+	return data, md, combined, nil
 }

@@ -105,11 +105,11 @@ func NewProtectedEntitySnapshotID(pesiString string) *ProtectedEntitySnapshotID 
 	return &returnPESI
 }
 
-func (pesid *ProtectedEntitySnapshotID) GetID() string {
+func (pesid ProtectedEntitySnapshotID) GetID() string {
 	return pesid.id
 }
 
-func (pesid *ProtectedEntitySnapshotID) String() string {
+func (pesid ProtectedEntitySnapshotID) String() string {
 	return pesid.id
 }
 

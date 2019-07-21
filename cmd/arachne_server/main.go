@@ -2,11 +2,15 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"os"
+	"strconv"
+
 	//"github.com/labstack/gommon/log"
 	"log"
 	//"net/http"
 	"github.com/labstack/echo"
-	"github.com/vmware/arachne/pkg/rest_api"
+	"github.com/vmware/arachne/pkg/server"
 )
 
 func main() {
@@ -18,10 +22,19 @@ func main() {
 		flag.Usage()
 		return
 	}
-	arachneRestAPI := rest_api.NewArachne(*confDirStr)
+	apiPort, err := strconv.Atoi(*apiPortStr)
+	if err != nil {
+		fmt.Errorf("apiPort %s is not an integer", *apiPortStr)
+		os.Exit(1)
+	}
+	arachneRestAPI := server.NewArachne(*confDirStr, apiPort)
 	e := echo.New()
-	err := arachneRestAPI.ConnectArachneAPIToEcho(e)
-	if (err != nil) {
+	err = arachneRestAPI.ConnectArachneAPIToEcho(e)
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	err = arachneRestAPI.ConnectMiniS3ToEcho(e)
+	if err != nil {
 		e.Logger.Fatal(err)
 	}
 	e.Logger.Fatal(e.Start(":" + *apiPortStr))

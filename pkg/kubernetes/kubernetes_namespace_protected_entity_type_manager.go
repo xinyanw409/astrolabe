@@ -14,7 +14,7 @@ type KubernetesNamespaceProtectedEntityTypeManager struct {
 	namespaces map[string]*KubernetesNamespaceProtectedEntity
 }
 
-func NewKubernetesNamespaceProtectedEntityTypeManagerFromConfig(params map[string]interface{}) (*KubernetesNamespaceProtectedEntityTypeManager, error) {
+func NewKubernetesNamespaceProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s3URLBase string) (*KubernetesNamespaceProtectedEntityTypeManager, error) {
 	masterURL := params["masterURL"].(string)
 	kubeconfigPath := params["kubeconfigPath"].(string)
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)

@@ -10,11 +10,12 @@ import (
 )
 
 type IVDProtectedEntityTypeManager struct {
-	client *govmomi.Client
-	vsom   *vslm.GlobalObjectManager
+	client    *govmomi.Client
+	vsom      *vslm.GlobalObjectManager
+	s3URLBase string
 }
 
-func NewIVDProtectedEntityTypeManagerFromConfig(params map[string]interface{}) (*IVDProtectedEntityTypeManager, error) {
+func NewIVDProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s3URLBase string) (*IVDProtectedEntityTypeManager, error) {
 	var vcURL url.URL
 	vcHostStr, ok := params["vcHost"].(string)
 	if !ok {
@@ -37,10 +38,10 @@ func NewIVDProtectedEntityTypeManagerFromConfig(params map[string]interface{}) (
 	}
 	vcURL.User = url.UserPassword(vcUser, vcPassword)
 	vcURL.Path = "/sdk"
-	return NewIVDProtectedEntityTypeManagerFromURL(&vcURL, insecure)
+	return NewIVDProtectedEntityTypeManagerFromURL(&vcURL, s3URLBase, insecure)
 }
 
-func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, insecure bool) (*IVDProtectedEntityTypeManager, error) {
+func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, s3URLBase string, insecure bool) (*IVDProtectedEntityTypeManager, error) {
 	ctx := context.Background()
 	client, err := govmomi.NewClient(ctx, url, insecure)
 	if err != nil {
@@ -53,16 +54,17 @@ func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, insecure bool) (*IVDP
 		return nil, err
 	}
 
-	return NewIVDProtectedEntityTypeManagerWithClient(client, vslmClient)
+	return NewIVDProtectedEntityTypeManagerWithClient(client, s3URLBase, vslmClient)
 }
 
-func NewIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, vslmClient *vslm.Client) (*IVDProtectedEntityTypeManager, error) {
+func NewIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, s3URLBase string, vslmClient *vslm.Client) (*IVDProtectedEntityTypeManager, error) {
 
 	vsom := vslm.NewGlobalObjectManager(vslmClient)
 
 	retVal := IVDProtectedEntityTypeManager{
-		client: client,
-		vsom:   vsom,
+		client:    client,
+		vsom:      vsom,
+		s3URLBase: s3URLBase,
 	}
 	return &retVal, nil
 }
@@ -100,6 +102,32 @@ func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.
 	return nil
 }
 
-func (this *IVDProtectedEntityTypeManager) getDataTransports(entity IVDProtectedEntity) ([]arachne.DataTransport, error) {
-	return nil, nil
+func (this *IVDProtectedEntityTypeManager) getDataTransports(id arachne.ProtectedEntityID) ([]arachne.DataTransport,
+	[]arachne.DataTransport,
+	[]arachne.DataTransport, error) {
+	vadpParams := make(map[string]string)
+	vadpParams["id"] = id.GetID()
+	if id.GetSnapshotID().String() != "" {
+		vadpParams["snapshotID"] = id.GetSnapshotID().String()
+	}
+	vadpParams["vcenter"] = this.client.URL().Host
+
+	dataS3URL := this.s3URLBase + "ivd/" + id.String()
+	data := []arachne.DataTransport{
+		arachne.NewDataTransport("vadp", vadpParams),
+		arachne.NewDataTransportForS3(dataS3URL),
+	}
+
+	mdS3URL := dataS3URL + ".md"
+
+	md := []arachne.DataTransport{
+		arachne.NewDataTransportForS3(mdS3URL),
+	}
+
+	combinedS3URL := dataS3URL + ".zip"
+	combined := []arachne.DataTransport{
+		arachne.NewDataTransportForS3(combinedS3URL),
+	}
+
+	return data, md, combined, nil
 }

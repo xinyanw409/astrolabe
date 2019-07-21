@@ -2,6 +2,7 @@ package arachne
 
 type ProtectedEntityManager struct {
 	typeManager map[string]ProtectedEntityTypeManager
+	s3URLBase string
 }
 
 func NewProtectedEntityManager(petms []ProtectedEntityTypeManager) (returnPEM ProtectedEntityManager) {

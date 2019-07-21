@@ -14,6 +14,9 @@ import (
 type IVDProtectedEntity struct {
 	ipetm *IVDProtectedEntityTypeManager
 	id    arachne.ProtectedEntityID
+	data     []arachne.DataTransport
+	metadata []arachne.DataTransport
+	combined []arachne.DataTransport
 }
 
 func (this IVDProtectedEntity) GetDataReader() (io.Reader, error) {
@@ -33,9 +36,16 @@ func newProtectedEntityIDWithSnapshotID(id vim.ID, snapshotID arachne.ProtectedE
 }
 
 func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.ProtectedEntityID) (IVDProtectedEntity, error) {
+	data, metadata, combined, err := ipetm.getDataTransports(id)
+	if err != nil {
+		return IVDProtectedEntity{}, err
+	}
 	newIPE := IVDProtectedEntity{
 		ipetm: ipetm,
 		id:    id,
+		data: data,
+		metadata: metadata,
+		combined: combined,
 	}
 	return newIPE, nil
 }
@@ -51,9 +61,9 @@ func (this IVDProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEn
 	retVal := arachne.NewProtectedEntityInfo(
 		this.id,
 		vso.Config.Name,
-		[]arachne.DataTransport{},
-		[]arachne.DataTransport{},
-		[]arachne.DataTransport{},
+		this.data,
+		this.metadata,
+		this.combined,
 		[]arachne.ProtectedEntityID{})
 	return retVal, nil
 }
