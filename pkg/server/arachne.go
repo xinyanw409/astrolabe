@@ -66,6 +66,10 @@ func NewArachne(confDirPath string, port int) *Arachne {
 	return &retArachne
 }
 
+func NewArachneRepository() *Arachne {
+	return nil
+}
+
 func (this *Arachne) Get(c echo.Context) error {
 	var servicesList strings.Builder
 	needsComma := false
@@ -84,6 +88,7 @@ func (this *Arachne) ConnectArachneAPIToEcho(echo *echo.Echo) error {
 
 	for serviceName, service := range this.api_services {
 		echo.GET("/arachne/"+serviceName, service.listObjects)
+		echo.POST("/arachne/"+serviceName, service.handleCopyObject)
 		echo.GET("/arachne/"+serviceName+"/:id", service.handleObjectRequest)
 		echo.GET("/arachne/"+serviceName+"/:id/snapshots", service.handleSnapshotListRequest)
 

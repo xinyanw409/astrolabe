@@ -29,19 +29,6 @@ func NewProtectedEntityIDWithSnapshotID(peType string, id string, snapshotID Pro
 }
 
 func NewProtectedEntityIDFromString(peiString string) (returnPEI ProtectedEntityID, returnError error) {
-	/*
-		components := strings.Split(peiString, ":")
-		if len(components) > 1 {
-			returnPEI.peType = components[0]
-			returnPEI.id = components[1]
-			if len(components) == 3 {
-				returnPEI.snapshotID = *NewProtectedEntitySnapshotID(components[2])
-			}
-		} else {
-			returnError = errors.New("arachne: '" + peiString + "' is not a valid protected entity ID")
-		}
-		return returnPEI, returnError
-	*/
 	returnError = fillInProtectedEntityIDFromString(&returnPEI, peiString)
 	return returnPEI, returnError
 }
@@ -60,24 +47,28 @@ func fillInProtectedEntityIDFromString(pei *ProtectedEntityID, peiString string)
 	}
 	return nil
 }
-func (peid ProtectedEntityID) GetID() string {
-	return peid.id
+func (this ProtectedEntityID) GetID() string {
+	return this.id
 }
 
-func (peid ProtectedEntityID) GetPeType() string {
-	return peid.peType
+func (this ProtectedEntityID) GetPeType() string {
+	return this.peType
 }
 
-func (peid ProtectedEntityID) GetSnapshotID() ProtectedEntitySnapshotID {
-	return peid.snapshotID
+func (this ProtectedEntityID) GetSnapshotID() ProtectedEntitySnapshotID {
+	return this.snapshotID
 
 }
 
-func (peid ProtectedEntityID) String() string {
+func (this ProtectedEntityID) HasSnapshot() bool {
+	return this.snapshotID.id != ""
+}
+
+func (this ProtectedEntityID) String() string {
 	var returnString string
-	returnString = peid.peType + ":" + peid.id
-	if (peid.snapshotID) != (ProtectedEntitySnapshotID{}) {
-		returnString += ":" + peid.snapshotID.String()
+	returnString = this.peType + ":" + this.id
+	if (this.snapshotID) != (ProtectedEntitySnapshotID{}) {
+		returnString += ":" + this.snapshotID.String()
 	}
 	return returnString
 }

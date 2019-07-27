@@ -12,8 +12,8 @@ import (
 )
 
 type IVDProtectedEntity struct {
-	ipetm *IVDProtectedEntityTypeManager
-	id    arachne.ProtectedEntityID
+	ipetm    *IVDProtectedEntityTypeManager
+	id       arachne.ProtectedEntityID
 	data     []arachne.DataTransport
 	metadata []arachne.DataTransport
 	combined []arachne.DataTransport
@@ -41,9 +41,9 @@ func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.Prot
 		return IVDProtectedEntity{}, err
 	}
 	newIPE := IVDProtectedEntity{
-		ipetm: ipetm,
-		id:    id,
-		data: data,
+		ipetm:    ipetm,
+		id:       id,
+		data:     data,
 		metadata: metadata,
 		combined: combined,
 	}
@@ -131,7 +131,21 @@ func NewIDFromString(idStr string) vim.ID {
 }
 
 func NewVimIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
-	return vim.ID{
-		Id: peid.GetID(),
+	if peid.GetPeType() == "ivd" {
+		return vim.ID{
+			Id: peid.GetID(),
+		}
+	} else {
+		return vim.ID{}
+	}
+}
+
+func NewVimSnapshotIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
+	if peid.HasSnapshot() {
+		return vim.ID{
+			Id: peid.GetSnapshotID().GetID(),
+		}
+	} else {
+		return vim.ID{}
 	}
 }

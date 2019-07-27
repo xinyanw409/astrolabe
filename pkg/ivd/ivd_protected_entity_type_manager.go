@@ -5,8 +5,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/vmware/arachne/pkg/arachne"
 	"github.com/vmware/govmomi"
+	"github.com/vmware/govmomi/vim25/soap"
+	"github.com/vmware/govmomi/vim25/types"
 	"github.com/vmware/govmomi/vslm"
 	"net/url"
+	"time"
 )
 
 type IVDProtectedEntityTypeManager struct {
@@ -98,8 +101,74 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Cont
 	return retEntities, nil
 }
 
-func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) error {
-	return nil
+func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) (arachne.ProtectedEntity, error) {
+	info, err := pe.GetInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return this.CopyFromInfo(ctx, info)
+}
+
+func (this *IVDProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, peInfo arachne.ProtectedEntityInfo) (arachne.ProtectedEntity, error) {
+
+	if (peInfo.GetID().GetPeType() != "ivd") {
+		return nil, errors.New("Copy source must be an ivd")
+	}
+	ourVC := false
+	existsInOurVC := false
+	for _, checkData := range peInfo.GetDataTransports() {
+		vcenterURL, ok := checkData.GetParam("vcenter")
+
+		if checkData.GetTransportType() == "vadp" && ok && vcenterURL == this.client.URL().Host {
+			ourVC = true
+			existsInOurVC = true
+			break
+		}
+	}
+
+	if (ourVC) {
+	_, err := this.vsom.Retrieve(ctx, NewVimIDFromPEID(peInfo.GetID()))
+	if err != nil {
+		if soap.IsSoapFault(err) {
+			fault := soap.ToSoapFault(err).Detail.Fault
+			if _, ok := fault.(types.NotFound); ok {
+				// Doesn't exist in our local system, we can't just clone it
+				existsInOurVC = false
+			} else {
+				return nil, err
+			}
+		}
+	}
+	}
+	var retPE arachne.ProtectedEntity
+	retPE = nil
+	if ourVC && existsInOurVC {
+		var createTask *vslm.Task
+		var err error
+		if (peInfo.GetID().HasSnapshot()) {
+			createTask, err = this.vsom.CreateDiskFromSnapshot(ctx, NewVimIDFromPEID(peInfo.GetID()), NewVimSnapshotIDFromPEID(peInfo.GetID()),
+				peInfo.GetName(),  nil, nil, "")
+		} else {
+			keepAfterDeleteVm := true
+			cloneSpec := types.VslmCloneSpec{
+				Name: "",
+				KeepAfterDeleteVm: &keepAfterDeleteVm,
+			}
+			createTask, err = this.vsom.Clone(ctx, NewVimIDFromPEID(peInfo.GetID()), cloneSpec)
+		}
+		retVal, err := createTask.WaitNonDefault(ctx, time.Hour * 24, time.Second * 10, true, time.Second * 30);
+		if err != nil {
+			return nil, err
+		}
+		newVSO := retVal.(types.VStorageObject)
+		retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+
+	}
+	return retPE, nil
 }
 
 func (this *IVDProtectedEntityTypeManager) getDataTransports(id arachne.ProtectedEntityID) ([]arachne.DataTransport,

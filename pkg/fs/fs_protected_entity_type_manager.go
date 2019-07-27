@@ -48,6 +48,11 @@ func (this *FSProtectedEntityTypeManager) GetProtectedEntities(ctx context.Conte
 	return retVal, nil
 }
 
-func (this *FSProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) error {
-	return nil
+func (this *FSProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) (arachne.ProtectedEntity, error) {
+	return nil, nil
+}
+
+
+func (this *FSProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, pe arachne.ProtectedEntityInfo) (arachne.ProtectedEntity, error) {
+	return nil, nil
 }

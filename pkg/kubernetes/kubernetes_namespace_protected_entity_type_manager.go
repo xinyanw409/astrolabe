@@ -73,6 +73,11 @@ func (this *KubernetesNamespaceProtectedEntityTypeManager) loadNamespaceEntities
 	return nil
 }
 
-func (this *KubernetesNamespaceProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) error {
-	return nil
+func (this *KubernetesNamespaceProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) (arachne.ProtectedEntity, error) {
+	return nil, nil
+}
+
+
+func (this *KubernetesNamespaceProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, pe arachne.ProtectedEntityInfo) (arachne.ProtectedEntity, error) {
+	return nil, nil
 }

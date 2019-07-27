@@ -8,7 +8,7 @@ import (
 )
 
 type ServiceAPI struct {
-	petm *arachne.ProtectedEntityTypeManager
+	petm       *arachne.ProtectedEntityTypeManager
 }
 
 func NewServiceAPI(petm *arachne.ProtectedEntityTypeManager) *ServiceAPI {
@@ -107,4 +107,17 @@ func (this *ServiceAPI) handleSnapshotListRequest(echoContext echo.Context) erro
 	}
 	echoContext.JSON(http.StatusOK, snapshotIDStrs)
 	return nil
+}
+
+func (this *ServiceAPI)handleCopyObject(echoContext echo.Context) (err error) {
+	pei := new(arachne.ProtectedEntityInfoImpl)
+	if err = echoContext.Bind(pei); err != nil {
+		return
+	}
+	newPE, err := (*this.petm).CopyFromInfo(context.Background(), pei)
+	if err != nil {
+		return err
+	}
+	echoContext.String(http.StatusOK, newPE.GetID().String())
+	return
 }
