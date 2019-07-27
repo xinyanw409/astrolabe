@@ -10,10 +10,10 @@ import (
 )
 
 type ServiceS3 struct {
-	petm *arachne.ProtectedEntityTypeManager
+	petm arachne.ProtectedEntityTypeManager
 }
 
-func NewServiceS3(petm *arachne.ProtectedEntityTypeManager) *ServiceS3 {
+func NewServiceS3(petm arachne.ProtectedEntityTypeManager) *ServiceS3 {
 	return &ServiceS3{
 		petm: petm,
 	}
@@ -24,7 +24,7 @@ func (this *ServiceS3) listObjects(echoContext echo.Context) error {
 	 * No, this is not a correct implementation of S3 list bucket.
 	 * TODO - write a proper implementation
 	 */
-	pes, err := (*this.petm).GetProtectedEntities(context.Background())
+	pes, err := this.petm.GetProtectedEntities(context.Background())
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func (this *ServiceS3) handleObjectRequest(echoContext echo.Context) error {
 		contentType = "application/octet-stream"
 	}
 
-	_, pe, err := getProtectedEntityForIDStr(*this.petm, idStr, echoContext)
+	_, pe, err := getProtectedEntityForIDStr(this.petm, idStr, echoContext)
 	if (err != nil) {
 
 	}

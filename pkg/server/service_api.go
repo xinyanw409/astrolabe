@@ -8,10 +8,10 @@ import (
 )
 
 type ServiceAPI struct {
-	petm       *arachne.ProtectedEntityTypeManager
+	petm       arachne.ProtectedEntityTypeManager
 }
 
-func NewServiceAPI(petm *arachne.ProtectedEntityTypeManager) *ServiceAPI {
+func NewServiceAPI(petm arachne.ProtectedEntityTypeManager) *ServiceAPI {
 	return &ServiceAPI{
 		petm: petm,
 	}
@@ -19,7 +19,7 @@ func NewServiceAPI(petm *arachne.ProtectedEntityTypeManager) *ServiceAPI {
 
 func (this *ServiceAPI) listObjects(echoContext echo.Context) error {
 
-	pes, err := (*this.petm).GetProtectedEntities(context.Background())
+	pes, err := this.petm.GetProtectedEntities(context.Background())
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (this *ServiceAPI) listObjects(echoContext echo.Context) error {
 
 func (this *ServiceAPI) handleObjectRequest(echoContext echo.Context) error {
 	idStr := echoContext.Param("id")
-	id, pe, err := getProtectedEntityForIDStr(*this.petm, idStr, echoContext)
+	id, pe, err := getProtectedEntityForIDStr(this.petm, idStr, echoContext)
 	if err != nil {
 		return nil
 	}
@@ -92,7 +92,7 @@ func (this *ServiceAPI) deleteSnapshot(echoContext echo.Context, pe arachne.Prot
 
 func (this *ServiceAPI) handleSnapshotListRequest(echoContext echo.Context) error {
 	idStr := echoContext.Param("id")
-	id, pe, err := getProtectedEntityForIDStr(*this.petm, idStr, echoContext)
+	id, pe, err := getProtectedEntityForIDStr(this.petm, idStr, echoContext)
 	if err != nil {
 		return nil
 	}
@@ -114,7 +114,7 @@ func (this *ServiceAPI)handleCopyObject(echoContext echo.Context) (err error) {
 	if err = echoContext.Bind(pei); err != nil {
 		return
 	}
-	newPE, err := (*this.petm).CopyFromInfo(context.Background(), pei)
+	newPE, err := this.petm.CopyFromInfo(context.Background(), pei)
 	if err != nil {
 		return err
 	}
