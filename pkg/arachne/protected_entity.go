@@ -39,7 +39,7 @@ func fillInProtectedEntityIDFromString(pei *ProtectedEntityID, peiString string)
 		pei.peType = components[0]
 		pei.id = components[1]
 		if len(components) == 3 {
-			pei.snapshotID = *NewProtectedEntitySnapshotID(components[2])
+			pei.snapshotID = NewProtectedEntitySnapshotID(components[2])
 		}
 		log.Print("pei = " + pei.String())
 	} else {
@@ -89,11 +89,11 @@ type ProtectedEntitySnapshotID struct {
 	id string
 }
 
-func NewProtectedEntitySnapshotID(pesiString string) *ProtectedEntitySnapshotID {
+func NewProtectedEntitySnapshotID(pesiString string) ProtectedEntitySnapshotID {
 	returnPESI := ProtectedEntitySnapshotID{
 		id: pesiString,
 	}
-	return &returnPESI
+	return returnPESI
 }
 
 func (pesid ProtectedEntitySnapshotID) GetID() string {

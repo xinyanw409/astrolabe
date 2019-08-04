@@ -84,21 +84,17 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Contex
 	return retIPE, nil
 }
 
-func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntity, error) {
+func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntityID, error) {
 	res, err := this.vsom.ListObjectsForSpec(ctx, nil, 1000)
 	if err != nil {
 		return nil, err
 	}
-	var retEntities []arachne.ProtectedEntity
-	for _, curVSOID := range res.Id {
+	retIDs := make([]arachne.ProtectedEntityID, len(res.Id))
+	for idNum, curVSOID := range res.Id {
 		arachneId := newProtectedEntityID(curVSOID)
-		newIPE, err := newIVDProtectedEntity(this, arachneId)
-		if err != nil {
-			return nil, err
-		}
-		retEntities = append(retEntities, &newIPE)
+		retIDs[idNum] = arachneId
 	}
-	return retEntities, nil
+	return retIDs, nil
 }
 
 func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) (arachne.ProtectedEntity, error) {

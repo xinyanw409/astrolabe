@@ -45,11 +45,12 @@ func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntity(ct
 	return nil, nil
 }
 
-func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntity, error) {
-	protectedEntities := make([]arachne.ProtectedEntity, 0, len(this.namespaces))
+func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntityID, error) {
+	//TODO - fix concurrency issues here
+	protectedEntities := make([]arachne.ProtectedEntityID, 0, len(this.namespaces))
 
 	for _, pe := range this.namespaces {
-		protectedEntities = append(protectedEntities, pe)
+		protectedEntities = append(protectedEntities, pe.GetID())
 	}
 	return protectedEntities, nil
 }

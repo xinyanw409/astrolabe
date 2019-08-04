@@ -31,19 +31,16 @@ func (this *FSProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context
 	return newFSProtectedEntity(this, id, id.GetID(), filepath.Join(this.root, id.GetID()))
 }
 
-func (this *FSProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntity, error) {
+func (this *FSProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntityID, error) {
 	files, err := ioutil.ReadDir(this.root)
 	if err != nil {
 		return nil, err
 	}
 
-	var retVal = make([]arachne.ProtectedEntity, len(files))
+	var retVal = make([]arachne.ProtectedEntityID, len(files))
 	for index, curFile := range files {
 		peid := arachne.NewProtectedEntityID("fs", curFile.Name())
-		retVal[index], err = newFSProtectedEntity(this, peid, curFile.Name(), filepath.Join(this.root, curFile.Name()))
-		if err != nil {
-			return nil, err
-		}
+		retVal[index] = peid
 	}
 	return retVal, nil
 }

@@ -15,7 +15,7 @@ func TestProtectedEntityTypeManager(t *testing.T) {
 
 	t.Logf("%s\n", vcUrl.String())
 
-	ivdPETM, err := NewIVDProtectedEntityTypeManagerFromURL(&vcUrl, true)
+	ivdPETM, err := NewIVDProtectedEntityTypeManagerFromURL(&vcUrl, "/ivd", true)
 	ctx := context.Background()
 
 	pes, err := ivdPETM.GetProtectedEntities(ctx)
