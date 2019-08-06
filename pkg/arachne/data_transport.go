@@ -32,7 +32,7 @@ func NewDataTransport(transportType string, params map[string]string) DataTransp
 	}
 }
 
-func NewDataTransportForS3(url string) DataTransport {
+func NewDataTransportForS3URL(url string) DataTransport {
 	return DataTransport {
 		transportType: "s3",
 		params: map[string]string{
@@ -41,6 +41,18 @@ func NewDataTransportForS3(url string) DataTransport {
 	}
 }
 
+func NewDataTransportForS3(host string, bucket string, key string) DataTransport {
+	url := "http://" + host + "/" + bucket + "/" + key
+	return DataTransport {
+		transportType: "s3",
+		params: map[string]string{
+			"url": url,
+			"host": host,
+			"bucket": bucket,
+			"key": key,
+		},
+	}
+}
 func (this DataTransport) GetTransportType() string {
 	return this.transportType
 }

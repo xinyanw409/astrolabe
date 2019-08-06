@@ -47,7 +47,7 @@ func TestCreateDeleteProtectedEntity(t *testing.T) {
 	}
 	peID := arachne.NewProtectedEntityIDWithSnapshotID("test", "unique1", arachne.NewProtectedEntitySnapshotID("snapshot1"))
 	peInfo := arachne.NewProtectedEntityInfo(peID, "testPE", nil, nil, nil, nil)
-	repoPE, err := s3petm.CopyFromInfo(context.Background(), peInfo)
+	repoPE, err := s3petm.CopyFromInfo(context.Background(), peInfo, arachne.AllocateNewObject)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func TestCopyFSProtectedEntity(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err = s3petm.Copy(ctx, fsPE)
+		_, err = s3petm.Copy(ctx, fsPE, arachne.AllocateNewObject)
 		if err != nil {
 			t.Fatal(err)
 		}

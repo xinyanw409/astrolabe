@@ -23,13 +23,13 @@ func TestProtectedEntityInfoJSON(t *testing.T) {
 		id:           test1ID,
 		name:         "peiiTestJSON",
 		dataTransports:     []DataTransport {
-			NewDataTransportForS3("http://localhost/s3/data1"),
+			NewDataTransportForS3URL("http://localhost/s3/data1"),
 		},
 		metadataTransports: []DataTransport {
-			NewDataTransportForS3("http://localhost/s3/metadata1"),
+			NewDataTransportForS3URL("http://localhost/s3/metadata1"),
 		},
 		combinedTransports: []DataTransport {
-			NewDataTransportForS3("http://localhost/s3/combined1"),
+			NewDataTransportForS3URL("http://localhost/s3/combined1"),
 		},
 		componentIDs: []ProtectedEntityID{component1ID},
 	}

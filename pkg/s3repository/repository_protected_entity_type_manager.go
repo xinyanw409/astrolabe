@@ -1,17 +1,13 @@
 package s3repository
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vmware/arachne/pkg/arachne"
 	"io"
-	"log"
 	"strings"
 )
 
@@ -61,25 +57,49 @@ func NewS3RepositoryProtectedEntityTypeManager(typeName string, session session.
 const MD_SUFFIX = ".md"
 const DATA_SUFFIX = ".data"
 
-func (this *ProtectedEntityTypeManager) peinfoName(id arachne.ProtectedEntityID) (string, error) {
+func (this *ProtectedEntityTypeManager) peinfoName(id arachne.ProtectedEntityID) (string) {
 	if !id.HasSnapshot() {
-		return "", errors.New("Cannot store objects that do not have snapshots")
+		panic("Cannot store objects that do not have snapshots")
 	}
-	return this.peinfoPrefix + id.String(), nil
+	return this.peinfoPrefix + id.String()
 }
 
-func (this *ProtectedEntityTypeManager) mdName(id arachne.ProtectedEntityID) (string, error) {
+func (this *ProtectedEntityTypeManager) metadataName(id arachne.ProtectedEntityID) (string) {
 	if !id.HasSnapshot() {
-		return "", errors.New("Cannot store objects that do not have snapshots")
+		panic("Cannot store objects that do not have snapshots")
 	}
-	return this.mdPrefix + id.String() + MD_SUFFIX, nil
+	return this.mdPrefix + id.String() + MD_SUFFIX
 }
 
-func (this *ProtectedEntityTypeManager) dataName(id arachne.ProtectedEntityID) (string, error) {
-	if !id.HasSnapshot() {
-		return "", errors.New("Cannot store objects that do not have snapshots")
+func (this *ProtectedEntityTypeManager) metadataTransportsForID(id arachne.ProtectedEntityID) ([]arachne.DataTransport, error) {
+	endpointPtr := this.session.Config.Endpoint
+	var endpoint string
+	if endpointPtr != nil {
+		endpoint = *endpointPtr
+	} else {
+		endpoint = ""
 	}
-	return this.dataPrefix + id.String() + DATA_SUFFIX, nil
+	mdTransport := arachne.NewDataTransportForS3(endpoint, this.bucket, this.metadataName(id))
+	return []arachne.DataTransport{mdTransport}, nil
+}
+
+func (this *ProtectedEntityTypeManager) dataName(id arachne.ProtectedEntityID) (string) {
+	if !id.HasSnapshot() {
+		panic("Cannot store objects that do not have snapshots")
+	}
+	return this.dataPrefix + id.String() + DATA_SUFFIX
+}
+
+func (this *ProtectedEntityTypeManager) dataTransportsForID(id arachne.ProtectedEntityID) ([]arachne.DataTransport, error) {
+	endpointPtr := this.session.Config.Endpoint
+	var endpoint string
+	if endpointPtr != nil {
+		endpoint = *endpointPtr
+	} else {
+		endpoint = ""
+	}
+	mdTransport := arachne.NewDataTransportForS3(endpoint, this.bucket, this.dataName(id))
+	return []arachne.DataTransport{mdTransport}, nil
 }
 
 func (this *ProtectedEntityTypeManager) objectPEID(key string) (arachne.ProtectedEntityID, error) {
@@ -115,10 +135,7 @@ func (this *ProtectedEntityTypeManager) GetTypeName() string {
 const maxPEInfoSize int = 16 * 1024
 
 func (this *ProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (arachne.ProtectedEntity, error) {
-	peKey, err := this.peinfoName(id)
-	if err != nil {
-		return nil, err
-	}
+	peKey := this.peinfoName(id)
 	oi := s3.GetObjectInput{
 		Bucket: &this.bucket,
 		Key:    &peKey,
@@ -177,99 +194,99 @@ func (this *ProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context
 
 const peInfoFileType = "application/json"
 
-func (this *ProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) (arachne.ProtectedEntity, error) {
-	if pe.GetID().GetPeType() != this.typeName {
-		return nil, errors.New(pe.GetID().GetPeType() + " is not of type " + this.typeName)
-	}
-	peInfo, err := pe.GetInfo(ctx)
+func (this *ProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE arachne.ProtectedEntity,
+	options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
+	sourcePEInfo, err := sourcePE.GetInfo(ctx)
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err := pe.GetDataReader()
+	dataReader, err := sourcePE.GetDataReader()
 	if err != nil {
 		return nil, err
 	}
 
-	mdReader, err := pe.GetMetadataReader()
+	metadataReader, err := sourcePE.GetMetadataReader()
 	if err != nil {
 		return nil, err
 	}
-	return this.copy(ctx, peInfo, dataReader, mdReader)
+	return this.copyInt(ctx, sourcePEInfo, options, dataReader, metadataReader)
 }
 
-func (this *ProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, info arachne.ProtectedEntityInfo) (arachne.ProtectedEntity, error) {
-
-	return this.copy(ctx, info, nil, nil)
+func (this *ProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, sourcePEInfo arachne.ProtectedEntityInfo,
+	options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
+	return nil, nil
 }
 
-func (this *ProtectedEntityTypeManager)uploadStream(ctx context.Context, name string, reader io.Reader) error {
-	uploader := s3manager.NewUploader(&this.session)
+func (this *ProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePEInfo arachne.ProtectedEntityInfo,
+	options arachne.CopyCreateOptions, dataReader io.Reader, metadataReader io.Reader) (arachne.ProtectedEntity, error) {
+	id := sourcePEInfo.GetID()
+	if id.GetPeType() != this.typeName {
+		return nil, errors.New(id.GetPeType() + " is not of type " + this.typeName)
+	}
+	if options == arachne.AllocateObjectWithID {
+		return nil, errors.New("AllocateObjectWithID not supported")
+	}
 
-	result, err := uploader.Upload(&s3manager.UploadInput{
-		Body:   reader,
-		Bucket: aws.String(this.bucket),
-		Key:    aws.String(name),
-	})
+	if options == arachne.UpdateExistingObject {
+		return nil, errors.New("UpdateExistingObject not supported")
+	}
+
+	_, err := this.GetProtectedEntity(ctx, id)
 	if err == nil {
-		log.Println("Successfully uploaded to", result.Location)
-	}
-	return err
-}
-func (this *ProtectedEntityTypeManager) copy(ctx context.Context, peInfo arachne.ProtectedEntityInfo, dataReader io.Reader,
-	metadataReader io.Reader) (arachne.ProtectedEntity, error) {
-	peinfoName, err := this.peinfoName(peInfo.GetID())
-	if err != nil {
-		return nil, err
-	}
-	buf, err := json.Marshal(peInfo)
-	if err != nil {
-		return nil, err
-	}
-	if len(buf) > maxPEInfoSize {
-		return nil, errors.New("JSON for pe info > 16K")
+		return nil, errors.New("id " + id.String() + " already exists")
 	}
 
-	if dataReader != nil {
-		dataName, err := this.dataName(peInfo.GetID())
+	var dataTransports []arachne.DataTransport
+	if len(sourcePEInfo.GetDataTransports()) > 0 {
+		dataTransports, err = this.dataTransportsForID(id)
 		if err != nil {
 			return nil, err
 		}
-		err = this.uploadStream(ctx, dataName, dataReader)
+	} else {
+		dataTransports = []arachne.DataTransport{}
+	}
+
+	var metadataTransports []arachne.DataTransport
+	if len(sourcePEInfo.GetMetadataTransports()) > 0 {
+		metadataTransports, err = this.metadataTransportsForID(id)
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		metadataTransports = []arachne.DataTransport{}
 	}
 
-	if metadataReader != nil {
-		mdName, err := this.mdName(peInfo.GetID())
-		if err != nil {
-			return nil, err
-		}
-		err = this.uploadStream(ctx, mdName, metadataReader)
-		if err != nil {
-			return nil, err
-		}
-	}
-	jsonBytes := bytes.NewReader(buf)
+	combinedTransports := []arachne.DataTransport{}
 
-	jsonParams := &s3.PutObjectInput{
-		Bucket:        aws.String(this.bucket),
-		Key:           aws.String(peinfoName),
-		Body:          jsonBytes,
-		ContentLength: aws.Int64(int64(len(buf))),
-		ContentType:   aws.String(peInfoFileType),
-	}
-	_, err = this.s3.PutObject(jsonParams)
-	if err != nil {
-		return nil, err
-	}
+	rPEInfo := arachne.NewProtectedEntityInfo(sourcePEInfo.GetID(), sourcePEInfo.GetName(),
+		dataTransports, metadataTransports, combinedTransports, sourcePEInfo.GetComponentIDs())
 
-	returnPEInfo := arachne.NewProtectedEntityInfo(peInfo.GetID(),
-		peInfo.GetName(),
-		nil, nil, nil, nil)
-	returnPE := ProtectedEntity{
+	rpe := ProtectedEntity{
 		rpetm:  this,
-		peinfo: returnPEInfo,
+		peinfo: rPEInfo,
 	}
-	return returnPE, err
+
+	return rpe.copy(ctx, dataReader, metadataReader)
+}
+
+func (this *ProtectedEntityTypeManager) getDataTransports(id arachne.ProtectedEntityID) ([]arachne.DataTransport,
+	[]arachne.DataTransport,
+	[]arachne.DataTransport, error) {
+	dataS3URL := this.dataName(id)
+	data := []arachne.DataTransport{
+		arachne.NewDataTransportForS3URL(dataS3URL),
+	}
+
+	mdS3URL := dataS3URL + ".md"
+
+	md := []arachne.DataTransport{
+		arachne.NewDataTransportForS3URL(mdS3URL),
+	}
+
+	combinedS3URL := dataS3URL + ".zip"
+	combined := []arachne.DataTransport{
+		arachne.NewDataTransportForS3URL(combinedS3URL),
+	}
+
+	return data, md, combined, nil
 }

@@ -1,15 +1,22 @@
 package s3repository
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/util"
 	"io"
+	"log"
 )
 
 type ProtectedEntity struct {
-	rpetm    *ProtectedEntityTypeManager
-	peinfo   arachne.ProtectedEntityInfo
+	rpetm  *ProtectedEntityTypeManager
+	peinfo arachne.ProtectedEntityInfo
 }
 
 func NewProtectedEntityFromJSONBuf(rpetm *ProtectedEntityTypeManager, buf [] byte) (pe ProtectedEntity, err error) {
@@ -23,8 +30,8 @@ func NewProtectedEntityFromJSONBuf(rpetm *ProtectedEntityTypeManager, buf [] byt
 	return
 }
 
-func NewProtectedEntityFromJSONReader(rpetm * ProtectedEntityTypeManager, reader io.Reader) (pe ProtectedEntity, err error) {
-	decoder:= json.NewDecoder(reader)
+func NewProtectedEntityFromJSONReader(rpetm *ProtectedEntityTypeManager, reader io.Reader) (pe ProtectedEntity, err error) {
+	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(&pe)
 	return
 }
@@ -37,7 +44,7 @@ func (ProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.Protected
 }
 
 func (ProtectedEntity) Snapshot(ctx context.Context) (*arachne.ProtectedEntitySnapshotID, error) {
-	panic("implement me")
+	return nil, errors.New("Snapshot not supported")
 }
 
 func (ProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
@@ -60,10 +67,92 @@ func (this ProtectedEntity) GetID() arachne.ProtectedEntityID {
 	return this.peinfo.GetID()
 }
 
-func (ProtectedEntity) GetDataReader() (io.Reader, error) {
-	panic("implement me")
+func (this ProtectedEntity) GetDataReader() (io.Reader, error) {
+	dataName := this.rpetm.dataName(this.GetID())
+	return this.getReader(dataName)
 }
 
-func (ProtectedEntity) GetMetadataReader() (io.Reader, error) {
-	panic("implement me")
+func (this ProtectedEntity) GetMetadataReader() (io.Reader, error) {
+	dataName := this.rpetm.metadataName(this.GetID())
+	return this.getReader(dataName)
+}
+
+func (this *ProtectedEntity) uploadStream(ctx context.Context, name string, reader io.Reader) error {
+	uploader := s3manager.NewUploader(&this.rpetm.session)
+
+	result, err := uploader.Upload(&s3manager.UploadInput{
+		Body:   reader,
+		Bucket: aws.String(this.rpetm.bucket),
+		Key:    aws.String(name),
+	})
+	if err == nil {
+		log.Println("Successfully uploaded to", result.Location)
+	}
+	return err
+}
+
+func (this *ProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
+	metadataReader io.Reader) (arachne.ProtectedEntity, error) {
+	peInfo := this.peinfo
+	peinfoName := this.rpetm.peinfoName(peInfo.GetID())
+
+	buf, err := json.Marshal(peInfo)
+	if err != nil {
+		return nil, err
+	}
+	if len(buf) > maxPEInfoSize {
+		return nil, errors.New("JSON for pe info > 16K")
+	}
+
+	if dataReader != nil {
+		dataName := this.rpetm.dataName(peInfo.GetID())
+		err = this.uploadStream(ctx, dataName, dataReader)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if metadataReader != nil {
+		mdName := this.rpetm.metadataName(peInfo.GetID())
+		err = this.uploadStream(ctx, mdName, metadataReader)
+		if err != nil {
+			return nil, err
+		}
+	}
+	jsonBytes := bytes.NewReader(buf)
+
+	jsonParams := &s3.PutObjectInput{
+		Bucket:        aws.String(this.rpetm.bucket),
+		Key:           aws.String(peinfoName),
+		Body:          jsonBytes,
+		ContentLength: aws.Int64(int64(len(buf))),
+		ContentType:   aws.String(peInfoFileType),
+	}
+	_, err = this.rpetm.s3.PutObject(jsonParams)
+	if err != nil {
+		return nil, err
+	}
+
+	returnPEInfo := arachne.NewProtectedEntityInfo(peInfo.GetID(),
+		peInfo.GetName(),
+		nil, nil, nil, nil)
+	returnPE := ProtectedEntity{
+		rpetm:  this.rpetm,
+		peinfo: returnPEInfo,
+	}
+	return returnPE, err
+}
+
+func (this *ProtectedEntity) getReader(key string) (io.Reader, error) {
+	downloadMgr := s3manager.NewDownloaderWithClient(&this.rpetm.s3, func(d *s3manager.Downloader) {
+		d.Concurrency = 1
+		d.PartSize = 1
+	})
+	reader, writer := io.Pipe()
+	seqWriterAt := util.NewSeqWriterAt(writer)
+	go downloadMgr.Download(seqWriterAt, &s3.GetObjectInput{
+		Bucket: aws.String(this.rpetm.bucket),
+		Key:    aws.String(key),
+	})
+	return reader, nil
 }

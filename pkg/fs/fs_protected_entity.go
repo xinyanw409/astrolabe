@@ -182,25 +182,3 @@ func tarDir(src string, writer io.Writer) error {
 		return nil
 	})
 }
-
-func (this *FSProtectedEntityTypeManager) getDataTransports(id arachne.ProtectedEntityID) ([]arachne.DataTransport,
-	[]arachne.DataTransport,
-	[]arachne.DataTransport, error) {
-	dataS3URL := this.s3URLBase + "fs/" + id.String()
-	data := []arachne.DataTransport{
-		arachne.NewDataTransportForS3(dataS3URL),
-	}
-
-	mdS3URL := dataS3URL + ".md"
-
-	md := []arachne.DataTransport{
-		arachne.NewDataTransportForS3(mdS3URL),
-	}
-
-	combinedS3URL := dataS3URL + ".zip"
-	combined := []arachne.DataTransport{
-		arachne.NewDataTransportForS3(combinedS3URL),
-	}
-
-	return data, md, combined, nil
-}

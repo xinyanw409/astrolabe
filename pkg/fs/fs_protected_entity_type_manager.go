@@ -53,3 +53,25 @@ func (this *FSProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.P
 func (this *FSProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, pe arachne.ProtectedEntityInfo) (arachne.ProtectedEntity, error) {
 	return nil, nil
 }
+
+func (this *FSProtectedEntityTypeManager) getDataTransports(id arachne.ProtectedEntityID) ([]arachne.DataTransport,
+	[]arachne.DataTransport,
+	[]arachne.DataTransport, error) {
+	dataS3URL := this.s3URLBase + "fs/" + id.String()
+	data := []arachne.DataTransport{
+		arachne.NewDataTransportForS3URL(dataS3URL),
+	}
+
+	mdS3URL := dataS3URL + ".md"
+
+	md := []arachne.DataTransport{
+		arachne.NewDataTransportForS3URL(mdS3URL),
+	}
+
+	combinedS3URL := dataS3URL + ".zip"
+	combined := []arachne.DataTransport{
+		arachne.NewDataTransportForS3URL(combinedS3URL),
+	}
+
+	return data, md, combined, nil
+}

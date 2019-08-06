@@ -180,18 +180,18 @@ func (this *IVDProtectedEntityTypeManager) getDataTransports(id arachne.Protecte
 	dataS3URL := this.s3URLBase + "ivd/" + id.String()
 	data := []arachne.DataTransport{
 		arachne.NewDataTransport("vadp", vadpParams),
-		arachne.NewDataTransportForS3(dataS3URL),
+		arachne.NewDataTransportForS3URL(dataS3URL),
 	}
 
 	mdS3URL := dataS3URL + ".md"
 
 	md := []arachne.DataTransport{
-		arachne.NewDataTransportForS3(mdS3URL),
+		arachne.NewDataTransportForS3URL(mdS3URL),
 	}
 
 	combinedS3URL := dataS3URL + ".zip"
 	combined := []arachne.DataTransport{
-		arachne.NewDataTransportForS3(combinedS3URL),
+		arachne.NewDataTransportForS3URL(combinedS3URL),
 	}
 
 	return data, md, combined, nil
