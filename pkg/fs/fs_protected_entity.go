@@ -6,6 +6,7 @@ import (
 	"github.com/vmware/arachne/pkg/arachne"
 	vim "github.com/vmware/govmomi/vim25/types"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -112,6 +113,10 @@ func (this FSProtectedEntity) GetMetadataReader() (io.Reader, error) {
 	return nil, nil
 }
 
+func (this FSProtectedEntity) createDir() error {
+	return os.Mkdir(this.root, 0700)
+}
+
 func runTar(src string, writer *io.PipeWriter) {
 	defer writer.Close()
 	err := tarDir(src, writer)
@@ -150,7 +155,7 @@ func tarDir(src string, writer io.Writer) error {
 		// update the name to correctly reflect the desired destination when untaring
 		header.Name = strings.TrimPrefix(strings.Replace(file, src, "", -1), string(filepath.Separator))
 		if (header.Name == "") {
-			return nil	// Don't put an empty record for the root
+			return nil // Don't put an empty record for the root
 		}
 		// write the header
 		if err := tw.WriteHeader(header); err != nil {
@@ -181,4 +186,45 @@ func tarDir(src string, writer io.Writer) error {
 		fmt.Printf("Finished writing file %s\n", file)
 		return nil
 	})
+}
+
+func (this *FSProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
+	metadataReader io.Reader) error {
+	err := untarToDir(this.root, dataReader)
+	return err
+}
+
+func untarToDir(dest string, reader io.Reader) error {
+	tr := tar.NewReader(reader)
+
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			return nil // End of archive
+		}
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Creating of %s:\n", hdr.Name)
+		path := dest + "/" + hdr.Name
+		var fileModeInt32 uint32
+		fileModeInt32 = uint32(hdr.Mode)
+		if hdr.Typeflag == tar.TypeDir {
+			err := os.Mkdir(path, os.FileMode(fileModeInt32))
+			if err != nil {
+				return err
+			}
+		} else {
+
+			file, err := os.Create(path)
+			defer file.Close()
+			if err != nil {
+				return err
+			}
+
+			if _, err := io.Copy(file, tr); err != nil {
+				log.Print(err)
+			}
+		}
+	}
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/vmware/arachne/pkg/arachne"
 	"github.com/vmware/arachne/pkg/fs"
+	"log"
 	"testing"
 )
 
@@ -82,9 +83,15 @@ func TestCopyFSProtectedEntity(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err = s3petm.Copy(ctx, fsPE, arachne.AllocateNewObject)
+		s3PE, err := s3petm.Copy(ctx, fsPE, arachne.AllocateNewObject)
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		newFSPE, err := fsPETM.Copy(ctx, s3PE, arachne.AllocateNewObject)
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Printf("Restored new FSPE %s\n", newFSPE.GetID().String())
 	}
 }

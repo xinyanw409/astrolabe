@@ -266,7 +266,11 @@ func (this *ProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePEInf
 		peinfo: rPEInfo,
 	}
 
-	return rpe.copy(ctx, dataReader, metadataReader)
+	err = rpe.copy(ctx, dataReader, metadataReader)
+	if err != nil {
+		return nil, err
+	}
+	return rpe, nil
 }
 
 func (this *ProtectedEntityTypeManager) getDataTransports(id arachne.ProtectedEntityID) ([]arachne.DataTransport,

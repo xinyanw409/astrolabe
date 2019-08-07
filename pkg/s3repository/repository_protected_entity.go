@@ -68,13 +68,19 @@ func (this ProtectedEntity) GetID() arachne.ProtectedEntityID {
 }
 
 func (this ProtectedEntity) GetDataReader() (io.Reader, error) {
-	dataName := this.rpetm.dataName(this.GetID())
-	return this.getReader(dataName)
+	if len(this.peinfo.GetDataTransports()) > 0 {
+		dataName := this.rpetm.dataName(this.GetID())
+		return this.getReader(dataName)
+	}
+	return nil, nil
 }
 
 func (this ProtectedEntity) GetMetadataReader() (io.Reader, error) {
-	dataName := this.rpetm.metadataName(this.GetID())
-	return this.getReader(dataName)
+	if len(this.peinfo.GetMetadataTransports()) > 0 {
+		metadataName := this.rpetm.metadataName(this.GetID())
+		return this.getReader(metadataName)
+	}
+	return nil, nil
 }
 
 func (this *ProtectedEntity) uploadStream(ctx context.Context, name string, reader io.Reader) error {
@@ -92,23 +98,23 @@ func (this *ProtectedEntity) uploadStream(ctx context.Context, name string, read
 }
 
 func (this *ProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
-	metadataReader io.Reader) (arachne.ProtectedEntity, error) {
+	metadataReader io.Reader) error {
 	peInfo := this.peinfo
 	peinfoName := this.rpetm.peinfoName(peInfo.GetID())
 
 	buf, err := json.Marshal(peInfo)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if len(buf) > maxPEInfoSize {
-		return nil, errors.New("JSON for pe info > 16K")
+		return errors.New("JSON for pe info > 16K")
 	}
 
 	if dataReader != nil {
 		dataName := this.rpetm.dataName(peInfo.GetID())
 		err = this.uploadStream(ctx, dataName, dataReader)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
@@ -116,7 +122,7 @@ func (this *ProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 		mdName := this.rpetm.metadataName(peInfo.GetID())
 		err = this.uploadStream(ctx, mdName, metadataReader)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 	jsonBytes := bytes.NewReader(buf)
@@ -130,23 +136,15 @@ func (this *ProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 	}
 	_, err = this.rpetm.s3.PutObject(jsonParams)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	returnPEInfo := arachne.NewProtectedEntityInfo(peInfo.GetID(),
-		peInfo.GetName(),
-		nil, nil, nil, nil)
-	returnPE := ProtectedEntity{
-		rpetm:  this.rpetm,
-		peinfo: returnPEInfo,
-	}
-	return returnPE, err
+	return err
 }
 
 func (this *ProtectedEntity) getReader(key string) (io.Reader, error) {
 	downloadMgr := s3manager.NewDownloaderWithClient(&this.rpetm.s3, func(d *s3manager.Downloader) {
 		d.Concurrency = 1
-		d.PartSize = 1
+		//d.PartSize = 1
 	})
 	reader, writer := io.Pipe()
 	seqWriterAt := util.NewSeqWriterAt(writer)
