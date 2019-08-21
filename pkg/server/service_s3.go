@@ -30,7 +30,7 @@ func (this *ServiceS3) listObjects(echoContext echo.Context) error {
 	}
 	var pesList []string
 	for _, curPes := range pes {
-		pesList = append(pesList, curPes.GetID().String())
+		pesList = append(pesList, curPes.GetID())
 	}
 	echoContext.JSON(http.StatusOK, pesList)
 	return nil

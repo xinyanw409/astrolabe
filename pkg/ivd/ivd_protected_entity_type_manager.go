@@ -8,6 +8,8 @@ import (
 	"github.com/vmware/govmomi/vim25/soap"
 	"github.com/vmware/govmomi/vim25/types"
 	"github.com/vmware/govmomi/vslm"
+	types2 "github.com/vmware/govmomi/vslm/types"
+	"github.com/vmware/gvddk/gDiskLib"
 	"net/url"
 	"time"
 )
@@ -16,6 +18,8 @@ type IVDProtectedEntityTypeManager struct {
 	client    *govmomi.Client
 	vsom      *vslm.GlobalObjectManager
 	s3URLBase string
+	user      string	// These are being kept so we can open VDDK connections, may be able to open a VDDK connection
+	password  string	// in IVDProtectedEntityTypeManager instead
 }
 
 func NewIVDProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s3URLBase string) (*IVDProtectedEntityTypeManager, error) {
@@ -57,13 +61,30 @@ func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, s3URLBase string, ins
 		return nil, err
 	}
 
-	return NewIVDProtectedEntityTypeManagerWithClient(client, s3URLBase, vslmClient)
+	retVal, err := newIVDProtectedEntityTypeManagerWithClient(client, s3URLBase, vslmClient)
+	if err == nil {
+
+	retVal.user = url.User.Username()
+	password, hasPassword := url.User.Password()
+	if !hasPassword {
+		return nil, errors.New("No VC Password specified")
+	}
+	retVal.password = password
+}
+	return retVal, err
 }
 
-func NewIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, s3URLBase string, vslmClient *vslm.Client) (*IVDProtectedEntityTypeManager, error) {
+const vsphereMajor = 6
+const vSphereMinor = 7
+const disklibLib64 = "/usr/lib/vmware-vix-disklib/lib64"
+func newIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, s3URLBase string, vslmClient *vslm.Client) (*IVDProtectedEntityTypeManager, error) {
 
 	vsom := vslm.NewGlobalObjectManager(vslmClient)
 
+	errno := gDiskLib.Init(vsphereMajor, vSphereMinor, disklibLib64)
+	if errno != 0 {
+		return nil, errors.New("Could not initialize VDDK errno ")
+	}
 	retVal := IVDProtectedEntityTypeManager{
 		client:    client,
 		vsom:      vsom,
@@ -85,7 +106,13 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Contex
 }
 
 func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntityID, error) {
-	res, err := this.vsom.ListObjectsForSpec(ctx, nil, 1000)
+	// Kludge because of PR
+	spec := types2.VslmVsoVStorageObjectQuerySpec{
+		QueryField:    "createTime",
+		QueryOperator: "greaterThan",
+		QueryValue:    []string{"0"},
+	}
+	res, err := this.vsom.ListObjectsForSpec(ctx, []types2.VslmVsoVStorageObjectQuerySpec{spec}, 1000)
 	if err != nil {
 		return nil, err
 	}
@@ -97,15 +124,15 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Cont
 	return retIDs, nil
 }
 
-func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity) (arachne.ProtectedEntity, error) {
+func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
 	info, err := pe.GetInfo(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return this.CopyFromInfo(ctx, info)
+	return this.CopyFromInfo(ctx, info, options)
 }
 
-func (this *IVDProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, peInfo arachne.ProtectedEntityInfo) (arachne.ProtectedEntity, error) {
+func (this *IVDProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, peInfo arachne.ProtectedEntityInfo, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
 
 	if (peInfo.GetID().GetPeType() != "ivd") {
 		return nil, errors.New("Copy source must be an ivd")

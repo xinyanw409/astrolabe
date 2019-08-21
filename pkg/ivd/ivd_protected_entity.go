@@ -1,10 +1,13 @@
 package ivd
 
+import "C"
 import (
 	"github.com/pkg/errors"
 	"github.com/vmware/arachne/pkg/arachne"
 	vim "github.com/vmware/govmomi/vim25/types"
+	"github.com/vmware/gvddk/gDiskLib"
 	"io"
+	"strings"
 
 	//	"github.com/vmware/govmomi/vslm"
 	"context"
@@ -20,7 +23,55 @@ type IVDProtectedEntity struct {
 }
 
 func (this IVDProtectedEntity) GetDataReader() (io.Reader, error) {
-	return nil, nil
+
+	url := this.ipetm.client.URL()
+	serverName := url.Hostname()
+	userName := this.ipetm.user
+	password := this.ipetm.password
+	/*
+	thumbprint := this.ipetm.client.Thumbprint(serverName)
+	thumbprint = "3D:62:45:37:88:36:3E:03:7A:6C:5A:63:D6:D6:AB:85:F7:DE:A3:AB"
+	if thumbprint == "" {
+		return nil, errors.New("Thumbprint was not set in client")
+	}*/
+	fcdid := this.id.GetID()
+
+	vso, err := this.ipetm.vsom.Retrieve(context.Background(), NewVimIDFromPEID(this.id))
+	if err != nil {
+		return nil, err
+	}
+	datastore := vso.Config.Backing.GetBaseConfigInfoBackingInfo().Datastore.String()
+	datastore = strings.TrimPrefix(datastore, "Datastore:")
+	/*
+	params := gDiskLib.ConnectParams{
+		ServerName: serverName,
+		UserName: userName,
+		Password: password,
+		ThumbPrint: thumbprint,
+		FCDid: fcdid,
+	}*/
+	params := gDiskLib.NewConnectParams("",
+		serverName,
+		"3D:62:45:37:88:36:3E:03:7A:6C:5A:63:D6:D6:AB:85:F7:DE:A3:AB",
+		userName,
+		password,
+		fcdid,
+		datastore,
+		"",
+		"",
+		"vm-example")
+
+
+	conn, errno := gDiskLib.Connect(params)
+	if errno != 0 {
+		return nil, errors.New("Connect failed")
+	}
+	errno = gDiskLib.PrepareForAccess(params)
+	if errno != 0 {
+		return nil, errors.New("PrepareForAccess failed")
+	}
+	diskHandle, errno := gDiskLib.Open(conn, "", 1 /*C.VIXDISKLIB_FLAG_OPEN_UNBUFFERED*/)
+	return arachne.NewReaderAtReader(diskHandle), nil
 }
 
 func (this IVDProtectedEntity) GetMetadataReader() (io.Reader, error) {
@@ -76,6 +127,7 @@ func (this IVDProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.P
 	return []arachne.ProtectedEntityInfo{ivdIPE}, nil
 }
 
+const waitTime = 3600 * time.Second
 /*
  * Snapshot APIs
  */
@@ -84,7 +136,7 @@ func (this IVDProtectedEntity) Snapshot(ctx context.Context) (*arachne.Protected
 	if err != nil {
 		return nil, errors.Wrap(err, "Snapshot failed")
 	}
-	ivdSnapshotIDAny, err := vslmTask.Wait(ctx, 60*time.Second)
+	ivdSnapshotIDAny, err := vslmTask.Wait(ctx, waitTime)
 	if err != nil {
 		return nil, errors.Wrap(err, "Wait failed")
 	}
@@ -95,7 +147,8 @@ func (this IVDProtectedEntity) Snapshot(ctx context.Context) (*arachne.Protected
 			id: ivdSnapshotStr,
 		}
 	*/
-	return arachne.NewProtectedEntitySnapshotID(ivdSnapshotID.Id), nil
+	retVal := arachne.NewProtectedEntitySnapshotID(ivdSnapshotID.Id)
+	return &retVal, nil
 }
 
 func (this IVDProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
@@ -105,13 +158,22 @@ func (this IVDProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.Pro
 	}
 	peSnapshotIDs := []arachne.ProtectedEntitySnapshotID{}
 	for _, curSnapshotInfo := range snapshotInfo {
-		peSnapshotIDs = append(peSnapshotIDs, *arachne.NewProtectedEntitySnapshotID(curSnapshotInfo.Id.Id))
+		peSnapshotIDs = append(peSnapshotIDs, arachne.NewProtectedEntitySnapshotID(curSnapshotInfo.Id.Id))
 	}
 	return peSnapshotIDs, nil
 }
 func (this IVDProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
+	vslmTask, err := this.ipetm.vsom.DeleteSnapshot(ctx, NewVimIDFromPEID(this.id), NewVimSnapshotIDFromPEID(this.id))
+	if err != nil {
+		return false, errors.Wrap(err, "DeleteSnapshot failed")
+	}
+	_, err = vslmTask.Wait(ctx, waitTime)
+	if err != nil {
+		return false, errors.Wrap(err, "Wait failed")
+	}
 	return true, nil
 }
+
 func (this IVDProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotID arachne.ProtectedEntitySnapshotID) (*arachne.ProtectedEntityInfo, error) {
 	return nil, nil
 }

@@ -25,7 +25,7 @@ func (this *ServiceAPI) listObjects(echoContext echo.Context) error {
 	}
 	var pesList []string
 	for _, curPes := range pes {
-		pesList = append(pesList, curPes.GetID().String())
+		pesList = append(pesList, curPes.GetID())
 	}
 	echoContext.JSON(http.StatusOK, pesList)
 	return nil
@@ -114,7 +114,7 @@ func (this *ServiceAPI)handleCopyObject(echoContext echo.Context) (err error) {
 	if err = echoContext.Bind(pei); err != nil {
 		return
 	}
-	newPE, err := this.petm.CopyFromInfo(context.Background(), pei)
+	newPE, err := this.petm.CopyFromInfo(context.Background(), pei, arachne.AllocateNewObject)
 	if err != nil {
 		return err
 	}
