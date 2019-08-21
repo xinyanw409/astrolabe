@@ -1,6 +1,7 @@
 package arachne
 
 import (
+	"fmt"
 	"io"
 	"sync"
 )
@@ -26,5 +27,6 @@ func (this ReaderAtReader) Read(p []byte) (n int, err error) {
 	defer this.mutex.Unlock()
 	bytesRead, err := this.readerAt.ReadAt(p, *this.offset)
 	*this.offset += int64(bytesRead)
+	fmt.Printf("Read returning %d, len(p) = %d\n", bytesRead, len(p))
 	return bytesRead, err
 }

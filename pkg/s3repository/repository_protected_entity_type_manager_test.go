@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/vmware/arachne/pkg/arachne"
 	"github.com/vmware/arachne/pkg/fs"
+	"github.com/vmware/arachne/pkg/ivd"
 	"log"
 	"testing"
 )
@@ -75,7 +76,7 @@ func TestCopyFSProtectedEntity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, fsPEID := range  fsPEs {
+	for _, fsPEID := range fsPEs {
 		// FS doesn't have snapshots, but repository likes them, so fake one
 		snapPEID := arachne.NewProtectedEntityIDWithSnapshotID(fsPEID.GetPeType(), fsPEID.GetID(),
 			arachne.NewProtectedEntitySnapshotID("dummy-snap-id"))
@@ -93,5 +94,65 @@ func TestCopyFSProtectedEntity(t *testing.T) {
 			t.Fatal(err)
 		}
 		log.Printf("Restored new FSPE %s\n", newFSPE.GetID().String())
+	}
+}
+
+func TestCopyIVDProtectedEntity(t *testing.T) {
+	s3petm, err := setupPETM(t, "ivd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ivdParams := make(map[string]interface{})
+	ivdParams["vcHost"] = "10.160.24.114"
+	ivdParams["insecureVC"] = "Y"
+	ivdParams["vcUser"] = "administrator@vsphere.local"
+	ivdParams["vcPassword"] = "Admin!23"
+
+	ivdPETM, err := ivd.NewIVDProtectedEntityTypeManagerFromConfig(ivdParams, "notUsed")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := context.Background()
+	ivdPEs, err := ivdPETM.GetProtectedEntities(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx = context.Background()
+	for _, ivdPEID := range ivdPEs {
+		ivdPE, err := ivdPETM.GetProtectedEntity(ctx, ivdPEID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		snapID, err := ivdPE.Snapshot(ctx)
+		if err == nil {
+
+			snapPEID := arachne.NewProtectedEntityIDWithSnapshotID("ivd", ivdPEID.GetID(), *snapID)
+			snapPE, err := ivdPETM.GetProtectedEntity(ctx, snapPEID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			s3PE, err := s3petm.Copy(ctx, snapPE, arachne.AllocateNewObject)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			newIVDPE, err := ivdPETM.Copy(ctx, s3PE, arachne.AllocateNewObject)
+			if err != nil {
+				t.Fatal(err)
+			}
+			log.Printf("Restored new IVDPE %s\n", newIVDPE.GetID().String())
+			status, err := ivdPE.DeleteSnapshot(ctx, *snapID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !status {
+				t.Fatal("Snapshot delete returned false")
+			}
+		} else {
+			log.Printf("Snapshot failed for %s, skipping\n", ivdPEID.String())
+		}
 	}
 }
