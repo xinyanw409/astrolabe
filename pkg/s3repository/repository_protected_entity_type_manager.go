@@ -200,12 +200,12 @@ func (this *ProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE arach
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err := sourcePE.GetDataReader()
+	dataReader, err := sourcePE.GetDataReader(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	metadataReader, err := sourcePE.GetMetadataReader()
+	metadataReader, err := sourcePE.GetMetadataReader(ctx)
 	if err != nil {
 		return nil, err
 	}

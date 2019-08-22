@@ -10,6 +10,7 @@ import (
 	"github.com/vmware/govmomi/vslm"
 	types2 "github.com/vmware/govmomi/vslm/types"
 	"github.com/vmware/gvddk/gDiskLib"
+	"io"
 	"net/url"
 	"time"
 )
@@ -124,22 +125,43 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Cont
 	return retIDs, nil
 }
 
-func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
-	info, err := pe.GetInfo(ctx)
+func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE arachne.ProtectedEntity, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
+	sourcePEInfo, err := sourcePE.GetInfo(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return this.CopyFromInfo(ctx, info, options)
+	dataReader, err := sourcePE.GetDataReader(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	metadataReader, err := sourcePE.GetMetadataReader(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return this.copyInt(ctx, sourcePEInfo, options, dataReader, metadataReader)
 }
 
 func (this *IVDProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, peInfo arachne.ProtectedEntityInfo, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
+	return nil, nil
+}
 
-	if (peInfo.GetID().GetPeType() != "ivd") {
+type backingSpec struct {
+	createSpec *types.VslmCreateSpecBackingSpec
+}
+
+func (this backingSpec) 	GetVslmCreateSpecBackingSpec() *types.VslmCreateSpecBackingSpec {
+	return this.createSpec
+}
+
+func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePEInfo arachne.ProtectedEntityInfo,
+	options arachne.CopyCreateOptions, dataReader io.Reader, metadataReader io.Reader) (arachne.ProtectedEntity, error) {
+	if (sourcePEInfo.GetID().GetPeType() != "ivd") {
 		return nil, errors.New("Copy source must be an ivd")
 	}
 	ourVC := false
 	existsInOurVC := false
-	for _, checkData := range peInfo.GetDataTransports() {
+	for _, checkData := range sourcePEInfo.GetDataTransports() {
 		vcenterURL, ok := checkData.GetParam("vcenter")
 
 		if checkData.GetTransportType() == "vadp" && ok && vcenterURL == this.client.URL().Host {
@@ -150,7 +172,7 @@ func (this *IVDProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, peI
 	}
 
 	if (ourVC) {
-	_, err := this.vsom.Retrieve(ctx, NewVimIDFromPEID(peInfo.GetID()))
+	_, err := this.vsom.Retrieve(ctx, NewVimIDFromPEID(sourcePEInfo.GetID()))
 	if err != nil {
 		if soap.IsSoapFault(err) {
 			fault := soap.ToSoapFault(err).Detail.Fault
@@ -163,33 +185,62 @@ func (this *IVDProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, peI
 		}
 	}
 	}
-	var retPE arachne.ProtectedEntity
-	retPE = nil
+	var retPE IVDProtectedEntity
+	var createTask *vslm.Task
+	var err error
+
 	if ourVC && existsInOurVC {
-		var createTask *vslm.Task
-		var err error
-		if (peInfo.GetID().HasSnapshot()) {
-			createTask, err = this.vsom.CreateDiskFromSnapshot(ctx, NewVimIDFromPEID(peInfo.GetID()), NewVimSnapshotIDFromPEID(peInfo.GetID()),
-				peInfo.GetName(),  nil, nil, "")
+		if (sourcePEInfo.GetID().HasSnapshot()) {
+			createTask, err = this.vsom.CreateDiskFromSnapshot(ctx, NewVimIDFromPEID(sourcePEInfo.GetID()), NewVimSnapshotIDFromPEID(sourcePEInfo.GetID()),
+				sourcePEInfo.GetName(),  nil, nil, "")
 		} else {
 			keepAfterDeleteVm := true
 			cloneSpec := types.VslmCloneSpec{
 				Name: "",
 				KeepAfterDeleteVm: &keepAfterDeleteVm,
 			}
-			createTask, err = this.vsom.Clone(ctx, NewVimIDFromPEID(peInfo.GetID()), cloneSpec)
+			createTask, err = this.vsom.Clone(ctx, NewVimIDFromPEID(sourcePEInfo.GetID()), cloneSpec)
+			retVal, err := createTask.WaitNonDefault(ctx, time.Hour * 24, time.Second * 10, true, time.Second * 30);
+			if err != nil {
+				return nil, err
+			}
+			newVSO := retVal.(types.VStorageObject)
+			retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id))
 		}
+
+	} else {
+		md, err := readMetadataFromReader(ctx, metadataReader)
+		if err != nil {
+			return nil, err
+		}
+		keepAfterDeleteVm := true
+		createSpec := types.VslmCreateSpecBackingSpec{
+			Datastore:   md.Datastore,
+			Path:        "",
+		}
+		backingSpec := backingSpec {
+			createSpec: &createSpec,
+		}
+		vslmCreateSpec := types.VslmCreateSpec{
+			Name:              "ivd-created",
+			KeepAfterDeleteVm: &keepAfterDeleteVm,
+			BackingSpec:       backingSpec,
+			CapacityInMB:      md.VirtualStorageObject.Config.CapacityInMB,
+			Profile:           nil,
+			Metadata:          nil,
+		}
+		createTask, err = this.vsom.CreateDisk(ctx, vslmCreateSpec)
 		retVal, err := createTask.WaitNonDefault(ctx, time.Hour * 24, time.Second * 10, true, time.Second * 30);
 		if err != nil {
 			return nil, err
 		}
 		newVSO := retVal.(types.VStorageObject)
 		retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id))
-		if err != nil {
-			return nil, err
-		}
-	} else {
+		retPE.copy(ctx, dataReader, md)
+	}
 
+	if err != nil {
+		return nil, err
 	}
 	return retPE, nil
 }

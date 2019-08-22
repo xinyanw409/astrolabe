@@ -1,12 +1,15 @@
 package ivd
 
-import "C"
 import (
+	"bytes"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/vmware/arachne/pkg/arachne"
 	vim "github.com/vmware/govmomi/vim25/types"
+	"github.com/vmware/govmomi/vim25/xml"
 	"github.com/vmware/gvddk/gDiskLib"
 	"io"
+	"io/ioutil"
 	"strings"
 
 	//	"github.com/vmware/govmomi/vslm"
@@ -22,34 +25,61 @@ type IVDProtectedEntity struct {
 	combined []arachne.DataTransport
 }
 
-func (this IVDProtectedEntity) GetDataReader() (io.Reader, error) {
+type metadata struct {
+	VirtualStorageObject vim.VStorageObject `xml:"virtualStorageObject"`
+	Datastore vim.ManagedObjectReference `xml:"datastore""`
+}
 
+func (this IVDProtectedEntity) GetDataReader(ctx context.Context) (io.Reader, error) {
+
+	diskHandle, err := this.getDiskHandle(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return arachne.NewReaderAtReader(diskHandle), nil
+}
+
+func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
+	metadata metadata) error {
+	// TODO - restore metadata
+	dataWriter, err := this.getDataWriter(ctx)
+	if err == nil {
+		_, err = io.Copy(dataWriter, dataReader) // TODO - add a copy routine that we can interrupt via context
+	}
+	return err
+}
+
+func (this IVDProtectedEntity) getDataWriter(ctx context.Context) (io.Writer, error) {
+	diskHandle, err := this.getDiskHandle(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return arachne.NewWriterAtWriter(diskHandle), nil
+}
+
+func (this IVDProtectedEntity) getDiskHandle(ctx context.Context) (gDiskLib.DiskHandle, error) {
 	url := this.ipetm.client.URL()
 	serverName := url.Hostname()
 	userName := this.ipetm.user
 	password := this.ipetm.password
 	/*
-	thumbprint := this.ipetm.client.Thumbprint(serverName)
-	thumbprint = "3D:62:45:37:88:36:3E:03:7A:6C:5A:63:D6:D6:AB:85:F7:DE:A3:AB"
-	if thumbprint == "" {
-		return nil, errors.New("Thumbprint was not set in client")
-	}*/
+		thumbprint := this.ipetm.client.Thumbprint(serverName)
+		thumbprint = "3D:62:45:37:88:36:3E:03:7A:6C:5A:63:D6:D6:AB:85:F7:DE:A3:AB"
+		if thumbprint == "" {
+			return nil, errors.New("Thumbprint was not set in client")
+		}*/
 	fcdid := this.id.GetID()
-
 	vso, err := this.ipetm.vsom.Retrieve(context.Background(), NewVimIDFromPEID(this.id))
 	if err != nil {
-		return nil, err
+		return gDiskLib.DiskHandle{}, err
 	}
 	datastore := vso.Config.Backing.GetBaseConfigInfoBackingInfo().Datastore.String()
 	datastore = strings.TrimPrefix(datastore, "Datastore:")
-	/*
-	params := gDiskLib.ConnectParams{
-		ServerName: serverName,
-		UserName: userName,
-		Password: password,
-		ThumbPrint: thumbprint,
-		FCDid: fcdid,
-	}*/
+
+	fcdssid := ""
+	if this.id.HasSnapshot() {
+		fcdssid = this.id.GetSnapshotID().String()
+	}
 	params := gDiskLib.NewConnectParams("",
 		serverName,
 		"3D:62:45:37:88:36:3E:03:7A:6C:5A:63:D6:D6:AB:85:F7:DE:A3:AB",
@@ -57,25 +87,70 @@ func (this IVDProtectedEntity) GetDataReader() (io.Reader, error) {
 		password,
 		fcdid,
 		datastore,
-		"",
+		fcdssid,
 		"",
 		"vm-example")
-
-
 	conn, errno := gDiskLib.Connect(params)
 	if errno != 0 {
-		return nil, errors.New("Connect failed")
+		return gDiskLib.DiskHandle{}, errors.New("Connect failed")
 	}
 	errno = gDiskLib.PrepareForAccess(params)
 	if errno != 0 {
-		return nil, errors.New("PrepareForAccess failed")
+		return gDiskLib.DiskHandle{}, errors.New("PrepareForAccess failed")
 	}
 	diskHandle, errno := gDiskLib.Open(conn, "", 1 /*C.VIXDISKLIB_FLAG_OPEN_UNBUFFERED*/)
-	return arachne.NewReaderAtReader(diskHandle), nil
+	return diskHandle, nil
 }
 
-func (this IVDProtectedEntity) GetMetadataReader() (io.Reader, error) {
-	return nil, nil
+func (this IVDProtectedEntity) GetMetadataReader(ctx context.Context) (io.Reader, error) {
+	infoBuf, err := this.getMetadataBuf(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.NewReader(infoBuf), nil
+}
+
+func (this IVDProtectedEntity) getMetadataBuf(ctx context.Context) ([]byte, error) {
+	md, err := this.getMetadata(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "Retrieve failed")
+	}
+	retBuf, err := xml.MarshalIndent(md, "  ", "    ")
+	if err == nil {
+		fmt.Println(retBuf)
+	}
+	return retBuf, err
+}
+
+func (this IVDProtectedEntity) getMetadata(ctx context.Context) (metadata, error) {
+	vsoID := vim.ID{
+		Id: this.id.GetID(),
+	}
+	vso, err := this.ipetm.vsom.Retrieve(ctx, vsoID)
+	if err != nil {
+		return metadata{}, err
+	}
+	datastore := vso.Config.BaseConfigInfo.GetBaseConfigInfo().Backing.GetBaseConfigInfoBackingInfo().Datastore
+	retVal := metadata{
+		VirtualStorageObject: *vso,
+		Datastore: datastore,
+	}
+	return retVal, nil
+}
+
+func readMetadataFromReader(ctx context.Context, metadataReader io.Reader) (metadata, error) {
+	mdBuf, err := ioutil.ReadAll(metadataReader) // TODO - limit this so it can't run us out of memory here
+	if err != nil {
+		return metadata{}, err
+	}
+	return readMetadataFromBuf(ctx, mdBuf)
+}
+
+func readMetadataFromBuf(ctx context.Context, buf []byte) (metadata, error) {
+	var retVal = metadata{}
+	err := xml.Unmarshal(buf, &retVal)
+	return retVal, err
 }
 
 func newProtectedEntityID(id vim.ID) arachne.ProtectedEntityID {
@@ -128,6 +203,7 @@ func (this IVDProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.P
 }
 
 const waitTime = 3600 * time.Second
+
 /*
  * Snapshot APIs
  */
@@ -163,7 +239,7 @@ func (this IVDProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.Pro
 	return peSnapshotIDs, nil
 }
 func (this IVDProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
-	vslmTask, err := this.ipetm.vsom.DeleteSnapshot(ctx, NewVimIDFromPEID(this.id), NewVimSnapshotIDFromPEID(this.id))
+	vslmTask, err := this.ipetm.vsom.DeleteSnapshot(ctx, NewVimIDFromPEID(this.id), NewVimSnapshotIDFromPESnapshotID(snapshotToDelete))
 	if err != nil {
 		return false, errors.Wrap(err, "DeleteSnapshot failed")
 	}
@@ -209,5 +285,11 @@ func NewVimSnapshotIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
 		}
 	} else {
 		return vim.ID{}
+	}
+}
+
+func NewVimSnapshotIDFromPESnapshotID(peSnapshotID arachne.ProtectedEntitySnapshotID) vim.ID {
+	return vim.ID {
+		Id: peSnapshotID.GetID(),
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -67,7 +68,7 @@ func (this ProtectedEntity) GetID() arachne.ProtectedEntityID {
 	return this.peinfo.GetID()
 }
 
-func (this ProtectedEntity) GetDataReader() (io.Reader, error) {
+func (this ProtectedEntity) GetDataReader(context.Context) (io.Reader, error) {
 	if len(this.peinfo.GetDataTransports()) > 0 {
 		dataName := this.rpetm.dataName(this.GetID())
 		return this.getReader(dataName)
@@ -75,7 +76,7 @@ func (this ProtectedEntity) GetDataReader() (io.Reader, error) {
 	return nil, nil
 }
 
-func (this ProtectedEntity) GetMetadataReader() (io.Reader, error) {
+func (this ProtectedEntity) GetMetadataReader(context.Context) (io.Reader, error) {
 	if len(this.peinfo.GetMetadataTransports()) > 0 {
 		metadataName := this.rpetm.metadataName(this.GetID())
 		return this.getReader(metadataName)
@@ -148,9 +149,14 @@ func (this *ProtectedEntity) getReader(key string) (io.Reader, error) {
 	})
 	reader, writer := io.Pipe()
 	seqWriterAt := util.NewSeqWriterAt(writer)
-	go downloadMgr.Download(seqWriterAt, &s3.GetObjectInput{
-		Bucket: aws.String(this.rpetm.bucket),
-		Key:    aws.String(key),
-	})
+	go func() {
+		defer writer.Close()
+		downloadMgr.Download(seqWriterAt, &s3.GetObjectInput{
+			Bucket: aws.String(this.rpetm.bucket),
+			Key:    aws.String(key),
+		})
+		fmt.Printf("Download finished")
+	}()
+
 	return reader, nil
 }

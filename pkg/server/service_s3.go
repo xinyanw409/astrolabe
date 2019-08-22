@@ -57,9 +57,9 @@ func (this *ServiceS3) handleObjectRequest(echoContext echo.Context) error {
 
 	switch (source) {
 	case "md":
-		objectStream, err = pe.GetMetadataReader()
+		objectStream, err = pe.GetMetadataReader(nil)
 	case "data":
-		objectStream, err = pe.GetDataReader()
+		objectStream, err = pe.GetDataReader(nil)
 	}
 	if (err != nil) {
 

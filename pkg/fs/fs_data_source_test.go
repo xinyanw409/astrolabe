@@ -14,7 +14,7 @@ func TestFSDataSource(t *testing.T) {
 	if err != nil {
 		t.Fatal("Got error " + err.Error())
 	}
-	fsReader, err := fs.GetDataReader()
+	fsReader, err := fs.GetDataReader(nil)
 	if err != nil {
 		t.Fatal("Got error " + err.Error())
 	}

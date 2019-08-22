@@ -57,11 +57,11 @@ func (this *FSProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.P
 	if err != nil {
 		return nil, err
 	}
-	dataReader, err := pe.GetDataReader()
+	dataReader, err := pe.GetDataReader(nil)
 	if err != nil {
 		return nil, err
 	}
-	metadataReader, err := pe.GetMetadataReader()
+	metadataReader, err := pe.GetMetadataReader(nil)
 	if err != nil {
 		return nil, err
 	}

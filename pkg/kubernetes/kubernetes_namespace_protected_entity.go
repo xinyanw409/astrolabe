@@ -13,11 +13,11 @@ type KubernetesNamespaceProtectedEntity struct {
 	namespace *v1.Namespace
 }
 
-func (this *KubernetesNamespaceProtectedEntity) GetDataReader() (io.Reader, error) {
+func (this *KubernetesNamespaceProtectedEntity) GetDataReader(context.Context) (io.Reader, error) {
 	return nil, nil
 }
 
-func (this *KubernetesNamespaceProtectedEntity) GetMetadataReader() (io.Reader, error) {
+func (this *KubernetesNamespaceProtectedEntity) GetMetadataReader(context.Context) (io.Reader, error) {
 	return nil, nil
 }
 

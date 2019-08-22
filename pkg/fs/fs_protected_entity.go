@@ -102,14 +102,14 @@ func NewVimIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
 	}
 }
 
-func (this FSProtectedEntity) GetDataReader() (io.Reader, error) {
+func (this FSProtectedEntity) GetDataReader(context.Context) (io.Reader, error) {
 	reader, writer := io.Pipe()
 	go runTar(this.root, writer) // Ignore errors until we figure out how to propagate
 	return reader, nil
 
 }
 
-func (this FSProtectedEntity) GetMetadataReader() (io.Reader, error) {
+func (this FSProtectedEntity) GetMetadataReader(context.Context) (io.Reader, error) {
 	return nil, nil
 }
 
