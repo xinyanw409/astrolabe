@@ -214,22 +214,24 @@ func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePE
 			return nil, err
 		}
 		keepAfterDeleteVm := true
-		createSpec := types.VslmCreateSpecBackingSpec{
-			Datastore:   md.Datastore,
-			Path:        "",
-		}
-		backingSpec := backingSpec {
-			createSpec: &createSpec,
-		}
+
 		vslmCreateSpec := types.VslmCreateSpec{
 			Name:              "ivd-created",
 			KeepAfterDeleteVm: &keepAfterDeleteVm,
-			BackingSpec:       backingSpec,
+			BackingSpec:       &types.VslmCreateSpecDiskFileBackingSpec{
+				VslmCreateSpecBackingSpec: types.VslmCreateSpecBackingSpec{
+					Datastore: md.Datastore,
+				},
+				ProvisioningType: string(types.BaseConfigInfoDiskFileBackingInfoProvisioningTypeThin),
+			},
 			CapacityInMB:      md.VirtualStorageObject.Config.CapacityInMB,
 			Profile:           nil,
 			Metadata:          nil,
 		}
 		createTask, err = this.vsom.CreateDisk(ctx, vslmCreateSpec)
+		if err != nil {
+			return nil, err
+		}
 		retVal, err := createTask.WaitNonDefault(ctx, time.Hour * 24, time.Second * 10, true, time.Second * 30);
 		if err != nil {
 			return nil, err
