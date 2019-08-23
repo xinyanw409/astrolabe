@@ -90,15 +90,18 @@ func (this IVDProtectedEntity) getDiskHandle(ctx context.Context) (gDiskLib.Disk
 		fcdssid,
 		"",
 		"vm-example")
-	conn, errno := gDiskLib.Connect(params)
-	if errno != 0 {
-		return gDiskLib.DiskHandle{}, errors.New("Connect failed")
+	conn, err := gDiskLib.Connect(params)
+	if err != nil {
+		return gDiskLib.DiskHandle{}, errors.Wrap(err, "Connect failed")
 	}
-	errno = gDiskLib.PrepareForAccess(params)
-	if errno != 0 {
-		return gDiskLib.DiskHandle{}, errors.New("PrepareForAccess failed")
+	err = gDiskLib.PrepareForAccess(params)
+	if err != nil {
+		return gDiskLib.DiskHandle{}, errors.Wrap(err, "PrepareForAccess failed")
 	}
-	diskHandle, errno := gDiskLib.Open(conn, "", 1 /*C.VIXDISKLIB_FLAG_OPEN_UNBUFFERED*/)
+	diskHandle, err := gDiskLib.Open(conn, "", 1 /*C.VIXDISKLIB_FLAG_OPEN_UNBUFFERED*/)
+	if err != nil {
+		return gDiskLib.DiskHandle{}, err
+	}
 	return diskHandle, nil
 }
 

@@ -82,9 +82,9 @@ func newIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, s3URLBas
 
 	vsom := vslm.NewGlobalObjectManager(vslmClient)
 
-	errno := gDiskLib.Init(vsphereMajor, vSphereMinor, disklibLib64)
-	if errno != 0 {
-		return nil, errors.New("Could not initialize VDDK errno ")
+	err := gDiskLib.Init(vsphereMajor, vSphereMinor, disklibLib64)
+	if err != nil{
+		return nil, errors.Wrap(err, "Could not initialize VDDK")
 	}
 	retVal := IVDProtectedEntityTypeManager{
 		client:    client,
