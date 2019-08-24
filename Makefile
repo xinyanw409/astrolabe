@@ -2,23 +2,36 @@ all: build
 
 build: arachne ivd kubernetes s3repository fs server cmd
 
-cmd:
-	cd cmd/arachne_server; go get; go install
+deps:
+	go get k8s.io/klog
+	go get k8s.io/api/core/v1
+	go get k8s.io/apimachinery/pkg/apis/meta/v1
+	go get k8s.io/client-go/tools/clientcmd
+	go get k8s.io/client-go/kubernetes
+	go get github.com/aws/aws-sdk-go
+	go get github.com/pkg/errors
+	go get github.com/vmware/govmomi
+	go get github.com/google/uuid
+	go get github.com/labstack/echo
+	cd $(GOPATH)/src/k8s.io/klog ; git checkout v0.4.0
 
-arachne:
-	cd pkg/arachne; go get; go install
+cmd: deps
+	cd cmd/arachne_server; go build
 
-ivd:
-	cd pkg/ivd; go get; go install
+arachne: deps
+	cd pkg/arachne; go build
 
-fs:
-	cd pkg/ivd; go get; go install
+ivd: deps
+	cd pkg/ivd; go build
 
-s3repository:
-	cd pkg/s3repository; go get; go install
+fs: deps
+	cd pkg/ivd; go build
 
-kubernetes:
-	cd pkg/kubernetes; go get; go install
+s3repository: deps
+	cd pkg/s3repository; go build
 
-server:
-	cd pkg/server; go get; go install
+kubernetes: deps
+	cd pkg/kubernetes; go build
+
+server: deps
+	cd pkg/server; go build
