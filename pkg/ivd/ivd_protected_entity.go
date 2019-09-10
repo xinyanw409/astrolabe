@@ -82,7 +82,7 @@ func (this IVDProtectedEntity) getDiskHandle(ctx context.Context) (gDiskLib.Disk
 	}
 	params := gDiskLib.NewConnectParams("",
 		serverName,
-		"3D:62:45:37:88:36:3E:03:7A:6C:5A:63:D6:D6:AB:85:F7:DE:A3:AB",
+		"31:E1:D5:67:34:50:30:30:0B:8A:96:C8:F0:D1:3F:D4:FD:6A:46:43",
 		userName,
 		password,
 		fcdid,
@@ -90,15 +90,23 @@ func (this IVDProtectedEntity) getDiskHandle(ctx context.Context) (gDiskLib.Disk
 		fcdssid,
 		"",
 		"vm-example")
-	conn, err := gDiskLib.Connect(params)
+
+	err = gDiskLib.EndAccess(params)
 	if err != nil {
-		return gDiskLib.DiskHandle{}, errors.Wrap(err, "Connect failed")
+		return gDiskLib.DiskHandle{}, errors.Wrap(err, "EndAccess failed")
 	}
+
 	err = gDiskLib.PrepareForAccess(params)
 	if err != nil {
 		return gDiskLib.DiskHandle{}, errors.Wrap(err, "PrepareForAccess failed")
 	}
-	diskHandle, err := gDiskLib.Open(conn, "", 1 /*C.VIXDISKLIB_FLAG_OPEN_UNBUFFERED*/)
+
+	conn, err := gDiskLib.Connect(params, true, "nbd")
+	if err != nil {
+		return gDiskLib.DiskHandle{}, errors.Wrap(err, "Connect failed")
+	}
+
+	diskHandle, err := gDiskLib.Open(conn, "", gDiskLib.VIXDISKLIB_FLAG_OPEN_COMPRESSION_SKIPZ | gDiskLib.VIXDISKLIB_FLAG_OPEN_READ_ONLY)
 	if err != nil {
 		return gDiskLib.DiskHandle{}, err
 	}
