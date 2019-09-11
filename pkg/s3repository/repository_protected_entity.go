@@ -33,7 +33,12 @@ func NewProtectedEntityFromJSONBuf(rpetm *ProtectedEntityTypeManager, buf [] byt
 
 func NewProtectedEntityFromJSONReader(rpetm *ProtectedEntityTypeManager, reader io.Reader) (pe ProtectedEntity, err error) {
 	decoder := json.NewDecoder(reader)
-	err = decoder.Decode(&pe)
+	peInfo := arachne.ProtectedEntityInfoImpl{}
+	err = decoder.Decode(&peInfo)
+	if err == nil {
+		pe.peinfo = peInfo
+		pe.rpetm = rpetm
+	}
 	return
 }
 func (this ProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEntityInfo, error) {
@@ -103,11 +108,11 @@ func (this *ProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 	peInfo := this.peinfo
 	peinfoName := this.rpetm.peinfoName(peInfo.GetID())
 
-	buf, err := json.Marshal(peInfo)
+	peInfoBuf, err := json.Marshal(peInfo)
 	if err != nil {
 		return err
 	}
-	if len(buf) > maxPEInfoSize {
+	if len(peInfoBuf) > maxPEInfoSize {
 		return errors.New("JSON for pe info > 16K")
 	}
 
@@ -126,13 +131,13 @@ func (this *ProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 			return err
 		}
 	}
-	jsonBytes := bytes.NewReader(buf)
+	jsonBytes := bytes.NewReader(peInfoBuf)
 
 	jsonParams := &s3.PutObjectInput{
 		Bucket:        aws.String(this.rpetm.bucket),
 		Key:           aws.String(peinfoName),
 		Body:          jsonBytes,
-		ContentLength: aws.Int64(int64(len(buf))),
+		ContentLength: aws.Int64(int64(len(peInfoBuf))),
 		ContentType:   aws.String(peInfoFileType),
 	}
 	_, err = this.rpetm.s3.PutObject(jsonParams)

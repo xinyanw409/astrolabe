@@ -32,7 +32,7 @@ type metadata struct {
 
 func (this IVDProtectedEntity) GetDataReader(ctx context.Context) (io.Reader, error) {
 
-	diskHandle, err := this.getDiskHandle(ctx)
+	diskHandle, err := this.getDiskHandle(ctx, true)
 	if err != nil {
 		return nil, err
 	}
@@ -50,14 +50,14 @@ func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 }
 
 func (this IVDProtectedEntity) getDataWriter(ctx context.Context) (io.Writer, error) {
-	diskHandle, err := this.getDiskHandle(ctx)
+	diskHandle, err := this.getDiskHandle(ctx, false)
 	if err != nil {
 		return nil, err
 	}
 	return arachne.NewWriterAtWriter(diskHandle), nil
 }
 
-func (this IVDProtectedEntity) getDiskHandle(ctx context.Context) (gDiskLib.DiskHandle, error) {
+func (this IVDProtectedEntity) getDiskHandle(ctx context.Context, readOnly bool) (gDiskLib.DiskHandle, error) {
 	url := this.ipetm.client.URL()
 	serverName := url.Hostname()
 	userName := this.ipetm.user
@@ -106,7 +106,13 @@ func (this IVDProtectedEntity) getDiskHandle(ctx context.Context) (gDiskLib.Disk
 		return gDiskLib.DiskHandle{}, errors.Wrap(err, "Connect failed")
 	}
 
-	diskHandle, err := gDiskLib.Open(conn, "", gDiskLib.VIXDISKLIB_FLAG_OPEN_COMPRESSION_SKIPZ | gDiskLib.VIXDISKLIB_FLAG_OPEN_READ_ONLY)
+	var flags uint32
+	if readOnly {
+		flags = gDiskLib.VIXDISKLIB_FLAG_OPEN_COMPRESSION_SKIPZ | gDiskLib.VIXDISKLIB_FLAG_OPEN_READ_ONLY
+	} else {
+		flags = gDiskLib.VIXDISKLIB_FLAG_OPEN_UNBUFFERED
+	}
+	diskHandle, err := gDiskLib.Open(conn, "", flags)
 	if err != nil {
 		return gDiskLib.DiskHandle{}, err
 	}
