@@ -1,6 +1,7 @@
 package ivd
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"github.com/pkg/errors"
@@ -44,7 +45,8 @@ func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 	// TODO - restore metadata
 	dataWriter, err := this.getDataWriter(ctx)
 	if err == nil {
-		_, err = io.Copy(dataWriter, dataReader) // TODO - add a copy routine that we can interrupt via context
+		buf := make([]byte, 1024 * 1024)
+		_, err = io.CopyBuffer(dataWriter, dataReader, buf) // TODO - add a copy routine that we can interrupt via context
 	}
 	return err
 }
@@ -54,7 +56,12 @@ func (this IVDProtectedEntity) getDataWriter(ctx context.Context) (io.Writer, er
 	if err != nil {
 		return nil, err
 	}
-	return arachne.NewWriterAtWriter(diskHandle), nil
+	unbuffered, err := arachne.NewWriterAtWriter(diskHandle), nil
+	if err != nil {
+		return nil, err
+	}
+	buffered := bufio.NewWriterSize(unbuffered, 1024 * 1024)
+	return buffered, nil
 }
 
 func (this IVDProtectedEntity) getDiskHandle(ctx context.Context, readOnly bool) (gDiskLib.DiskHandle, error) {

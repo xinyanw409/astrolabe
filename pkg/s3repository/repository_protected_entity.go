@@ -1,6 +1,7 @@
 package s3repository
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -170,6 +171,6 @@ func (this *ProtectedEntity) getReader(key string) (io.Reader, error) {
 		fmt.Printf("Download finished")
 	}()
 	*/
-
-	return s3Object.Body, nil
+	s3BufferedReader := bufio.NewReaderSize(s3Object.Body, 1024*1024)
+	return s3BufferedReader, nil
 }
