@@ -3,6 +3,7 @@ package ivd
 import (
 	"context"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/vmware/arachne/pkg/arachne"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/vim25/soap"
@@ -19,11 +20,13 @@ type IVDProtectedEntityTypeManager struct {
 	client    *govmomi.Client
 	vsom      *vslm.GlobalObjectManager
 	s3URLBase string
-	user      string	// These are being kept so we can open VDDK connections, may be able to open a VDDK connection
-	password  string	// in IVDProtectedEntityTypeManager instead
+	user      string // These are being kept so we can open VDDK connections, may be able to open a VDDK connection
+	password  string // in IVDProtectedEntityTypeManager instead
+	logger    logrus.FieldLogger
 }
 
-func NewIVDProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s3URLBase string) (*IVDProtectedEntityTypeManager, error) {
+func NewIVDProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s3URLBase string,
+	logger logrus.FieldLogger) (*IVDProtectedEntityTypeManager, error) {
 	var vcURL url.URL
 	vcHostStr, ok := params["vcHost"].(string)
 	if !ok {
@@ -46,10 +49,10 @@ func NewIVDProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s
 	}
 	vcURL.User = url.UserPassword(vcUser, vcPassword)
 	vcURL.Path = "/sdk"
-	return NewIVDProtectedEntityTypeManagerFromURL(&vcURL, s3URLBase, insecure)
+	return NewIVDProtectedEntityTypeManagerFromURL(&vcURL, s3URLBase, insecure, logger)
 }
 
-func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, s3URLBase string, insecure bool) (*IVDProtectedEntityTypeManager, error) {
+func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, s3URLBase string, insecure bool, logger logrus.FieldLogger) (*IVDProtectedEntityTypeManager, error) {
 	ctx := context.Background()
 	client, err := govmomi.NewClient(ctx, url, insecure)
 	if err != nil {
@@ -62,34 +65,37 @@ func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, s3URLBase string, ins
 		return nil, err
 	}
 
-	retVal, err := newIVDProtectedEntityTypeManagerWithClient(client, s3URLBase, vslmClient)
+	retVal, err := newIVDProtectedEntityTypeManagerWithClient(client, s3URLBase, vslmClient, logger)
 	if err == nil {
 
-	retVal.user = url.User.Username()
-	password, hasPassword := url.User.Password()
-	if !hasPassword {
-		return nil, errors.New("No VC Password specified")
+		retVal.user = url.User.Username()
+		password, hasPassword := url.User.Password()
+		if !hasPassword {
+			return nil, errors.New("No VC Password specified")
+		}
+		retVal.password = password
 	}
-	retVal.password = password
-}
 	return retVal, err
 }
 
 const vsphereMajor = 6
 const vSphereMinor = 7
 const disklibLib64 = "/usr/lib/vmware-vix-disklib/lib64"
-func newIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, s3URLBase string, vslmClient *vslm.Client) (*IVDProtectedEntityTypeManager, error) {
+
+func newIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, s3URLBase string, vslmClient *vslm.Client,
+	logger logrus.FieldLogger) (*IVDProtectedEntityTypeManager, error) {
 
 	vsom := vslm.NewGlobalObjectManager(vslmClient)
 
 	err := gDiskLib.Init(vsphereMajor, vSphereMinor, disklibLib64)
-	if err != nil{
+	if err != nil {
 		return nil, errors.Wrap(err, "Could not initialize VDDK")
 	}
 	retVal := IVDProtectedEntityTypeManager{
 		client:    client,
 		vsom:      vsom,
 		s3URLBase: s3URLBase,
+		logger:    logger,
 	}
 	return &retVal, nil
 }
@@ -99,7 +105,7 @@ func (this *IVDProtectedEntityTypeManager) GetTypeName() string {
 }
 
 func (this *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (arachne.ProtectedEntity, error) {
-	retIPE, err := newIVDProtectedEntity(this, id)
+	retIPE, err := newIVDProtectedEntity(this, id, this.logger)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +156,7 @@ type backingSpec struct {
 	createSpec *types.VslmCreateSpecBackingSpec
 }
 
-func (this backingSpec) 	GetVslmCreateSpecBackingSpec() *types.VslmCreateSpecBackingSpec {
+func (this backingSpec) GetVslmCreateSpecBackingSpec() *types.VslmCreateSpecBackingSpec {
 	return this.createSpec
 }
 
@@ -172,18 +178,18 @@ func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePE
 	}
 
 	if (ourVC) {
-	_, err := this.vsom.Retrieve(ctx, NewVimIDFromPEID(sourcePEInfo.GetID()))
-	if err != nil {
-		if soap.IsSoapFault(err) {
-			fault := soap.ToSoapFault(err).Detail.Fault
-			if _, ok := fault.(types.NotFound); ok {
-				// Doesn't exist in our local system, we can't just clone it
-				existsInOurVC = false
-			} else {
-				return nil, err
+		_, err := this.vsom.Retrieve(ctx, NewVimIDFromPEID(sourcePEInfo.GetID()))
+		if err != nil {
+			if soap.IsSoapFault(err) {
+				fault := soap.ToSoapFault(err).Detail.Fault
+				if _, ok := fault.(types.NotFound); ok {
+					// Doesn't exist in our local system, we can't just clone it
+					existsInOurVC = false
+				} else {
+					return nil, err
+				}
 			}
 		}
-	}
 	}
 	var retPE IVDProtectedEntity
 	var createTask *vslm.Task
@@ -192,20 +198,20 @@ func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePE
 	if ourVC && existsInOurVC {
 		if (sourcePEInfo.GetID().HasSnapshot()) {
 			createTask, err = this.vsom.CreateDiskFromSnapshot(ctx, NewVimIDFromPEID(sourcePEInfo.GetID()), NewVimSnapshotIDFromPEID(sourcePEInfo.GetID()),
-				sourcePEInfo.GetName(),  nil, nil, "")
+				sourcePEInfo.GetName(), nil, nil, "")
 		} else {
 			keepAfterDeleteVm := true
 			cloneSpec := types.VslmCloneSpec{
-				Name: "",
+				Name:              "",
 				KeepAfterDeleteVm: &keepAfterDeleteVm,
 			}
 			createTask, err = this.vsom.Clone(ctx, NewVimIDFromPEID(sourcePEInfo.GetID()), cloneSpec)
-			retVal, err := createTask.WaitNonDefault(ctx, time.Hour * 24, time.Second * 10, true, time.Second * 30);
+			retVal, err := createTask.WaitNonDefault(ctx, time.Hour*24, time.Second*10, true, time.Second*30);
 			if err != nil {
 				return nil, err
 			}
 			newVSO := retVal.(types.VStorageObject)
-			retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id))
+			retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id), this.logger)
 		}
 
 	} else {
@@ -218,26 +224,26 @@ func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePE
 		vslmCreateSpec := types.VslmCreateSpec{
 			Name:              "ivd-created",
 			KeepAfterDeleteVm: &keepAfterDeleteVm,
-			BackingSpec:       &types.VslmCreateSpecDiskFileBackingSpec{
+			BackingSpec: &types.VslmCreateSpecDiskFileBackingSpec{
 				VslmCreateSpecBackingSpec: types.VslmCreateSpecBackingSpec{
 					Datastore: md.Datastore,
 				},
 				ProvisioningType: string(types.BaseConfigInfoDiskFileBackingInfoProvisioningTypeThin),
 			},
-			CapacityInMB:      md.VirtualStorageObject.Config.CapacityInMB,
-			Profile:           nil,
-			Metadata:          nil,
+			CapacityInMB: md.VirtualStorageObject.Config.CapacityInMB,
+			Profile:      nil,
+			Metadata:     nil,
 		}
 		createTask, err = this.vsom.CreateDisk(ctx, vslmCreateSpec)
 		if err != nil {
 			return nil, err
 		}
-		retVal, err := createTask.WaitNonDefault(ctx, time.Hour * 24, time.Second * 10, true, time.Second * 30);
+		retVal, err := createTask.WaitNonDefault(ctx, time.Hour*24, time.Second*10, true, time.Second*30);
 		if err != nil {
 			return nil, err
 		}
 		newVSO := retVal.(types.VStorageObject)
-		retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id))
+		retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id), this.logger)
 		retPE.copy(ctx, dataReader, md)
 	}
 

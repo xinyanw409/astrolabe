@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/vmware/arachne/pkg/arachne"
 	vim "github.com/vmware/govmomi/vim25/types"
 	"github.com/vmware/govmomi/vim25/xml"
@@ -24,11 +25,12 @@ type IVDProtectedEntity struct {
 	data     []arachne.DataTransport
 	metadata []arachne.DataTransport
 	combined []arachne.DataTransport
+	logger   logrus.FieldLogger
 }
 
 type metadata struct {
-	VirtualStorageObject vim.VStorageObject `xml:"virtualStorageObject"`
-	Datastore vim.ManagedObjectReference `xml:"datastore""`
+	VirtualStorageObject vim.VStorageObject         `xml:"virtualStorageObject"`
+	Datastore            vim.ManagedObjectReference `xml:"datastore""`
 }
 
 func (this IVDProtectedEntity) GetDataReader(ctx context.Context) (io.Reader, error) {
@@ -45,7 +47,7 @@ func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 	// TODO - restore metadata
 	dataWriter, err := this.getDataWriter(ctx)
 	if err == nil {
-		buf := make([]byte, 1024 * 1024)
+		buf := make([]byte, 1024*1024)
 		_, err = io.CopyBuffer(dataWriter, dataReader, buf) // TODO - add a copy routine that we can interrupt via context
 	}
 	return err
@@ -56,11 +58,11 @@ func (this IVDProtectedEntity) getDataWriter(ctx context.Context) (io.Writer, er
 	if err != nil {
 		return nil, err
 	}
-	unbuffered, err := arachne.NewWriterAtWriter(diskHandle), nil
+	unbuffered, err := arachne.NewWriterAtWriter(diskHandle, this.logger), nil
 	if err != nil {
 		return nil, err
 	}
-	buffered := bufio.NewWriterSize(unbuffered, 1024 * 1024)
+	buffered := bufio.NewWriterSize(unbuffered, 1024*1024)
 	return buffered, nil
 }
 
@@ -158,7 +160,7 @@ func (this IVDProtectedEntity) getMetadata(ctx context.Context) (metadata, error
 	datastore := vso.Config.BaseConfigInfo.GetBaseConfigInfo().Backing.GetBaseConfigInfoBackingInfo().Datastore
 	retVal := metadata{
 		VirtualStorageObject: *vso,
-		Datastore: datastore,
+		Datastore:            datastore,
 	}
 	return retVal, nil
 }
@@ -185,7 +187,8 @@ func newProtectedEntityIDWithSnapshotID(id vim.ID, snapshotID arachne.ProtectedE
 	return arachne.NewProtectedEntityIDWithSnapshotID("ivd", id.Id, snapshotID)
 }
 
-func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.ProtectedEntityID) (IVDProtectedEntity, error) {
+func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.ProtectedEntityID,
+	logger logrus.FieldLogger) (IVDProtectedEntity, error) {
 	data, metadata, combined, err := ipetm.getDataTransports(id)
 	if err != nil {
 		return IVDProtectedEntity{}, err
@@ -196,6 +199,7 @@ func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.Prot
 		data:     data,
 		metadata: metadata,
 		combined: combined,
+		logger:   logger,
 	}
 	return newIPE, nil
 }
@@ -313,7 +317,7 @@ func NewVimSnapshotIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
 }
 
 func NewVimSnapshotIDFromPESnapshotID(peSnapshotID arachne.ProtectedEntitySnapshotID) vim.ID {
-	return vim.ID {
+	return vim.ID{
 		Id: peSnapshotID.GetID(),
 	}
 }
