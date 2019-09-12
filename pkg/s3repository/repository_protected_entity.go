@@ -5,12 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vmware/arachne/pkg/arachne"
-	"github.com/vmware/arachne/pkg/util"
 	"io"
 	"log"
 )
@@ -148,10 +146,19 @@ func (this *ProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 }
 
 func (this *ProtectedEntity) getReader(key string) (io.Reader, error) {
+	s3Object, err := this.rpetm.s3.GetObject(&s3.GetObjectInput {
+		Bucket: aws.String(this.rpetm.bucket),
+		Key: aws.String(key),
+	})
+	if err != nil {
+		return nil, err
+	}
+ 	/*
 	downloadMgr := s3manager.NewDownloaderWithClient(&this.rpetm.s3, func(d *s3manager.Downloader) {
 		d.Concurrency = 1
-		//d.PartSize = 1
+		d.PartSize = 16 * 1024 * 1024
 	})
+
 	reader, writer := io.Pipe()
 	seqWriterAt := util.NewSeqWriterAt(writer)
 	go func() {
@@ -162,6 +169,7 @@ func (this *ProtectedEntity) getReader(key string) (io.Reader, error) {
 		})
 		fmt.Printf("Download finished")
 	}()
+	*/
 
-	return reader, nil
+	return s3Object.Body, nil
 }
