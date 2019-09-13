@@ -14,6 +14,7 @@ deps:
 	go get github.com/vmware/govmomi
 	go get github.com/google/uuid
 	go get github.com/labstack/echo
+	go get github.com/sirupsen/logrus
 
 cmd: deps
 	cd cmd/arachne_server; go build
