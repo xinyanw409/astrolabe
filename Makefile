@@ -4,7 +4,7 @@ build: arachne ivd kubernetes s3repository fs server cmd
 
 deps:
 	go get k8s.io/klog
-	cd $(GOPATH)/src/k8s.io/klog ; git checkout v0.4.0
+#	cd $(GOPATH)/src/k8s.io/klog ; git checkout v0.4.0
 	go get k8s.io/api/core/v1
 	go get k8s.io/apimachinery/pkg/apis/meta/v1
 	go get k8s.io/client-go/tools/clientcmd
