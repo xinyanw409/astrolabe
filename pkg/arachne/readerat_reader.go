@@ -9,7 +9,7 @@ import (
 type ReaderAtReader struct {
 	readerAt io.ReaderAt
 	offset   *int64
-	mutex    sync.Mutex	// Lock to ensure that multiple-threads do not break offset or see the same data twice
+	mutex    sync.Mutex // Lock to ensure that multiple-threads do not break offset or see the same data twice
 }
 
 func NewReaderAtReader(readerAt io.ReaderAt) ReaderAtReader {

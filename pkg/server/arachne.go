@@ -12,10 +12,10 @@ import (
 )
 
 type Arachne struct {
-	petm *DirectProtectedEntityManager
+	petm         *DirectProtectedEntityManager
 	api_services map[string]*ServiceAPI
-	s3_services map[string]*ServiceS3
-	s3URLBase string
+	s3_services  map[string]*ServiceS3
+	s3URLBase    string
 }
 
 func NewArachne(confDirPath string, port int) *Arachne {
@@ -34,8 +34,8 @@ func NewArachne(confDirPath string, port int) *Arachne {
 
 	retArachne := Arachne{
 		api_services: api_services,
-		s3_services: s3_services,
-		s3URLBase: s3URLBase,
+		s3_services:  s3_services,
+		s3URLBase:    s3URLBase,
 	}
 
 	return &retArachne
@@ -96,6 +96,7 @@ func (this *Arachne) ConnectMiniS3ToEcho(echo *echo.Echo) error {
 	}
 	return nil
 }
+
 const fileSuffix = ".pe.json"
 
 func getProtectedEntityForIDStr(petm arachne.ProtectedEntityTypeManager, idStr string,
@@ -124,4 +125,3 @@ func getProtectedEntityForIDStr(petm arachne.ProtectedEntityTypeManager, idStr s
 	}
 	return id, pe, nil
 }
-

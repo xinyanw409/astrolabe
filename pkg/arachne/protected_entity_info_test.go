@@ -20,15 +20,15 @@ func TestProtectedEntityInfoJSON(t *testing.T) {
 		t.Fatal("Got error " + test1Err.Error())
 	}
 	peii := ProtectedEntityInfoImpl{
-		id:           test1ID,
-		name:         "peiiTestJSON",
-		dataTransports:     []DataTransport {
+		id:   test1ID,
+		name: "peiiTestJSON",
+		dataTransports: []DataTransport{
 			NewDataTransportForS3URL("http://localhost/s3/data1"),
 		},
-		metadataTransports: []DataTransport {
+		metadataTransports: []DataTransport{
 			NewDataTransportForS3URL("http://localhost/s3/metadata1"),
 		},
-		combinedTransports: []DataTransport {
+		combinedTransports: []DataTransport{
 			NewDataTransportForS3URL("http://localhost/s3/combined1"),
 		},
 		componentIDs: []ProtectedEntityID{component1ID},

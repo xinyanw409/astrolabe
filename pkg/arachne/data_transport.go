@@ -28,12 +28,12 @@ type dataTransportJSON struct {
 func NewDataTransport(transportType string, params map[string]string) DataTransport {
 	return DataTransport{
 		transportType: transportType,
-		params: params,
+		params:        params,
 	}
 }
 
 func NewDataTransportForS3URL(url string) DataTransport {
-	return DataTransport {
+	return DataTransport{
 		transportType: "s3",
 		params: map[string]string{
 			"url": url,
@@ -43,13 +43,13 @@ func NewDataTransportForS3URL(url string) DataTransport {
 
 func NewDataTransportForS3(host string, bucket string, key string) DataTransport {
 	url := "http://" + host + "/" + bucket + "/" + key
-	return DataTransport {
+	return DataTransport{
 		transportType: "s3",
 		params: map[string]string{
-			"url": url,
-			"host": host,
+			"url":    url,
+			"host":   host,
 			"bucket": bucket,
-			"key": key,
+			"key":    key,
 		},
 	}
 }
