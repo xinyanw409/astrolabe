@@ -3,6 +3,7 @@ package fs
 import (
 	"archive/tar"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/vmware/arachne/pkg/arachne"
 	vim "github.com/vmware/govmomi/vim25/types"
 	"io"
@@ -23,6 +24,7 @@ type FSProtectedEntity struct {
 	data     []arachne.DataTransport
 	metadata []arachne.DataTransport
 	combined []arachne.DataTransport
+	logger   logrus.FieldLogger
 }
 
 func newProtectedEntityID(id vim.ID) arachne.ProtectedEntityID {
@@ -43,6 +45,7 @@ func newFSProtectedEntity(fspetm *FSProtectedEntityTypeManager, id arachne.Prote
 		data:     data,
 		metadata: metadata,
 		combined: combined,
+		logger:   fspetm.logger,
 	}
 	return newFSPE, nil
 }

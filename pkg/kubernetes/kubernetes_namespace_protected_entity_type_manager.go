@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"github.com/vmware/arachne/pkg/arachne"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,9 +13,11 @@ import (
 type KubernetesNamespaceProtectedEntityTypeManager struct {
 	clientset  *kubernetes.Clientset
 	namespaces map[string]*KubernetesNamespaceProtectedEntity
+	logger     logrus.FieldLogger
 }
 
-func NewKubernetesNamespaceProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s3URLBase string) (*KubernetesNamespaceProtectedEntityTypeManager, error) {
+func NewKubernetesNamespaceProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s3URLBase string,
+	logger logrus.FieldLogger) (*KubernetesNamespaceProtectedEntityTypeManager, error) {
 	masterURL := params["masterURL"].(string)
 	kubeconfigPath := params["kubeconfigPath"].(string)
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
@@ -27,6 +30,7 @@ func NewKubernetesNamespaceProtectedEntityTypeManagerFromConfig(params map[strin
 	}
 	returnTypeManager := KubernetesNamespaceProtectedEntityTypeManager{
 		clientset: clientset,
+		logger:    logger,
 	}
 	returnTypeManager.namespaces = make(map[string]*KubernetesNamespaceProtectedEntity)
 	err = returnTypeManager.loadNamespaceEntities()
@@ -77,7 +81,6 @@ func (this *KubernetesNamespaceProtectedEntityTypeManager) loadNamespaceEntities
 func (this *KubernetesNamespaceProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
 	return nil, nil
 }
-
 
 func (this *KubernetesNamespaceProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, pe arachne.ProtectedEntityInfo, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
 	return nil, nil

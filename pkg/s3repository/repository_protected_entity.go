@@ -147,29 +147,29 @@ func (this *ProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 }
 
 func (this *ProtectedEntity) getReader(key string) (io.Reader, error) {
-	s3Object, err := this.rpetm.s3.GetObject(&s3.GetObjectInput {
+	s3Object, err := this.rpetm.s3.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(this.rpetm.bucket),
-		Key: aws.String(key),
+		Key:    aws.String(key),
 	})
 	if err != nil {
 		return nil, err
 	}
- 	/*
-	downloadMgr := s3manager.NewDownloaderWithClient(&this.rpetm.s3, func(d *s3manager.Downloader) {
-		d.Concurrency = 1
-		d.PartSize = 16 * 1024 * 1024
-	})
-
-	reader, writer := io.Pipe()
-	seqWriterAt := util.NewSeqWriterAt(writer)
-	go func() {
-		defer writer.Close()
-		downloadMgr.Download(seqWriterAt, &s3.GetObjectInput{
-			Bucket: aws.String(this.rpetm.bucket),
-			Key:    aws.String(key),
+	/*
+		downloadMgr := s3manager.NewDownloaderWithClient(&this.rpetm.s3, func(d *s3manager.Downloader) {
+			d.Concurrency = 1
+			d.PartSize = 16 * 1024 * 1024
 		})
-		fmt.Printf("Download finished")
-	}()
+
+		reader, writer := io.Pipe()
+		seqWriterAt := util.NewSeqWriterAt(writer)
+		go func() {
+			defer writer.Close()
+			downloadMgr.Download(seqWriterAt, &s3.GetObjectInput{
+				Bucket: aws.String(this.rpetm.bucket),
+				Key:    aws.String(key),
+			})
+			fmt.Printf("Download finished")
+		}()
 	*/
 	s3BufferedReader := bufio.NewReaderSize(s3Object.Body, 1024*1024)
 	return s3BufferedReader, nil

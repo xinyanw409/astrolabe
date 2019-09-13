@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"github.com/vmware/arachne/pkg/arachne"
 	"io"
 	"io/ioutil"
@@ -13,16 +14,19 @@ import (
 type FSProtectedEntityTypeManager struct {
 	root      string
 	s3URLBase string
+	logger    logrus.FieldLogger
 }
 
 const kTYPE_NAME = "fs"
 
-func NewFSProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s3URLBase string) (*FSProtectedEntityTypeManager, error) {
+func NewFSProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s3URLBase string,
+	logger logrus.FieldLogger) (*FSProtectedEntityTypeManager, error) {
 	root := params["root"].(string)
 
 	returnTypeManager := FSProtectedEntityTypeManager{
 		root:      root,
 		s3URLBase: s3URLBase,
+		logger:    logger,
 	}
 	return &returnTypeManager, nil
 }

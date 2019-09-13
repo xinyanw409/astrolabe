@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"github.com/vmware/arachne/pkg/arachne"
 	"io"
 	v1 "k8s.io/api/core/v1"
@@ -11,6 +12,7 @@ type KubernetesNamespaceProtectedEntity struct {
 	knpetm    *KubernetesNamespaceProtectedEntityTypeManager
 	id        arachne.ProtectedEntityID
 	namespace *v1.Namespace
+	logger    logrus.FieldLogger
 }
 
 func (this *KubernetesNamespaceProtectedEntity) GetDataReader(context.Context) (io.Reader, error) {
@@ -28,6 +30,7 @@ func NewKubernetesNamespaceProtectedEntity(knpetm *KubernetesNamespaceProtectedE
 		knpetm:    knpetm,
 		id:        nsPEID,
 		namespace: namespace,
+		logger:    knpetm.logger,
 	}
 	return &returnPE, nil
 }

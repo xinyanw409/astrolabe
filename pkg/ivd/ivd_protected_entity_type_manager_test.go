@@ -2,6 +2,7 @@ package ivd
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"net/url"
 	"testing"
 )
@@ -15,7 +16,7 @@ func TestProtectedEntityTypeManager(t *testing.T) {
 
 	t.Logf("%s\n", vcUrl.String())
 
-	ivdPETM, err := NewIVDProtectedEntityTypeManagerFromURL(&vcUrl, "/ivd", true)
+	ivdPETM, err := NewIVDProtectedEntityTypeManagerFromURL(&vcUrl, "/ivd", true, logrus.New())
 	ctx := context.Background()
 
 	pes, err := ivdPETM.GetProtectedEntities(ctx)

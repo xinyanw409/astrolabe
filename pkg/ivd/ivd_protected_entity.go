@@ -30,7 +30,8 @@ type IVDProtectedEntity struct {
 
 type metadata struct {
 	VirtualStorageObject vim.VStorageObject         `xml:"virtualStorageObject"`
-	Datastore            vim.ManagedObjectReference `xml:"datastore""`
+	Datastore            vim.ManagedObjectReference `xml:"datastore"`
+	ExtendedMetadata     []vim.KeyValue          `xml:"extendedMetadata"`
 }
 
 func (this IVDProtectedEntity) GetDataReader(ctx context.Context) (io.Reader, error) {
@@ -144,7 +145,7 @@ func (this IVDProtectedEntity) getMetadataBuf(ctx context.Context) ([]byte, erro
 	}
 	retBuf, err := xml.MarshalIndent(md, "  ", "    ")
 	if err == nil {
-		fmt.Println(retBuf)
+		fmt.Println(string(retBuf))
 	}
 	return retBuf, err
 }
@@ -158,9 +159,19 @@ func (this IVDProtectedEntity) getMetadata(ctx context.Context) (metadata, error
 		return metadata{}, err
 	}
 	datastore := vso.Config.BaseConfigInfo.GetBaseConfigInfo().Backing.GetBaseConfigInfoBackingInfo().Datastore
+	var ssID *vim.ID = nil
+	if (this.id.HasSnapshot()) {
+
+		ssID = &vim.ID{
+			Id: this.id.GetSnapshotID().GetID(),
+		}
+	}
+	extendedMetadata, err := this.ipetm.vsom.RetrieveMetadata(ctx, vsoID, ssID, "")
+
 	retVal := metadata{
 		VirtualStorageObject: *vso,
 		Datastore:            datastore,
+		ExtendedMetadata:     extendedMetadata,
 	}
 	return retVal, nil
 }
@@ -187,8 +198,7 @@ func newProtectedEntityIDWithSnapshotID(id vim.ID, snapshotID arachne.ProtectedE
 	return arachne.NewProtectedEntityIDWithSnapshotID("ivd", id.Id, snapshotID)
 }
 
-func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.ProtectedEntityID,
-	logger logrus.FieldLogger) (IVDProtectedEntity, error) {
+func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.ProtectedEntityID) (IVDProtectedEntity, error) {
 	data, metadata, combined, err := ipetm.getDataTransports(id)
 	if err != nil {
 		return IVDProtectedEntity{}, err
@@ -199,7 +209,7 @@ func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.Prot
 		data:     data,
 		metadata: metadata,
 		combined: combined,
-		logger:   logger,
+		logger:   ipetm.logger,
 	}
 	return newIPE, nil
 }

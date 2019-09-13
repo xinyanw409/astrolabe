@@ -105,7 +105,7 @@ func (this *IVDProtectedEntityTypeManager) GetTypeName() string {
 }
 
 func (this *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (arachne.ProtectedEntity, error) {
-	retIPE, err := newIVDProtectedEntity(this, id, this.logger)
+	retIPE, err := newIVDProtectedEntity(this, id)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePE
 				return nil, err
 			}
 			newVSO := retVal.(types.VStorageObject)
-			retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id), this.logger)
+			retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id))
 		}
 
 	} else {
@@ -232,7 +232,7 @@ func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePE
 			},
 			CapacityInMB: md.VirtualStorageObject.Config.CapacityInMB,
 			Profile:      nil,
-			Metadata:     nil,
+			Metadata:     md.ExtendedMetadata,
 		}
 		createTask, err = this.vsom.CreateDisk(ctx, vslmCreateSpec)
 		if err != nil {
@@ -243,7 +243,7 @@ func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePE
 			return nil, err
 		}
 		newVSO := retVal.(types.VStorageObject)
-		retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id), this.logger)
+		retPE, err = newIVDProtectedEntity(this, newProtectedEntityID(newVSO.Config.Id))
 		retPE.copy(ctx, dataReader, md)
 	}
 

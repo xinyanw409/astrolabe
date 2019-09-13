@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/vmware/arachne/pkg/arachne"
 	"github.com/vmware/arachne/pkg/fs"
 	"github.com/vmware/arachne/pkg/ivd"
@@ -43,16 +44,17 @@ func NewDirectProtectedEntityManagerFromParamMap(configMap map[string]map[string
 *DirectProtectedEntityManager) {
 	petms := make([]arachne.ProtectedEntityTypeManager, 0) // No guarantee all configs will be valid, so don't preallocate
 	var err error
-
+	logger := logrus.New()
 	for serviceName, params := range configMap {
 		var curService arachne.ProtectedEntityTypeManager
 		switch serviceName {
 		case "ivd":
-			curService, err = ivd.NewIVDProtectedEntityTypeManagerFromConfig(params, s3URLBase)
+			curService, err = ivd.NewIVDProtectedEntityTypeManagerFromConfig(params, s3URLBase, logger)
 		case "k8sns":
-			curService, err = kubernetes.NewKubernetesNamespaceProtectedEntityTypeManagerFromConfig(params, s3URLBase)
+			curService, err = kubernetes.NewKubernetesNamespaceProtectedEntityTypeManagerFromConfig(params,
+				s3URLBase, logger)
 		case "fs":
-			curService, err = fs.NewFSProtectedEntityTypeManagerFromConfig(params, s3URLBase)
+			curService, err = fs.NewFSProtectedEntityTypeManagerFromConfig(params, s3URLBase, logger)
 		default:
 
 		}
