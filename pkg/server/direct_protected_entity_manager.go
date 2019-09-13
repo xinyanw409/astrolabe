@@ -48,7 +48,7 @@ func NewDirectProtectedEntityManagerFromParamMap(configMap map[string]map[string
 		var curService arachne.ProtectedEntityTypeManager
 		switch serviceName {
 		case "ivd":
-			curService, err = ivd.NewIVDProtectedEntityTypeManagerFromConfig(params, s3URLBase)
+			curService, err = ivd.NewIVDProtectedEntityTypeManagerFromConfig(params, s3URLBase, nil)
 		case "k8sns":
 			curService, err = kubernetes.NewKubernetesNamespaceProtectedEntityTypeManagerFromConfig(params, s3URLBase)
 		case "fs":
