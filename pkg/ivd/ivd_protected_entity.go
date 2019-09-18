@@ -92,7 +92,8 @@ func (this IVDProtectedEntity) getDiskHandle(ctx context.Context, readOnly bool)
 	}
 	params := gDiskLib.NewConnectParams("",
 		serverName,
-		"31:E1:D5:67:34:50:30:30:0B:8A:96:C8:F0:D1:3F:D4:FD:6A:46:43",
+		//"31:E1:D5:67:34:50:30:30:0B:8A:96:C8:F0:D1:3F:D4:FD:6A:46:43",
+		this.ipetm.thumbprint,
 		userName,
 		password,
 		fcdid,

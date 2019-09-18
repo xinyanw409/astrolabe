@@ -19,6 +19,7 @@ import (
 type IVDProtectedEntityTypeManager struct {
 	client    *govmomi.Client
 	vsom      *vslm.GlobalObjectManager
+	thumbprint string
 	s3URLBase string
 	user      string // These are being kept so we can open VDDK connections, may be able to open a VDDK connection
 	password  string // in IVDProtectedEntityTypeManager instead
@@ -49,10 +50,11 @@ func NewIVDProtectedEntityTypeManagerFromConfig(params map[string]interface{}, s
 	}
 	vcURL.User = url.UserPassword(vcUser, vcPassword)
 	vcURL.Path = "/sdk"
-	return NewIVDProtectedEntityTypeManagerFromURL(&vcURL, s3URLBase, insecure, logger)
+	vcThumbPrint := params["vcThumbPrint"].(string)
+	return NewIVDProtectedEntityTypeManagerFromURL(&vcURL, s3URLBase, vcThumbPrint, insecure, logger)
 }
 
-func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, s3URLBase string, insecure bool, logger logrus.FieldLogger) (*IVDProtectedEntityTypeManager, error) {
+func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, s3URLBase string, vcThumbPrint string, insecure bool, logger logrus.FieldLogger) (*IVDProtectedEntityTypeManager, error) {
 	ctx := context.Background()
 	client, err := govmomi.NewClient(ctx, url, insecure)
 	if err != nil {
@@ -65,7 +67,7 @@ func NewIVDProtectedEntityTypeManagerFromURL(url *url.URL, s3URLBase string, ins
 		return nil, err
 	}
 
-	retVal, err := newIVDProtectedEntityTypeManagerWithClient(client, s3URLBase, vslmClient, logger)
+	retVal, err := newIVDProtectedEntityTypeManagerWithClient(client, s3URLBase, vcThumbPrint, vslmClient, logger)
 	if err == nil {
 
 		retVal.user = url.User.Username()
@@ -82,7 +84,7 @@ const vsphereMajor = 6
 const vSphereMinor = 7
 const disklibLib64 = "/usr/lib/vmware-vix-disklib/lib64"
 
-func newIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, s3URLBase string, vslmClient *vslm.Client,
+func newIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, s3URLBase string, vcThumbPrint string, vslmClient *vslm.Client,
 	logger logrus.FieldLogger) (*IVDProtectedEntityTypeManager, error) {
 
 	vsom := vslm.NewGlobalObjectManager(vslmClient)
@@ -94,6 +96,7 @@ func newIVDProtectedEntityTypeManagerWithClient(client *govmomi.Client, s3URLBas
 	retVal := IVDProtectedEntityTypeManager{
 		client:    client,
 		vsom:      vsom,
+		thumbprint: vcThumbPrint,
 		s3URLBase: s3URLBase,
 		logger:    logger,
 	}
