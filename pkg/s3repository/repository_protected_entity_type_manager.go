@@ -204,6 +204,11 @@ func (this *ProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE arach
 	if err != nil {
 		return nil, err
 	}
+	diskDataReader, ok := dataReader.(arachne.DiskDataReader)
+	if ok {
+		defer diskDataReader.Close()
+	}
+	dataReader = diskDataReader
 
 	metadataReader, err := sourcePE.GetMetadataReader(ctx)
 	if err != nil {

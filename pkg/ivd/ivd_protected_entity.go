@@ -35,53 +35,55 @@ type metadata struct {
 }
 
 func (this IVDProtectedEntity) GetDataReader(ctx context.Context) (io.Reader, error) {
-
-	diskHandle, err := this.getDiskHandle(ctx, true)
+	//diskHandle, err := this.getDiskHandle(ctx, true)
+	diskConnectionParam, err := this.getDiskConnectionParams(ctx, true)
 	if err != nil {
 		return nil, err
 	}
-	return arachne.NewReaderAtReader(diskHandle), nil
+	//return arachne.NewReaderAtReader(diskHandle), nil
+	return arachne.NewDiskDataReaderAtReader(diskConnectionParam, this.logger), nil
 }
 
 func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 	metadata metadata) error {
 	// TODO - restore metadata
 	dataWriter, err := this.getDataWriter(ctx)
-	if err == nil {
-		buf := make([]byte, 1024*1024)
-		_, err = io.CopyBuffer(dataWriter, dataReader, buf) // TODO - add a copy routine that we can interrupt via context
+	if err != nil {
+		return err
 	}
+	diskDataWriter, ok := dataWriter.(arachne.DiskDataWriter)
+	if ok {
+		defer diskDataWriter.Close()
+	}
+	dataWriter = diskDataWriter
+
+	bufferedWriter := bufio.NewWriterSize(dataWriter, 1024*1024)
+	buf := make([]byte, 1024*1024)
+	_, err = io.CopyBuffer(bufferedWriter, dataReader, buf) // TODO - add a copy routine that we can interrupt via context
+
 	return err
 }
 
 func (this IVDProtectedEntity) getDataWriter(ctx context.Context) (io.Writer, error) {
-	diskHandle, err := this.getDiskHandle(ctx, false)
+	//diskHandle, err := this.getDiskHandle(ctx, false)
+	diskConnectionParam, err := this.getDiskConnectionParams(ctx, false)
 	if err != nil {
 		return nil, err
 	}
-	unbuffered, err := arachne.NewWriterAtWriter(diskHandle, this.logger), nil
-	if err != nil {
-		return nil, err
-	}
-	buffered := bufio.NewWriterSize(unbuffered, 1024*1024)
-	return buffered, nil
+	//unbuffered, err := arachne.NewWriterAtWriter(diskHandle, this.logger), nil
+	return arachne.NewDiskDataWriter(diskConnectionParam, this.logger), nil
 }
 
-func (this IVDProtectedEntity) getDiskHandle(ctx context.Context, readOnly bool) (gDiskLib.DiskHandle, error) {
+func (this IVDProtectedEntity) getDiskConnectionParams(ctx context.Context, readOnly bool) (arachne.DiskConnectionParam, error) {
 	url := this.ipetm.client.URL()
 	serverName := url.Hostname()
 	userName := this.ipetm.user
 	password := this.ipetm.password
-	/*
-		thumbprint := this.ipetm.client.Thumbprint(serverName)
-		thumbprint = "3D:62:45:37:88:36:3E:03:7A:6C:5A:63:D6:D6:AB:85:F7:DE:A3:AB"
-		if thumbprint == "" {
-			return nil, errors.New("Thumbprint was not set in client")
-		}*/
 	fcdid := this.id.GetID()
 	vso, err := this.ipetm.vsom.Retrieve(context.Background(), NewVimIDFromPEID(this.id))
 	if err != nil {
-		return gDiskLib.DiskHandle{}, err
+		//return gDiskLib.DiskHandle{}, err
+		return arachne.DiskConnectionParam{}, err
 	}
 	datastore := vso.Config.Backing.GetBaseConfigInfoBackingInfo().Datastore.String()
 	datastore = strings.TrimPrefix(datastore, "Datastore:")
@@ -92,7 +94,6 @@ func (this IVDProtectedEntity) getDiskHandle(ctx context.Context, readOnly bool)
 	}
 	params := gDiskLib.NewConnectParams("",
 		serverName,
-		//"31:E1:D5:67:34:50:30:30:0B:8A:96:C8:F0:D1:3F:D4:FD:6A:46:43",
 		this.ipetm.thumbprint,
 		userName,
 		password,
@@ -104,17 +105,17 @@ func (this IVDProtectedEntity) getDiskHandle(ctx context.Context, readOnly bool)
 
 	err = gDiskLib.EndAccess(params)
 	if err != nil {
-		return gDiskLib.DiskHandle{}, errors.Wrap(err, "EndAccess failed")
+		return arachne.DiskConnectionParam{}, errors.Wrap(err, "EndAccess failed")
 	}
 
 	err = gDiskLib.PrepareForAccess(params)
 	if err != nil {
-		return gDiskLib.DiskHandle{}, errors.Wrap(err, "PrepareForAccess failed")
+		return arachne.DiskConnectionParam{}, errors.Wrap(err, "PrepareForAccess failed")
 	}
 
 	conn, err := gDiskLib.Connect(params, true, "nbd")
 	if err != nil {
-		return gDiskLib.DiskHandle{}, errors.Wrap(err, "Connect failed")
+		return arachne.DiskConnectionParam{}, errors.Wrap(err, "Connect failed")
 	}
 
 	var flags uint32
@@ -125,9 +126,14 @@ func (this IVDProtectedEntity) getDiskHandle(ctx context.Context, readOnly bool)
 	}
 	diskHandle, err := gDiskLib.Open(conn, "", flags)
 	if err != nil {
-		return gDiskLib.DiskHandle{}, err
+		return arachne.DiskConnectionParam{}, err
 	}
-	return diskHandle, nil
+	diskConnectionParam := arachne.DiskConnectionParam{
+		diskHandle,
+		conn,
+		params,
+	}
+	return diskConnectionParam, nil
 }
 
 func (this IVDProtectedEntity) GetMetadataReader(ctx context.Context) (io.Reader, error) {
@@ -279,10 +285,12 @@ func (this IVDProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.Pro
 }
 func (this IVDProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
 	vslmTask, err := this.ipetm.vsom.DeleteSnapshot(ctx, NewVimIDFromPEID(this.id), NewVimSnapshotIDFromPESnapshotID(snapshotToDelete))
+	this.logger.Infof("IVD DeleteSnapshot API get called. Error: %v", err)
 	if err != nil {
 		return false, errors.Wrap(err, "DeleteSnapshot failed")
 	}
 	_, err = vslmTask.Wait(ctx, waitTime)
+	this.logger.Infof("IVD DeleteSnapshot Task is reported to be completed. Error: %v", err)
 	if err != nil {
 		return false, errors.Wrap(err, "Wait failed")
 	}

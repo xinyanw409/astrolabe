@@ -115,6 +115,7 @@ func (this *ProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 		return errors.New("JSON for pe info > 16K")
 	}
 
+	// TODO: defer the clean up of disk handle of source PE's data reader
 	if dataReader != nil {
 		dataName := this.rpetm.dataName(peInfo.GetID())
 		err = this.uploadStream(ctx, dataName, dataReader)
