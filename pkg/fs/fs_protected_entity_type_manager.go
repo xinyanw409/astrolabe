@@ -62,9 +62,18 @@ func (this *FSProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.P
 		return nil, err
 	}
 	dataReader, err := pe.GetDataReader(nil)
+	if dataReader != nil {
+		defer func() {
+			if err := dataReader.Close(); err != nil {
+				this.logger.Errorf("The deferred data reader is closed with error, %v", err)
+			}
+		}()
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	metadataReader, err := pe.GetMetadataReader(nil)
 	if err != nil {
 		return nil, err

@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/vmware/arachne/pkg/arachne"
 	"io"
+	"io/ioutil"
 	"log"
 )
 
@@ -72,7 +73,7 @@ func (this ProtectedEntity) GetID() arachne.ProtectedEntityID {
 	return this.peinfo.GetID()
 }
 
-func (this ProtectedEntity) GetDataReader(context.Context) (io.Reader, error) {
+func (this ProtectedEntity) GetDataReader(context.Context) (io.ReadCloser, error) {
 	if len(this.peinfo.GetDataTransports()) > 0 {
 		dataName := this.rpetm.dataName(this.GetID())
 		return this.getReader(dataName)
@@ -147,7 +148,7 @@ func (this *ProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 	return err
 }
 
-func (this *ProtectedEntity) getReader(key string) (io.Reader, error) {
+func (this *ProtectedEntity) getReader(key string) (io.ReadCloser, error) {
 	s3Object, err := this.rpetm.s3.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(this.rpetm.bucket),
 		Key:    aws.String(key),
@@ -173,5 +174,5 @@ func (this *ProtectedEntity) getReader(key string) (io.Reader, error) {
 		}()
 	*/
 	s3BufferedReader := bufio.NewReaderSize(s3Object.Body, 1024*1024)
-	return s3BufferedReader, nil
+	return ioutil.NopCloser(s3BufferedReader), nil
 }

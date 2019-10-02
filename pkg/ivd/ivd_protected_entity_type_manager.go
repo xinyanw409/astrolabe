@@ -140,6 +140,14 @@ func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE ar
 		return nil, err
 	}
 	dataReader, err := sourcePE.GetDataReader(ctx)
+	if dataReader != nil {
+		defer func() {
+			if err := dataReader.Close(); err != nil {
+				this.logger.Errorf("The deferred data reader is closed with error, %v", err)
+			}
+		}()
+	}
+
 	if err != nil {
 		return nil, err
 	}

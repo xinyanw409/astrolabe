@@ -15,7 +15,7 @@ type KubernetesNamespaceProtectedEntity struct {
 	logger    logrus.FieldLogger
 }
 
-func (this *KubernetesNamespaceProtectedEntity) GetDataReader(context.Context) (io.Reader, error) {
+func (this *KubernetesNamespaceProtectedEntity) GetDataReader(context.Context) (io.ReadCloser, error) {
 	return nil, nil
 }
 

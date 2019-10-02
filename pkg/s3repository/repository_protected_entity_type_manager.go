@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/sirupsen/logrus"
 	"github.com/vmware/arachne/pkg/arachne"
 	"io"
 	"strings"
@@ -21,9 +22,10 @@ type ProtectedEntityTypeManager struct {
 	s3                                               s3.S3
 	bucket                                           string
 	objectPrefix, peinfoPrefix, mdPrefix, dataPrefix string
+	logger    logrus.FieldLogger
 }
 
-func NewS3RepositoryProtectedEntityTypeManager(typeName string, session session.Session, bucket string) (*ProtectedEntityTypeManager, error) {
+func NewS3RepositoryProtectedEntityTypeManager(typeName string, session session.Session, bucket string, logger logrus.FieldLogger) (*ProtectedEntityTypeManager, error) {
 	objectPrefix := "arachne-repo/" + typeName + "/"
 	peinfoPrefix := objectPrefix + "peinfo/"
 	mdPrefix := objectPrefix + "md/"
@@ -37,6 +39,7 @@ func NewS3RepositoryProtectedEntityTypeManager(typeName string, session session.
 		peinfoPrefix: peinfoPrefix,
 		mdPrefix:     mdPrefix,
 		dataPrefix:   dataPrefix,
+		logger:       logger,
 	}
 	return &returnPETM, nil
 }
@@ -201,14 +204,17 @@ func (this *ProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE arach
 		return nil, err
 	}
 	dataReader, err := sourcePE.GetDataReader(ctx)
+	if dataReader != nil {
+		defer func() {
+			if err := dataReader.Close(); err != nil {
+				this.logger.Errorf("The deferred data reader is closed with error, %v", err)
+			}
+		}()
+	}
+
 	if err != nil {
 		return nil, err
 	}
-	diskDataReader, ok := dataReader.(arachne.DiskDataReader)
-	if ok {
-		defer diskDataReader.Close()
-	}
-	dataReader = diskDataReader
 
 	metadataReader, err := sourcePE.GetMetadataReader(ctx)
 	if err != nil {

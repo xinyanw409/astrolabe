@@ -34,7 +34,7 @@ type metadata struct {
 	ExtendedMetadata     []vim.KeyValue          `xml:"extendedMetadata"`
 }
 
-func (this IVDProtectedEntity) GetDataReader(ctx context.Context) (io.Reader, error) {
+func (this IVDProtectedEntity) GetDataReader(ctx context.Context) (io.ReadCloser, error) {
 	//diskHandle, err := this.getDiskHandle(ctx, true)
 	diskConnectionParam, err := this.getDiskConnectionParams(ctx, true)
 	if err != nil {
@@ -48,14 +48,18 @@ func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 	metadata metadata) error {
 	// TODO - restore metadata
 	dataWriter, err := this.getDataWriter(ctx)
+	if dataWriter != nil {
+		//defer dataWriter.Close()
+		defer func() {
+			if err := dataWriter.Close(); err != nil {
+				this.logger.Errorf("The deferred data writer is closed with error, %v", err)
+			}
+		}()
+	}
+
 	if err != nil {
 		return err
 	}
-	diskDataWriter, ok := dataWriter.(arachne.DiskDataWriter)
-	if ok {
-		defer diskDataWriter.Close()
-	}
-	dataWriter = diskDataWriter
 
 	bufferedWriter := bufio.NewWriterSize(dataWriter, 1024*1024)
 	buf := make([]byte, 1024*1024)
@@ -64,7 +68,7 @@ func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 	return err
 }
 
-func (this IVDProtectedEntity) getDataWriter(ctx context.Context) (io.Writer, error) {
+func (this IVDProtectedEntity) getDataWriter(ctx context.Context) (io.WriteCloser, error) {
 	//diskHandle, err := this.getDiskHandle(ctx, false)
 	diskConnectionParam, err := this.getDiskConnectionParams(ctx, false)
 	if err != nil {
