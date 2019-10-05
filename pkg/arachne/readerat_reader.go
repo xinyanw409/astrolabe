@@ -71,17 +71,17 @@ func (this DiskDataReader) Read(p []byte) (n int, err error) {
 func (this DiskDataReader) Close() (err error) {
 	vErr := this.readerAt.(gDiskLib.DiskHandle).Close()
 	if vErr != nil {
-		return errors.New(fmt.Sprintf(vErr.Error() + " with error code: %d", vErr.VixErrorCode()))
+		return errors.New(fmt.Sprintf(vErr.Error() + " with error code: %v", vErr))
 	}
 
 	vErr = gDiskLib.Disconnect(this.connection)
 	if vErr != nil {
-		return errors.New(fmt.Sprintf(vErr.Error() + " with error code: %d", vErr.VixErrorCode()))
+		return errors.New(fmt.Sprintf(vErr.Error() + " with error code: %v", vErr))
 	}
 
 	vErr = gDiskLib.EndAccess(this.params)
 	if vErr != nil {
-		return errors.New(fmt.Sprintf(vErr.Error() + " with error code: %d", vErr.VixErrorCode()))
+		return errors.New(fmt.Sprintf(vErr.Error() + " with error code: %v", vErr))
 	}
 
 	return nil

@@ -10,6 +10,7 @@ import (
 	vim "github.com/vmware/govmomi/vim25/types"
 	"github.com/vmware/govmomi/vim25/xml"
 	"github.com/vmware/gvddk/gDiskLib"
+	gvddk_high "github.com/vmware/gvddk/gvddk-high"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -35,14 +36,21 @@ type metadata struct {
 }
 
 func (this IVDProtectedEntity) GetDataReader(ctx context.Context) (io.ReadCloser, error) {
-	//diskHandle, err := this.getDiskHandle(ctx, true)
-	diskConnectionParam, err := this.getDiskConnectionParams(ctx, true)
+	diskConnectParam, err := this.getDiskConnectionParams(ctx, true)
 	if err != nil {
 		return nil, err
 	}
+
+	diskReader, vErr := gvddk_high.Open(diskConnectParam, this.logger)
+	if vErr != nil {
+		return nil, errors.New(fmt.Sprintf(vErr.Error() + " with error code: %d", vErr.VixErrorCode()))
+	}
+
 	//return arachne.NewReaderAtReader(diskHandle), nil
-	return arachne.NewDiskDataReaderAtReader(diskConnectionParam, this.logger), nil
+	//return arachne.NewDiskDataReaderAtReader(diskConnectionParam, this.logger), nil
+	return diskReader, nil
 }
+
 
 func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 	metadata metadata) error {
@@ -70,15 +78,21 @@ func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 
 func (this IVDProtectedEntity) getDataWriter(ctx context.Context) (io.WriteCloser, error) {
 	//diskHandle, err := this.getDiskHandle(ctx, false)
-	diskConnectionParam, err := this.getDiskConnectionParams(ctx, false)
+	diskConnectParam, err := this.getDiskConnectionParams(ctx, false)
 	if err != nil {
 		return nil, err
 	}
+
+	diskWriter, vErr := gvddk_high.Open(diskConnectParam, this.logger)
+	if vErr != nil {
+		return nil, errors.New(fmt.Sprintf(vErr.Error() + " with error code: %d", vErr.VixErrorCode()))
+	}
+
 	//unbuffered, err := arachne.NewWriterAtWriter(diskHandle, this.logger), nil
-	return arachne.NewDiskDataWriter(diskConnectionParam, this.logger), nil
+	return diskWriter, nil
 }
 
-func (this IVDProtectedEntity) getDiskConnectionParams(ctx context.Context, readOnly bool) (arachne.DiskConnectionParam, error) {
+func (this IVDProtectedEntity) getDiskConnectionParams(ctx context.Context, readOnly bool) (gDiskLib.ConnectParams, error) {
 	url := this.ipetm.client.URL()
 	serverName := url.Hostname()
 	userName := this.ipetm.user
@@ -87,7 +101,7 @@ func (this IVDProtectedEntity) getDiskConnectionParams(ctx context.Context, read
 	vso, err := this.ipetm.vsom.Retrieve(context.Background(), NewVimIDFromPEID(this.id))
 	if err != nil {
 		//return gDiskLib.DiskHandle{}, err
-		return arachne.DiskConnectionParam{}, err
+		return gDiskLib.ConnectParams{}, err
 	}
 	datastore := vso.Config.Backing.GetBaseConfigInfoBackingInfo().Datastore.String()
 	datastore = strings.TrimPrefix(datastore, "Datastore:")
@@ -96,6 +110,15 @@ func (this IVDProtectedEntity) getDiskConnectionParams(ctx context.Context, read
 	if this.id.HasSnapshot() {
 		fcdssid = this.id.GetSnapshotID().String()
 	}
+	path := ""
+	var flags uint32
+	if readOnly {
+		flags = gDiskLib.VIXDISKLIB_FLAG_OPEN_COMPRESSION_SKIPZ | gDiskLib.VIXDISKLIB_FLAG_OPEN_READ_ONLY
+	} else {
+		flags = gDiskLib.VIXDISKLIB_FLAG_OPEN_UNBUFFERED
+	}
+	transportMode := "nbd"
+
 	params := gDiskLib.NewConnectParams("",
 		serverName,
 		this.ipetm.thumbprint,
@@ -105,39 +128,13 @@ func (this IVDProtectedEntity) getDiskConnectionParams(ctx context.Context, read
 		datastore,
 		fcdssid,
 		"",
-		"vm-example")
+		"vm-example",
+		path,
+		flags,
+		readOnly,
+		transportMode)
 
-	err = gDiskLib.EndAccess(params)
-	if err != nil {
-		return arachne.DiskConnectionParam{}, errors.Wrap(err, "EndAccess failed")
-	}
-
-	err = gDiskLib.PrepareForAccess(params)
-	if err != nil {
-		return arachne.DiskConnectionParam{}, errors.Wrap(err, "PrepareForAccess failed")
-	}
-
-	conn, err := gDiskLib.Connect(params, true, "nbd")
-	if err != nil {
-		return arachne.DiskConnectionParam{}, errors.Wrap(err, "Connect failed")
-	}
-
-	var flags uint32
-	if readOnly {
-		flags = gDiskLib.VIXDISKLIB_FLAG_OPEN_COMPRESSION_SKIPZ | gDiskLib.VIXDISKLIB_FLAG_OPEN_READ_ONLY
-	} else {
-		flags = gDiskLib.VIXDISKLIB_FLAG_OPEN_UNBUFFERED
-	}
-	diskHandle, err := gDiskLib.Open(conn, "", flags)
-	if err != nil {
-		return arachne.DiskConnectionParam{}, err
-	}
-	diskConnectionParam := arachne.DiskConnectionParam{
-		diskHandle,
-		conn,
-		params,
-	}
-	return diskConnectionParam, nil
+	return params, nil
 }
 
 func (this IVDProtectedEntity) GetMetadataReader(ctx context.Context) (io.Reader, error) {
