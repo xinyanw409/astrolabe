@@ -97,7 +97,7 @@ func (this IVDProtectedEntity) getDiskConnectionParams(ctx context.Context, read
 	serverName := url.Hostname()
 	userName := this.ipetm.user
 	password := this.ipetm.password
-	fcdid := this.id.GetID()
+	fcdId := this.id.GetID()
 	vso, err := this.ipetm.vsom.Retrieve(context.Background(), NewVimIDFromPEID(this.id))
 	if err != nil {
 		//return gDiskLib.DiskHandle{}, err
@@ -118,13 +118,19 @@ func (this IVDProtectedEntity) getDiskConnectionParams(ctx context.Context, read
 		flags = gDiskLib.VIXDISKLIB_FLAG_OPEN_UNBUFFERED
 	}
 	transportMode := "nbd"
+	thumbPrint, err := gDiskLib.GetThumbPrintForURL(*url)
+	//thumbPrint, err := gDiskLib.GetThumbPrintForServer(serverName, port)
+	if err != nil {
+		this.logger.Errorf("Failed to get the thumb print for the URL, %s", url.String())
+		return gDiskLib.ConnectParams{}, err
+	}
 
 	params := gDiskLib.NewConnectParams("",
 		serverName,
-		this.ipetm.thumbprint,
+		thumbPrint,
 		userName,
 		password,
-		fcdid,
+		fcdId,
 		datastore,
 		fcdssid,
 		"",
