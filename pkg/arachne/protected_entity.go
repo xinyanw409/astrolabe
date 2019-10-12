@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/vmware/gvddk/gDiskLib"
 	"io"
 	"log"
 	"strings"
@@ -14,12 +13,6 @@ type ProtectedEntityID struct {
 	peType     string
 	id         string
 	snapshotID ProtectedEntitySnapshotID
-}
-
-type DiskConnectionParam struct {
-	gDiskLib.DiskHandle
-	gDiskLib.VixDiskLibConnection
-	gDiskLib.ConnectParams
 }
 
 func NewProtectedEntityID(peType string, id string) ProtectedEntityID {

@@ -46,8 +46,6 @@ func (this IVDProtectedEntity) GetDataReader(ctx context.Context) (io.ReadCloser
 		return nil, errors.New(fmt.Sprintf(vErr.Error() + " with error code: %d", vErr.VixErrorCode()))
 	}
 
-	//return arachne.NewReaderAtReader(diskHandle), nil
-	//return arachne.NewDiskDataReaderAtReader(diskConnectionParam, this.logger), nil
 	return diskReader, nil
 }
 
@@ -57,7 +55,6 @@ func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 	// TODO - restore metadata
 	dataWriter, err := this.getDataWriter(ctx)
 	if dataWriter != nil {
-		//defer dataWriter.Close()
 		defer func() {
 			if err := dataWriter.Close(); err != nil {
 				this.logger.Errorf("The deferred data writer is closed with error, %v", err)
@@ -77,7 +74,6 @@ func (this IVDProtectedEntity) copy(ctx context.Context, dataReader io.Reader,
 }
 
 func (this IVDProtectedEntity) getDataWriter(ctx context.Context) (io.WriteCloser, error) {
-	//diskHandle, err := this.getDiskHandle(ctx, false)
 	diskConnectParam, err := this.getDiskConnectionParams(ctx, false)
 	if err != nil {
 		return nil, err
@@ -88,7 +84,6 @@ func (this IVDProtectedEntity) getDataWriter(ctx context.Context) (io.WriteClose
 		return nil, errors.New(fmt.Sprintf(vErr.Error() + " with error code: %d", vErr.VixErrorCode()))
 	}
 
-	//unbuffered, err := arachne.NewWriterAtWriter(diskHandle, this.logger), nil
 	return diskWriter, nil
 }
 
@@ -119,7 +114,6 @@ func (this IVDProtectedEntity) getDiskConnectionParams(ctx context.Context, read
 	}
 	transportMode := "nbd"
 	thumbPrint, err := gDiskLib.GetThumbPrintForURL(*url)
-	//thumbPrint, err := gDiskLib.GetThumbPrintForServer(serverName, port)
 	if err != nil {
 		this.logger.Errorf("Failed to get the thumb print for the URL, %s", url.String())
 		return gDiskLib.ConnectParams{}, err

@@ -26,7 +26,7 @@ type ProtectedEntityTypeManager struct {
 }
 
 func NewS3RepositoryProtectedEntityTypeManager(typeName string, session session.Session, bucket string, logger logrus.FieldLogger) (*ProtectedEntityTypeManager, error) {
-	objectPrefix := "arachne-repo/" + typeName + "/"
+	objectPrefix := "backups/vsphere-volumes-repo/" + typeName + "/"
 	peinfoPrefix := objectPrefix + "peinfo/"
 	mdPrefix := objectPrefix + "md/"
 	dataPrefix := objectPrefix + "data/"
