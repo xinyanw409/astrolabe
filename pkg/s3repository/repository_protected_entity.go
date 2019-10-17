@@ -21,10 +21,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/pkg/errors"
 	"github.com/vmware/arachne/pkg/arachne"
 	"io"
 	"io/ioutil"
@@ -69,12 +69,39 @@ func (ProtectedEntity) Snapshot(ctx context.Context) (*arachne.ProtectedEntitySn
 	return nil, errors.New("Snapshot not supported")
 }
 
-func (ProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
-	panic("implement me")
+func (this ProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
+	peID := this.peinfo.GetID()
+	idPrefix := peID.GetPeType() + ":" + peID.GetID()
+	retPEIDs, err := this.rpetm.GetProtectedEntitiesByIDPrefix(ctx, idPrefix)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to get PEs by the id prefix, %s", idPrefix)
+	}
+	retPESnapshotIDs := make([]arachne.ProtectedEntitySnapshotID, len(retPEIDs))
+	for index, retPEID := range retPEIDs {
+		retPESnapshotIDs[index] = retPEID.GetSnapshotID()
+	}
+	return retPESnapshotIDs, nil
 }
 
-func (ProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
-	panic("implement me")
+func (this ProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
+	bucket := this.rpetm.bucket
+	peID := this.rpetm.peinfoName(this.peinfo.GetID())
+	_, err := this.rpetm.s3.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(bucket),
+		Key: aws.String(peID),
+	})
+	if err != nil {
+		return false, errors.Wrapf(err, "Unable to delete object %q from bucket %q", peID, bucket)
+	}
+
+	err = this.rpetm.s3.WaitUntilObjectNotExists(&s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(peID),
+	})
+	if err != nil {
+		return false, errors.Wrapf(err, "Error occurred while waiting for object %q to be deleted", peID)
+	}
+	return true, nil
 }
 
 func (ProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotID arachne.ProtectedEntitySnapshotID) (*arachne.ProtectedEntityInfo, error) {

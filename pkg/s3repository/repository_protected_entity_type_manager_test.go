@@ -52,7 +52,7 @@ func setupPETM(t *testing.T, typeName string) (*ProtectedEntityTypeManager, erro
 	if err != nil {
 		return nil, err
 	}
-	s3petm, err := NewS3RepositoryProtectedEntityTypeManager(typeName, *sess, "velero-plugin-s3-repo" /*"dsu-velero"*/)
+	s3petm, err := NewS3RepositoryProtectedEntityTypeManager(typeName, *sess, "velero-plugin-s3-repo" /*"dsu-velero"*/, nil)
 	if err != nil {
 		return nil, err
 	}

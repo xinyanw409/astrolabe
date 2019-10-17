@@ -173,10 +173,13 @@ func (this *ProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, 
 
 const maxS3ObjectsToFetch int64 = 1000
 
-func (this *ProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntityID, error) {
+func (this *ProtectedEntityTypeManager) GetProtectedEntitiesByIDPrefix(ctx context.Context, idPrefix string) ([]arachne.ProtectedEntityID, error) {
 	hasMore := true
 	var continuationToken *string = nil
-	prefix := this.peinfoPrefix
+	var prefix string
+	if idPrefix != "" {
+		prefix = this.peinfoPrefix + idPrefix
+	}
 	retPEIDs := make([]arachne.ProtectedEntityID, 0)
 	for hasMore {
 		maxKeys := maxS3ObjectsToFetch
@@ -209,6 +212,10 @@ func (this *ProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context
 		}
 	}
 	return retPEIDs, nil
+}
+
+func (this *ProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntityID, error) {
+	return this.GetProtectedEntitiesByIDPrefix(ctx, "")
 }
 
 const peInfoFileType = "application/json"
