@@ -1,0 +1,327 @@
+swagger: '2.0'
+info:
+  title: Arachne API
+  version: 1.0.0
+paths:
+  /arachne:
+    get:
+      produces:
+        - application/json
+      parameters: []
+      responses:
+        '200':
+          description: 200 response
+          schema:
+            $ref: '#/definitions/ServiceList'
+      operationId: listServices
+      summary: List available services
+  /arachne/tasks:
+    get:
+      produces:
+        - application/json
+      parameters: []
+      responses:
+        '200':
+          description: List of recent task IDs
+          schema:
+            $ref: '#/definitions/TaskIDList'
+      operationId: listTasks
+      summary: Lists running and recent tasks
+  '/arachne/tasks/{taskID}':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - description: The ID of the task to retrieve info for
+          in: path
+          name: taskID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Info for running or recently completed task
+          schema:
+            $ref: '#/definitions/TaskInfo'
+      operationId: getTaskInfo
+      summary: Gets info about a running or recently completed task
+  '/arachne/{service}':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - description: The service to list protected entities from
+          in: path
+          name: service
+          required: true
+          type: string
+        - description: >-
+            The maximum number of results to return (fewer results may be
+            returned)
+          format: int32
+          in: query
+          name: maxResults
+          required: false
+          type: integer
+        - description: Results will be returned that come after this ID
+          in: query
+          name: idsAfter
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 200 response
+          schema:
+            $ref: '#/definitions/ProtectedEntityList'
+      operationId: listProtectedEntities
+      summary: >-
+        List protected entities for the service.  Results will be returned in
+        canonical ID order (string sorted).  Fewer results may be returned than
+        expected, the ProtectedEntityList has a field specifying if the list has
+        been truncated.
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - description: The service to copy the protected entity into
+          in: path
+          name: service
+          required: true
+          type: string
+        - description: >-
+            How to handle the copy.  create - a new protected entity with the
+            Protected Entity ID will be created.  If the Protected Entity ID
+            already exists, the copy will fail.  create_new - A Protected Entity
+            with a new ID will be created with data and metadata from the source
+            protected entity.  Update - If a protected entity with the same ID
+            exists it will be overwritten.  If there is no PE with that ID, one
+            will be created with the same ID. For complex Persistent Entities,
+            the mode will be applied to all of the component entities that are
+            part of this operation as well.
+          enum:
+            - create
+            - create_new
+            - update
+          in: query
+          name: mode
+          required: true
+          type: string
+        - description: Info of ProtectedEntity to copy
+          in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProtectedEntityInfo'
+      responses:
+        '201':
+          description: >-
+            Created - returned if the protected entity can be created
+            immediately
+          schema:
+            $ref: '#/definitions/CreatedResponse'
+        '202':
+          description: Create in progress
+          schema:
+            $ref: '#/definitions/CreateInProgressResponse'
+      operationId: copyProtectedEntity
+      summary: >-
+        Copy a protected entity into the repository.  There is no option to
+        embed data on this path, for a self-contained or partially
+        self-contained object, use the restore from zip file option in the S3
+        API REST API
+  '/arachne/{service}/{protectedEntityID}':
+    delete:
+      produces:
+        - application/json
+      parameters:
+        - description: The service for the protected entity
+          in: path
+          name: service
+          required: true
+          type: string
+        - description: The protected entity ID to retrieve info for
+          in: path
+          name: protectedEntityID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 200 response
+          schema:
+            $ref: '#/definitions/ProtectedEntityID'
+      operationId: deleteProtectedEntity
+      summary: >-
+        Deletes a protected entity or snapshot of a protected entity (if the
+        snapshot ID is specified)
+    get:
+      produces:
+        - application/json
+      parameters:
+        - description: The service for the protected entity
+          in: path
+          name: service
+          required: true
+          type: string
+        - description: The protected entity ID to retrieve info for
+          in: path
+          name: protectedEntityID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 200 response
+          schema:
+            $ref: '#/definitions/ProtectedEntityInfo'
+      operationId: getProtectedEntityInfo
+      summary: >-
+        Get the info for a Protected Entity including name, data access and
+        components
+  '/arachne/{service}/{protectedEntityID}/snapshots':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - description: The service for the protected entity
+          in: path
+          name: service
+          required: true
+          type: string
+        - description: The protected entity ID to retrieve info for
+          in: path
+          name: protectedEntityID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: '"200" response"'
+          schema:
+            $ref: '#/definitions/ProtectedEntityList'
+      operationId: getSnapshots
+      summary: Gets the list of snapshots for this protected entity
+    post:
+      produces:
+        - application/json
+      parameters:
+        - description: The service for the protected entity
+          in: path
+          name: service
+          required: true
+          type: string
+        - description: The protected entity ID to retrieve info for
+          in: path
+          name: protectedEntityID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'Snapshot created successfully, returns the new snapshot ID'
+          schema:
+            $ref: '#/definitions/ProtectedEntityID'
+      operationId: createSnapshot
+      summary: Creates a new snapshot for this protected entity
+definitions:
+  ComponentSpec:
+    properties:
+      id:
+        type: string
+      server:
+        type: string
+    required:
+      - id
+    type: object
+  CreateInProgressResponse:
+    properties:
+      taskID:
+        type: string
+    type: object
+  CreatedResponse:
+    type: string
+  DataSpec:
+    properties:
+      transportType:
+        type: string
+      uri:
+        type: string
+    type: object
+  ProtectedEntityID:
+    type: string
+  ProtectedEntityInfo:
+    properties:
+      components:
+        items:
+          $ref: "#/definitions/ComponentSpec"
+        type: array
+      combined:
+        items:
+          $ref: "#/definitions/DataSpec"
+        type: array
+      data:
+        items:
+          $ref: "#/definitions/DataSpec"
+        type: array
+      id:
+        $ref: "#/definitions/ProtectedEntityID"
+      metadata:
+        items:
+          $ref: "#/definitions/DataSpec"
+        type: array
+      name:
+        type: string
+    required:
+      - id
+      - name
+      - metadata
+      - data
+      - combined
+      - components
+    type: object
+  ProtectedEntityList:
+    properties:
+      list:
+        items:
+          $ref: "#/definitions/ProtectedEntityID"
+        type: array
+      truncated:
+        type: boolean
+    type: object
+  ServiceList:
+    items:
+      type: string
+    type: array
+  TaskID:
+    type: string
+  TaskIDList:
+    items:
+      $ref: "#/definitions/TaskID"
+    type: array
+  TaskInfo:
+    properties:
+      completed:
+        type: boolean
+      details:
+        type: string
+      finishedTime:
+        type: string
+      id:
+        $ref: "#/definitions/TaskID"
+      progress:
+        type: integer
+      startedTime:
+        type: string
+      status:
+        enum:
+          - running
+          - success
+          - failed
+          - cancelled
+        type: string
+    required:
+      - id
+      - completed
+      - status
+      - startedTime
+      - progress
+    type: object
+x-components: {}
+
