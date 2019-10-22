@@ -35,14 +35,11 @@ type Arachne struct {
 }
 
 func NewArachne(confDirPath string, port int) *Arachne {
+
+	s3URLBase, pem := NewProtectedEntityManager(confDirPath, port)
 	api_services := make(map[string]*ServiceAPI)
 	s3_services := make(map[string]*ServiceS3)
-	s3URLBase, err := configS3URL(port)
-	if err != nil {
-		log.Fatal("Could not get host IP address", err)
-	}
-	petm := NewDirectProtectedEntityManagerFromConfigDir(confDirPath, s3URLBase)
-	for _, curService := range petm.ListEntityTypeManagers() {
+	for _, curService := range pem.ListEntityTypeManagers() {
 		serviceName := curService.GetTypeName()
 		api_services[serviceName] = NewServiceAPI(curService)
 		s3_services[serviceName] = NewServiceS3(curService)
@@ -55,6 +52,15 @@ func NewArachne(confDirPath string, port int) *Arachne {
 	}
 
 	return &retArachne
+}
+
+func NewProtectedEntityManager(confDirPath string, port int) (string, *DirectProtectedEntityManager) {
+	s3URLBase, err := configS3URL(port)
+	if err != nil {
+		log.Fatal("Could not get host IP address", err)
+	}
+	pem := NewDirectProtectedEntityManagerFromConfigDir(confDirPath, s3URLBase)
+	return s3URLBase, pem
 }
 
 func NewArachneRepository() *Arachne {

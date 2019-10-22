@@ -36,3 +36,6 @@ kubernetes: deps
 
 server: deps
 	cd pkg/server; go build
+
+server-gen:
+	swagger generate server -f openapi/arachne_api.yaml -t gen --exclude-main -A arachne
