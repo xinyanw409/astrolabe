@@ -62,8 +62,9 @@ func main() {
 	// set the port this service will be run on
 	server.Port = apiPort
 
-	api.ListServicesHandler = operations.ListServicesHandlerFunc(apiHandler.Handle)
-
+	api.ListServicesHandler = operations.ListServicesHandlerFunc(apiHandler.ListServices)
+	api.ListProtectedEntitiesHandler = operations.ListProtectedEntitiesHandlerFunc(apiHandler.ListProtectedEntities)
+	api.GetProtectedEntityInfoHandler = operations.GetProtectedEntityInfoHandlerFunc(apiHandler.GetProtectedEntityInfo)
 	// serve API
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)
