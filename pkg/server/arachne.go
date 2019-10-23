@@ -54,12 +54,14 @@ func NewArachne(confDirPath string, port int) *Arachne {
 	return &retArachne
 }
 
-func NewProtectedEntityManager(confDirPath string, port int) (string, *DirectProtectedEntityManager) {
+func NewProtectedEntityManager(confDirPath string, port int) (string, arachne.ProtectedEntityManager) {
 	s3URLBase, err := configS3URL(port)
 	if err != nil {
 		log.Fatal("Could not get host IP address", err)
 	}
-	pem := NewDirectProtectedEntityManagerFromConfigDir(confDirPath, s3URLBase)
+	dpem := NewDirectProtectedEntityManagerFromConfigDir(confDirPath, s3URLBase)
+	var pem arachne.ProtectedEntityManager
+	pem = dpem
 	return s3URLBase, pem
 }
 

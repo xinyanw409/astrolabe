@@ -22,6 +22,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/vmware/arachne/gen/restapi"
 	"github.com/vmware/arachne/gen/restapi/operations"
+	"github.com/vmware/arachne/pkg/server"
 	"os"
 	"strconv"
 
@@ -43,7 +44,8 @@ func main() {
 		fmt.Errorf("apiPort %s is not an integer", *apiPortStr)
 		os.Exit(1)
 	}
-	//s3URLBase, pem := server.NewProtectedEntityManager(*confDirStr, apiPort)
+	_, pem := server.NewProtectedEntityManager(*confDirStr, apiPort)
+	apiHandler := server.NewOpenAPIArachneHandler(pem)
 	// load embedded swagger file
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
@@ -60,7 +62,7 @@ func main() {
 	// set the port this service will be run on
 	server.Port = apiPort
 
-	// TODO: Set Handle
+	api.ListServicesHandler = operations.ListServicesHandlerFunc(apiHandler.Handle)
 
 	// serve API
 	if err := server.Serve(); err != nil {
