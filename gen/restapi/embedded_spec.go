@@ -289,7 +289,7 @@ func init() {
           },
           {
             "type": "string",
-            "description": "The protected entity ID to retrieve info for",
+            "description": "The protected entity ID to snapshot",
             "name": "protectedEntityID",
             "in": "path",
             "required": true
@@ -299,7 +299,7 @@ func init() {
           "200": {
             "description": "Snapshot created successfully, returns the new snapshot ID",
             "schema": {
-              "$ref": "#/definitions/ProtectedEntityID"
+              "$ref": "#/definitions/ProtectedEntitySnapshotID"
             }
           }
         }
@@ -314,7 +314,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "string"
+          "$ref": "#/definitions/ProtectedEntityID"
         },
         "server": {
           "type": "string"
@@ -332,13 +332,16 @@ func init() {
     "CreatedResponse": {
       "type": "string"
     },
-    "DataSpec": {
+    "DataTransport": {
       "type": "object",
       "properties": {
-        "transportType": {
-          "type": "string"
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
-        "uri": {
+        "transportType": {
           "type": "string"
         }
       }
@@ -351,37 +354,37 @@ func init() {
       "required": [
         "id",
         "name",
-        "metadata",
-        "data",
-        "combined",
-        "components"
+        "metadataTransports",
+        "dataTransports",
+        "combinedTransports",
+        "componentSpecs"
       ],
       "properties": {
-        "combined": {
+        "combinedTransports": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/DataSpec"
+            "$ref": "#/definitions/DataTransport"
           }
         },
-        "components": {
+        "componentSpecs": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/ComponentSpec"
           }
         },
-        "data": {
+        "dataTransports": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/DataSpec"
+            "$ref": "#/definitions/DataTransport"
           }
         },
         "id": {
           "$ref": "#/definitions/ProtectedEntityID"
         },
-        "metadata": {
+        "metadataTransports": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/DataSpec"
+            "$ref": "#/definitions/DataTransport"
           }
         },
         "name": {
@@ -402,6 +405,9 @@ func init() {
           "type": "boolean"
         }
       }
+    },
+    "ProtectedEntitySnapshotID": {
+      "type": "string"
     },
     "ServiceList": {
       "type": "array",
@@ -732,7 +738,7 @@ func init() {
           },
           {
             "type": "string",
-            "description": "The protected entity ID to retrieve info for",
+            "description": "The protected entity ID to snapshot",
             "name": "protectedEntityID",
             "in": "path",
             "required": true
@@ -742,7 +748,7 @@ func init() {
           "200": {
             "description": "Snapshot created successfully, returns the new snapshot ID",
             "schema": {
-              "$ref": "#/definitions/ProtectedEntityID"
+              "$ref": "#/definitions/ProtectedEntitySnapshotID"
             }
           }
         }
@@ -757,7 +763,7 @@ func init() {
       ],
       "properties": {
         "id": {
-          "type": "string"
+          "$ref": "#/definitions/ProtectedEntityID"
         },
         "server": {
           "type": "string"
@@ -775,13 +781,16 @@ func init() {
     "CreatedResponse": {
       "type": "string"
     },
-    "DataSpec": {
+    "DataTransport": {
       "type": "object",
       "properties": {
-        "transportType": {
-          "type": "string"
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
-        "uri": {
+        "transportType": {
           "type": "string"
         }
       }
@@ -794,37 +803,37 @@ func init() {
       "required": [
         "id",
         "name",
-        "metadata",
-        "data",
-        "combined",
-        "components"
+        "metadataTransports",
+        "dataTransports",
+        "combinedTransports",
+        "componentSpecs"
       ],
       "properties": {
-        "combined": {
+        "combinedTransports": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/DataSpec"
+            "$ref": "#/definitions/DataTransport"
           }
         },
-        "components": {
+        "componentSpecs": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/ComponentSpec"
           }
         },
-        "data": {
+        "dataTransports": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/DataSpec"
+            "$ref": "#/definitions/DataTransport"
           }
         },
         "id": {
           "$ref": "#/definitions/ProtectedEntityID"
         },
-        "metadata": {
+        "metadataTransports": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/DataSpec"
+            "$ref": "#/definitions/DataTransport"
           }
         },
         "name": {
@@ -845,6 +854,9 @@ func init() {
           "type": "boolean"
         }
       }
+    },
+    "ProtectedEntitySnapshotID": {
+      "type": "string"
     },
     "ServiceList": {
       "type": "array",

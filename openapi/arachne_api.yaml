@@ -208,7 +208,7 @@ paths:
           name: service
           required: true
           type: string
-        - description: The protected entity ID to retrieve info for
+        - description: The protected entity ID to snapshot
           in: path
           name: protectedEntityID
           required: true
@@ -217,14 +217,14 @@ paths:
         '200':
           description: 'Snapshot created successfully, returns the new snapshot ID'
           schema:
-            $ref: '#/definitions/ProtectedEntityID'
+            $ref: '#/definitions/ProtectedEntitySnapshotID'
       operationId: createSnapshot
       summary: Creates a new snapshot for this protected entity
 definitions:
   ComponentSpec:
     properties:
       id:
-        type: string
+        $ref: "#/definitions/ProtectedEntityID"
       server:
         type: string
     required:
@@ -237,44 +237,48 @@ definitions:
     type: object
   CreatedResponse:
     type: string
-  DataSpec:
+  DataTransport:
     properties:
       transportType:
         type: string
-      uri:
-        type: string
+      params:
+        type: object
+        additionalProperties:
+          type: string
     type: object
   ProtectedEntityID:
     type: string
+  ProtectedEntitySnapshotID:
+    type: string
   ProtectedEntityInfo:
     properties:
-      components:
+      componentSpecs:
         items:
           $ref: "#/definitions/ComponentSpec"
         type: array
-      combined:
+      combinedTransports:
         items:
-          $ref: "#/definitions/DataSpec"
+          $ref: "#/definitions/DataTransport"
         type: array
-      data:
+      dataTransports:
         items:
-          $ref: "#/definitions/DataSpec"
+          $ref: "#/definitions/DataTransport"
         type: array
       id:
         $ref: "#/definitions/ProtectedEntityID"
-      metadata:
+      metadataTransports:
         items:
-          $ref: "#/definitions/DataSpec"
+          $ref: "#/definitions/DataTransport"
         type: array
       name:
         type: string
     required:
       - id
       - name
-      - metadata
-      - data
-      - combined
-      - components
+      - metadataTransports
+      - dataTransports
+      - combinedTransports
+      - componentSpecs
     type: object
   ProtectedEntityList:
     properties:

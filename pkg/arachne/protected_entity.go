@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/vmware/arachne/gen/models"
 	"io"
 	"log"
 	"strings"
@@ -89,6 +90,10 @@ func (this ProtectedEntityID) String() string {
 	return returnString
 }
 
+func (this ProtectedEntityID) GetModelProtectedEntityID() models.ProtectedEntityID {
+	return models.ProtectedEntityID(this.String())
+}
+
 func (this ProtectedEntityID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(this.String()) // Use marshal to make sure encoding happens
 }
@@ -112,12 +117,16 @@ func NewProtectedEntitySnapshotID(pesiString string) ProtectedEntitySnapshotID {
 	return returnPESI
 }
 
-func (pesid ProtectedEntitySnapshotID) GetID() string {
-	return pesid.id
+func (this ProtectedEntitySnapshotID) GetID() string {
+	return this.id
 }
 
-func (pesid ProtectedEntitySnapshotID) String() string {
-	return pesid.id
+func (this ProtectedEntitySnapshotID) String() string {
+	return this.id
+}
+
+func (this ProtectedEntitySnapshotID) GetModelProtectedEntitySnapshotID() models.ProtectedEntitySnapshotID {
+	return models.ProtectedEntitySnapshotID(this.String())
 }
 
 type ProtectedEntity interface {
@@ -126,7 +135,7 @@ type ProtectedEntity interface {
 	/*
 	 * Snapshot APIs
 	 */
-	Snapshot(ctx context.Context) (*ProtectedEntitySnapshotID, error)
+	Snapshot(ctx context.Context) (ProtectedEntitySnapshotID, error)
 	ListSnapshots(ctx context.Context) ([]ProtectedEntitySnapshotID, error)
 	DeleteSnapshot(ctx context.Context, snapshotToDelete ProtectedEntitySnapshotID) (bool, error)
 	GetInfoForSnapshot(ctx context.Context, snapshotID ProtectedEntitySnapshotID) (*ProtectedEntityInfo, error)

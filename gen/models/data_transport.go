@@ -11,24 +11,24 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// DataSpec data spec
-// swagger:model DataSpec
-type DataSpec struct {
+// DataTransport data transport
+// swagger:model DataTransport
+type DataTransport struct {
+
+	// params
+	Params map[string]string `json:"params,omitempty"`
 
 	// transport type
 	TransportType string `json:"transportType,omitempty"`
-
-	// uri
-	URI string `json:"uri,omitempty"`
 }
 
-// Validate validates this data spec
-func (m *DataSpec) Validate(formats strfmt.Registry) error {
+// Validate validates this data transport
+func (m *DataTransport) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *DataSpec) MarshalBinary() ([]byte, error) {
+func (m *DataTransport) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -36,8 +36,8 @@ func (m *DataSpec) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DataSpec) UnmarshalBinary(b []byte) error {
-	var res DataSpec
+func (m *DataTransport) UnmarshalBinary(b []byte) error {
+	var res DataTransport
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

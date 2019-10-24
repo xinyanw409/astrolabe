@@ -62,14 +62,27 @@ func (this OpenAPIArachneHandler) GetProtectedEntityInfo(params operations.GetPr
 
 	}
 	peInfo, err := pe.GetInfo(context.Background())
-	name := peInfo.GetName()
-	peInfoResponse := models.ProtectedEntityInfo {
-		ID:         models.ProtectedEntityID(peid.String()),
-		Name:       &name,
-		Combined:   nil,
-		Data:       nil,
-		Metadata:   nil,
-		Components: nil,
-	}
+	peInfoResponse := peInfo.GetModelProtectedEntityInfo()
 	return operations.NewGetProtectedEntityInfoOK().WithPayload(&peInfoResponse);
+}
+
+func (this OpenAPIArachneHandler) CreateSnapshot(params operations.CreateSnapshotParams) middleware.Responder {
+	petm := this.pem.GetProtectedEntityTypeManager(params.Service)
+	if petm == nil {
+
+	}
+	peid, err := arachne.NewProtectedEntityIDFromString(params.ProtectedEntityID)
+	if err != nil {
+
+	}
+	pe, err := petm.GetProtectedEntity(context.Background(), peid)
+	if err != nil {
+
+	}
+	snapshotID, err := pe.Snapshot(context.Background())
+	if err != nil {
+
+	}
+
+	return operations.NewCreateSnapshotOK().WithPayload(snapshotID.GetModelProtectedEntitySnapshotID())
 }

@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/vmware/arachne/gen/models"
 	"net/url"
 )
 
@@ -30,6 +31,7 @@ type ProtectedEntityInfo interface {
 	GetMetadataTransports() [] DataTransport
 	GetCombinedTransports() [] DataTransport
 	GetComponentIDs() []ProtectedEntityID
+	GetModelProtectedEntityInfo() models.ProtectedEntityInfo
 }
 
 type ProtectedEntityInfoImpl struct {
@@ -51,15 +53,6 @@ func NewProtectedEntityInfo(id ProtectedEntityID, name string, dataTransports []
 		combinedTransports: combinedTransports,
 		componentIDs:       componentIDs,
 	}
-}
-
-type protectedEntityInfoJSON struct {
-	Id                 ProtectedEntityID   `json:"id"`
-	Name               string              `json:"name"`
-	DataTransports     []DataTransport     `json:"dataTransports"`
-	MetadataTransports []DataTransport     `json:"metadataTransports"`
-	CombinedTransports []DataTransport     `json:"combinedTransports"`
-	ComponentIDs       []ProtectedEntityID `json:"componentIDs"`
 }
 
 func (this ProtectedEntityInfoImpl) GetID() ProtectedEntityID {
@@ -92,17 +85,45 @@ func urlsToStrings(urls []url.URL) []string {
 }
 
 func (this ProtectedEntityInfoImpl) MarshalJSON() ([]byte, error) {
-
-	jsonStruct := protectedEntityInfoJSON{
-		Id:                 this.id,
-		Name:               this.name,
-		DataTransports:     this.dataTransports,
-		MetadataTransports: this.metadataTransports,
-		CombinedTransports: this.combinedTransports,
-		ComponentIDs:       this.componentIDs,
-	}
+	jsonStruct := this.GetModelProtectedEntityInfo()
 
 	return json.Marshal(jsonStruct)
+}
+
+func (this ProtectedEntityInfoImpl) GetModelProtectedEntityInfo() models.ProtectedEntityInfo {
+	componentSpecs := make([]*models.ComponentSpec, len(this.componentIDs))
+	for curComponentNum, curComponentID := range this.componentIDs {
+		componentSpecs[curComponentNum] = &models.ComponentSpec{
+			ID:     models.ProtectedEntityID(curComponentID.String()),
+			Server: "", // TODO - convert to component specs throughout
+		}
+	}
+	jsonStruct := models.ProtectedEntityInfo{
+		ID:                 models.ProtectedEntityID(this.id.String()),
+		Name:               &this.name,
+		DataTransports:     convertToModelTransports(this.dataTransports),
+		MetadataTransports: convertToModelTransports(this.metadataTransports),
+		CombinedTransports: convertToModelTransports(this.combinedTransports),
+		ComponentSpecs:     componentSpecs,
+	}
+	return jsonStruct
+}
+
+func convertToModelTransports(transports []DataTransport) []*models.DataTransport {
+	retTransports := make([]*models.DataTransport, len(transports))
+	for transportNum, curTransport := range transports {
+		curModelDataTransport := curTransport.getModelDataTransport()
+		retTransports[transportNum] = &curModelDataTransport
+	}
+	return retTransports
+}
+
+func convertToTransports(transports []*models.DataTransport) []DataTransport {
+	retTransports := make([]DataTransport, len(transports))
+	for transportNum, curTransport := range transports {
+		retTransports[transportNum] = newDataTransportForModelTransport(*curTransport)
+	}
+	return retTransports
 }
 
 func appendJSON(buffer *bytes.Buffer, key string, value interface{}) error {
@@ -115,17 +136,25 @@ func appendJSON(buffer *bytes.Buffer, key string, value interface{}) error {
 }
 
 func (this *ProtectedEntityInfoImpl) UnmarshalJSON(data []byte) error {
-	jsonStruct := protectedEntityInfoJSON{}
+	jsonStruct := models.ProtectedEntityInfo{}
 	err := json.Unmarshal(data, &jsonStruct)
 	if err != nil {
 		return err
 	}
-	this.id = jsonStruct.Id
-	this.name = jsonStruct.Name
-	this.dataTransports = jsonStruct.DataTransports
-	this.metadataTransports = jsonStruct.MetadataTransports
-	this.combinedTransports = jsonStruct.CombinedTransports
-	this.componentIDs = jsonStruct.ComponentIDs
+	this.id, err = NewProtectedEntityIDFromString(string(jsonStruct.ID))
+	this.name = *jsonStruct.Name
+	this.dataTransports = convertToTransports(jsonStruct.DataTransports)
+	this.metadataTransports = convertToTransports(jsonStruct.MetadataTransports)
+	this.combinedTransports = convertToTransports(jsonStruct.CombinedTransports)
+	componentIDs := make([]ProtectedEntityID, len(jsonStruct.ComponentSpecs))
+	for curComponentNum, curComponentSpec := range componentIDs {
+		componentID, err := NewProtectedEntityIDFromString(curComponentSpec.id)
+		if err != nil {
+			return err
+		}
+		componentIDs[curComponentNum] = componentID
+	}
+	this.componentIDs = componentIDs
 	return nil
 }
 

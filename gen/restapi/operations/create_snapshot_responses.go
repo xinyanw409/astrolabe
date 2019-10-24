@@ -25,7 +25,7 @@ type CreateSnapshotOK struct {
 	/*
 	  In: Body
 	*/
-	Payload models.ProtectedEntityID `json:"body,omitempty"`
+	Payload models.ProtectedEntitySnapshotID `json:"body,omitempty"`
 }
 
 // NewCreateSnapshotOK creates CreateSnapshotOK with default headers values
@@ -35,13 +35,13 @@ func NewCreateSnapshotOK() *CreateSnapshotOK {
 }
 
 // WithPayload adds the payload to the create snapshot o k response
-func (o *CreateSnapshotOK) WithPayload(payload models.ProtectedEntityID) *CreateSnapshotOK {
+func (o *CreateSnapshotOK) WithPayload(payload models.ProtectedEntitySnapshotID) *CreateSnapshotOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the create snapshot o k response
-func (o *CreateSnapshotOK) SetPayload(payload models.ProtectedEntityID) {
+func (o *CreateSnapshotOK) SetPayload(payload models.ProtectedEntitySnapshotID) {
 	o.Payload = payload
 }
 

@@ -87,8 +87,8 @@ func (this FSProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.Pr
 /*
  * Snapshot APIs
  */
-func (this FSProtectedEntity) Snapshot(ctx context.Context) (*arachne.ProtectedEntitySnapshotID, error) {
-	return nil, nil
+func (this FSProtectedEntity) Snapshot(ctx context.Context) (arachne.ProtectedEntitySnapshotID, error) {
+	return arachne.ProtectedEntitySnapshotID{}, nil
 }
 
 func (this FSProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {

@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // ComponentSpec component spec
@@ -19,7 +18,7 @@ type ComponentSpec struct {
 
 	// id
 	// Required: true
-	ID *string `json:"id"`
+	ID ProtectedEntityID `json:"id"`
 
 	// server
 	Server string `json:"server,omitempty"`
@@ -41,7 +40,10 @@ func (m *ComponentSpec) Validate(formats strfmt.Registry) error {
 
 func (m *ComponentSpec) validateID(formats strfmt.Registry) error {
 
-	if err := validate.Required("id", "body", m.ID); err != nil {
+	if err := m.ID.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("id")
+		}
 		return err
 	}
 

@@ -18,6 +18,7 @@ package arachne
 
 import (
 	"encoding/json"
+	"github.com/vmware/arachne/gen/models"
 )
 
 // DataTransport is our internal interface representing the data transport for Protected Entity
@@ -34,11 +35,6 @@ type DataTransport struct {
 	// The type of this data source, e.g. S3, VADP
 	transportType string
 	params        map[string]string
-}
-
-type dataTransportJSON struct {
-	TransportType string            `json:"transportType"`
-	Params        map[string]string `json:"params"`
 }
 
 func NewDataTransport(transportType string, params map[string]string) DataTransport {
@@ -78,18 +74,26 @@ func (this DataTransport) GetParam(key string) (string, bool) {
 	return val, ok
 }
 
-func (this DataTransport) MarshalJSON() ([]byte, error) {
-
-	jsonStruct := dataTransportJSON{
+func (this DataTransport) getModelDataTransport() models.DataTransport {
+	return models.DataTransport{
 		TransportType: this.transportType,
-		Params:        this.params,
+		Params: this.params,
 	}
+}
 
-	return json.Marshal(jsonStruct)
+func newDataTransportForModelTransport(transport models.DataTransport) DataTransport {
+	return DataTransport{
+		transportType: transport.TransportType,
+		params:        transport.Params,
+	}
+}
+
+func (this DataTransport) MarshalJSON() ([]byte, error) {
+	return json.Marshal(this.getModelDataTransport())
 }
 
 func (this *DataTransport) UnmarshalJSON(data []byte) error {
-	jsonStruct := dataTransportJSON{}
+	jsonStruct := models.DataTransport{}
 	err := json.Unmarshal(data, &jsonStruct)
 	if err != nil {
 		return err

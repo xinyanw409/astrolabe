@@ -269,7 +269,7 @@ const waitTime = 3600 * time.Second
 /*
  * Snapshot APIs
  */
-func (this IVDProtectedEntity) Snapshot(ctx context.Context) (*arachne.ProtectedEntitySnapshotID, error) {
+func (this IVDProtectedEntity) Snapshot(ctx context.Context) (arachne.ProtectedEntitySnapshotID, error) {
 	vslmTask, err := this.ipetm.vsom.CreateSnapshot(ctx, NewVimIDFromPEID(this.GetID()), "ArachneSnapshot")
 	if err != nil {
 		return nil, errors.Wrap(err, "Snapshot failed")
@@ -286,7 +286,7 @@ func (this IVDProtectedEntity) Snapshot(ctx context.Context) (*arachne.Protected
 		}
 	*/
 	retVal := arachne.NewProtectedEntitySnapshotID(ivdSnapshotID.Id)
-	return &retVal, nil
+	return retVal, nil
 }
 
 func (this IVDProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {

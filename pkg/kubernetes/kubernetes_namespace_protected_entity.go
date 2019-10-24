@@ -59,8 +59,8 @@ func (this *KubernetesNamespaceProtectedEntity) GetCombinedInfo(ctx context.Cont
 
 }
 
-func (this *KubernetesNamespaceProtectedEntity) Snapshot(ctx context.Context) (*arachne.ProtectedEntitySnapshotID, error) {
-	return nil, nil
+func (this *KubernetesNamespaceProtectedEntity) Snapshot(ctx context.Context) (arachne.ProtectedEntitySnapshotID, error) {
+	return arachne.ProtectedEntitySnapshotID{}, nil
 
 }
 func (this *KubernetesNamespaceProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {

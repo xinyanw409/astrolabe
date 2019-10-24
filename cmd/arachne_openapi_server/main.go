@@ -65,6 +65,7 @@ func main() {
 	api.ListServicesHandler = operations.ListServicesHandlerFunc(apiHandler.ListServices)
 	api.ListProtectedEntitiesHandler = operations.ListProtectedEntitiesHandlerFunc(apiHandler.ListProtectedEntities)
 	api.GetProtectedEntityInfoHandler = operations.GetProtectedEntityInfoHandlerFunc(apiHandler.GetProtectedEntityInfo)
+	api.CreateSnapshotHandler = operations.CreateSnapshotHandlerFunc(apiHandler.CreateSnapshot)
 	// serve API
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)

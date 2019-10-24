@@ -30,7 +30,7 @@ type CreateSnapshotParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*The protected entity ID to retrieve info for
+	/*The protected entity ID to snapshot
 	  Required: true
 	  In: path
 	*/

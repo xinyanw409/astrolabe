@@ -65,8 +65,8 @@ func (ProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.Protected
 	panic("implement me")
 }
 
-func (ProtectedEntity) Snapshot(ctx context.Context) (*arachne.ProtectedEntitySnapshotID, error) {
-	return nil, errors.New("Snapshot not supported")
+func (ProtectedEntity) Snapshot(ctx context.Context) (arachne.ProtectedEntitySnapshotID, error) {
+	return arachne.ProtectedEntitySnapshotID{}, errors.New("Snapshot not supported")
 }
 
 func (this ProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {

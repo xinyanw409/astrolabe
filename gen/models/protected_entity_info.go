@@ -19,25 +19,25 @@ import (
 // swagger:model ProtectedEntityInfo
 type ProtectedEntityInfo struct {
 
-	// combined
+	// combined transports
 	// Required: true
-	Combined []*DataSpec `json:"combined"`
+	CombinedTransports []*DataTransport `json:"combinedTransports"`
 
-	// components
+	// component specs
 	// Required: true
-	Components []*ComponentSpec `json:"components"`
+	ComponentSpecs []*ComponentSpec `json:"componentSpecs"`
 
-	// data
+	// data transports
 	// Required: true
-	Data []*DataSpec `json:"data"`
+	DataTransports []*DataTransport `json:"dataTransports"`
 
 	// id
 	// Required: true
 	ID ProtectedEntityID `json:"id"`
 
-	// metadata
+	// metadata transports
 	// Required: true
-	Metadata []*DataSpec `json:"metadata"`
+	MetadataTransports []*DataTransport `json:"metadataTransports"`
 
 	// name
 	// Required: true
@@ -48,15 +48,15 @@ type ProtectedEntityInfo struct {
 func (m *ProtectedEntityInfo) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateCombined(formats); err != nil {
+	if err := m.validateCombinedTransports(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateComponents(formats); err != nil {
+	if err := m.validateComponentSpecs(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validateData(formats); err != nil {
+	if err := m.validateDataTransports(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,7 +64,7 @@ func (m *ProtectedEntityInfo) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateMetadata(formats); err != nil {
+	if err := m.validateMetadataTransports(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -78,21 +78,21 @@ func (m *ProtectedEntityInfo) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ProtectedEntityInfo) validateCombined(formats strfmt.Registry) error {
+func (m *ProtectedEntityInfo) validateCombinedTransports(formats strfmt.Registry) error {
 
-	if err := validate.Required("combined", "body", m.Combined); err != nil {
+	if err := validate.Required("combinedTransports", "body", m.CombinedTransports); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Combined); i++ {
-		if swag.IsZero(m.Combined[i]) { // not required
+	for i := 0; i < len(m.CombinedTransports); i++ {
+		if swag.IsZero(m.CombinedTransports[i]) { // not required
 			continue
 		}
 
-		if m.Combined[i] != nil {
-			if err := m.Combined[i].Validate(formats); err != nil {
+		if m.CombinedTransports[i] != nil {
+			if err := m.CombinedTransports[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("combined" + "." + strconv.Itoa(i))
+					return ve.ValidateName("combinedTransports" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -103,21 +103,21 @@ func (m *ProtectedEntityInfo) validateCombined(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ProtectedEntityInfo) validateComponents(formats strfmt.Registry) error {
+func (m *ProtectedEntityInfo) validateComponentSpecs(formats strfmt.Registry) error {
 
-	if err := validate.Required("components", "body", m.Components); err != nil {
+	if err := validate.Required("componentSpecs", "body", m.ComponentSpecs); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Components); i++ {
-		if swag.IsZero(m.Components[i]) { // not required
+	for i := 0; i < len(m.ComponentSpecs); i++ {
+		if swag.IsZero(m.ComponentSpecs[i]) { // not required
 			continue
 		}
 
-		if m.Components[i] != nil {
-			if err := m.Components[i].Validate(formats); err != nil {
+		if m.ComponentSpecs[i] != nil {
+			if err := m.ComponentSpecs[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("components" + "." + strconv.Itoa(i))
+					return ve.ValidateName("componentSpecs" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -128,21 +128,21 @@ func (m *ProtectedEntityInfo) validateComponents(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *ProtectedEntityInfo) validateData(formats strfmt.Registry) error {
+func (m *ProtectedEntityInfo) validateDataTransports(formats strfmt.Registry) error {
 
-	if err := validate.Required("data", "body", m.Data); err != nil {
+	if err := validate.Required("dataTransports", "body", m.DataTransports); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Data); i++ {
-		if swag.IsZero(m.Data[i]) { // not required
+	for i := 0; i < len(m.DataTransports); i++ {
+		if swag.IsZero(m.DataTransports[i]) { // not required
 			continue
 		}
 
-		if m.Data[i] != nil {
-			if err := m.Data[i].Validate(formats); err != nil {
+		if m.DataTransports[i] != nil {
+			if err := m.DataTransports[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("data" + "." + strconv.Itoa(i))
+					return ve.ValidateName("dataTransports" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -165,21 +165,21 @@ func (m *ProtectedEntityInfo) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ProtectedEntityInfo) validateMetadata(formats strfmt.Registry) error {
+func (m *ProtectedEntityInfo) validateMetadataTransports(formats strfmt.Registry) error {
 
-	if err := validate.Required("metadata", "body", m.Metadata); err != nil {
+	if err := validate.Required("metadataTransports", "body", m.MetadataTransports); err != nil {
 		return err
 	}
 
-	for i := 0; i < len(m.Metadata); i++ {
-		if swag.IsZero(m.Metadata[i]) { // not required
+	for i := 0; i < len(m.MetadataTransports); i++ {
+		if swag.IsZero(m.MetadataTransports[i]) { // not required
 			continue
 		}
 
-		if m.Metadata[i] != nil {
-			if err := m.Metadata[i].Validate(formats); err != nil {
+		if m.MetadataTransports[i] != nil {
+			if err := m.MetadataTransports[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("metadata" + "." + strconv.Itoa(i))
+					return ve.ValidateName("metadataTransports" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
