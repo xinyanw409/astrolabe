@@ -6,7 +6,6 @@ import (
 	"github.com/vmware/arachne/gen/models"
 	"github.com/vmware/arachne/gen/restapi/operations"
 	"github.com/vmware/arachne/pkg/arachne"
-	"github.com/vmware/govmomi/task"
 	"time"
 )
 
@@ -27,6 +26,7 @@ func (this OpenAPIArachneHandler) AttachHandlers(api *operations.ArachneAPI) {
 	api.ListProtectedEntitiesHandler = operations.ListProtectedEntitiesHandlerFunc(this.ListProtectedEntities)
 	api.GetProtectedEntityInfoHandler = operations.GetProtectedEntityInfoHandlerFunc(this.GetProtectedEntityInfo)
 	api.CreateSnapshotHandler = operations.CreateSnapshotHandlerFunc(this.CreateSnapshot)
+	api.GetSnapshotsHandler = operations.GetSnapshotsHandlerFunc(this.GetSnapshots)
 	api.CopyProtectedEntityHandler = operations.CopyProtectedEntityHandlerFunc(this.CopyProtectedEntity)
 }
 
@@ -99,6 +99,11 @@ func (this OpenAPIArachneHandler) CreateSnapshot(params operations.CreateSnapsho
 	return operations.NewCreateSnapshotOK().WithPayload(snapshotID.GetModelProtectedEntitySnapshotID())
 }
 
+func (this OpenAPIArachneHandler) GetSnapshots(params operations.GetSnapshotsParams) middleware.Responder {
+	return nil
+}
+
+
 func (this OpenAPIArachneHandler) CopyProtectedEntity(params operations.CopyProtectedEntityParams) middleware.Responder {
 	petm := this.pem.GetProtectedEntityTypeManager(params.Service)
 	if petm == nil {
@@ -112,18 +117,18 @@ func (this OpenAPIArachneHandler) CopyProtectedEntity(params operations.CopyProt
 	newPE, err := petm.CopyFromInfo(context.Background(), pei, arachne.AllocateNewObject)
 	var taskStatus arachne.TaskStatus
 	if err != nil {
-		taskStatus = arachne.TaskStatus{
-
-		}
+		taskStatus = arachne.Failed
+	} else {
+		taskStatus = arachne.Success
 	}
 	// Fake a task for now
-	task := arachne.GenericTask{
-		ID:           arachne.TaskID{},
-		Completed:    true,
-		TaskStatus:   0,
-		Details:      "",
-		StartedTime:  startedTime,
-		FinishedTime: time.Now(),
-		Progress:     100,
-	}
+	task := arachne.NewGenericTask()
+	task.Completed = true
+	task.StartedTime = startedTime
+	task.FinishedTime = time.Now()
+	task.Progress = 100
+	task.TaskStatus = taskStatus
+	task.Result = newPE.GetID().GetModelProtectedEntityID()
+	return operations.NewCopyProtectedEntityAccepted()
 }
+

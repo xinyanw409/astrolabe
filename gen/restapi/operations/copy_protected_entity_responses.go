@@ -13,48 +13,6 @@ import (
 	models "github.com/vmware/arachne/gen/models"
 )
 
-// CopyProtectedEntityCreatedCode is the HTTP code returned for type CopyProtectedEntityCreated
-const CopyProtectedEntityCreatedCode int = 201
-
-/*CopyProtectedEntityCreated Created - returned if the protected entity can be created immediately
-
-swagger:response copyProtectedEntityCreated
-*/
-type CopyProtectedEntityCreated struct {
-
-	/*
-	  In: Body
-	*/
-	Payload models.CreatedResponse `json:"body,omitempty"`
-}
-
-// NewCopyProtectedEntityCreated creates CopyProtectedEntityCreated with default headers values
-func NewCopyProtectedEntityCreated() *CopyProtectedEntityCreated {
-
-	return &CopyProtectedEntityCreated{}
-}
-
-// WithPayload adds the payload to the copy protected entity created response
-func (o *CopyProtectedEntityCreated) WithPayload(payload models.CreatedResponse) *CopyProtectedEntityCreated {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the copy protected entity created response
-func (o *CopyProtectedEntityCreated) SetPayload(payload models.CreatedResponse) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *CopyProtectedEntityCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(201)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
-	}
-}
-
 // CopyProtectedEntityAcceptedCode is the HTTP code returned for type CopyProtectedEntityAccepted
 const CopyProtectedEntityAcceptedCode int = 202
 

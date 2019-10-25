@@ -718,12 +718,9 @@ margin-bottom: 20px;
   "type" : "object",
   "properties" : {
     "taskID" : {
-      "type" : "string"
+      "$ref" : "#/definitions/TaskID"
     }
   }
-};
-  defs.CreatedResponse = {
-  "type" : "string"
 };
   defs.DataTransport = {
   "type" : "object",
@@ -1009,7 +1006,7 @@ public class DefaultApiExample {
         String mode = mode_example; // String | How to handle the copy.  create - a new protected entity with the Protected Entity ID will be created.  If the Protected Entity ID already exists, the copy will fail.  create_new - A Protected Entity with a new ID will be created with data and metadata from the source protected entity.  Update - If a protected entity with the same ID exists it will be overwritten.  If there is no PE with that ID, one will be created with the same ID. For complex Persistent Entities, the mode will be applied to all of the component entities that are part of this operation as well.
         ProtectedEntityInfo body = ; // ProtectedEntityInfo | Info of ProtectedEntity to copy
         try {
-            CreatedResponse result = apiInstance.copyProtectedEntity(service, mode, body);
+            CreateInProgressResponse result = apiInstance.copyProtectedEntity(service, mode, body);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#copyProtectedEntity");
@@ -1034,7 +1031,7 @@ public class DefaultApiExample {
         String mode = mode_example; // String | How to handle the copy.  create - a new protected entity with the Protected Entity ID will be created.  If the Protected Entity ID already exists, the copy will fail.  create_new - A Protected Entity with a new ID will be created with data and metadata from the source protected entity.  Update - If a protected entity with the same ID exists it will be overwritten.  If there is no PE with that ID, one will be created with the same ID. For complex Persistent Entities, the mode will be applied to all of the component entities that are part of this operation as well.
         ProtectedEntityInfo body = ; // ProtectedEntityInfo | Info of ProtectedEntity to copy
         try {
-            CreatedResponse result = apiInstance.copyProtectedEntity(service, mode, body);
+            CreateInProgressResponse result = apiInstance.copyProtectedEntity(service, mode, body);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#copyProtectedEntity");
@@ -1065,7 +1062,7 @@ DefaultApi *apiInstance = [[DefaultApi alloc] init];
 [apiInstance copyProtectedEntityWith:service
     mode:mode
     body:body
-              completionHandler: ^(CreatedResponse output, NSError* error) {
+              completionHandler: ^(CreateInProgressResponse output, NSError* error) {
                             if (output) {
                                 NSLog(@"%@", output);
                             }
@@ -1128,7 +1125,7 @@ namespace Example
             try
             {
                 // Copy a protected entity into the repository.  There is no option to embed data on this path, for a self-contained or partially self-contained object, use the restore from zip file option in the S3 API REST API
-                CreatedResponse result = apiInstance.copyProtectedEntity(service, mode, body);
+                CreateInProgressResponse result = apiInstance.copyProtectedEntity(service, mode, body);
                 Debug.WriteLine(result);
             }
             catch (Exception e)
@@ -1315,85 +1312,6 @@ try {
                                                 </table>
 
                                             <h2>Responses</h2>
-
-                                                <h3> Status: 201 - Created - returned if the protected entity can be created immediately </h3>
-
-                                                <ul class="nav nav-tabs nav-tabs-examples" >
-
-                                                    <li class="active">
-                                                        <a href="#examples-Default-copyProtectedEntity-schema">Schema</a>
-                                                    </li>
-
-
-                                                </ul>
-
-
-
-
-
-
-
-                                                <div class="tab-content" style='margin-bottom: 10px;'>
-
-
-
-                                                    <div class="tab-pane active" id="examples-Default-copyProtectedEntity-schema">
-
-
-
-
-                                                        <div id='examples-Default-copyProtectedEntity-schema-201' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
-
-                                                            <script>
-                                                                $(document).ready(function() {
-                                                                    var schemaWrapper = {
-  "description" : "Created - returned if the protected entity can be created immediately",
-  "schema" : {
-    "$ref" : "#/definitions/CreatedResponse"
-  }
-};
-                                                                    var schema = schemaWrapper.schema;
-                                                                    schemaWrapper.definitions = defs;
-                                                                    //console.log(JSON.stringify(schema))
-                                                                    JsonRefs.resolveRefs(schemaWrapper, {
-                                                                        "depth": 3,
-                                                                        "resolveRemoteRefs": false,
-                                                                        "resolveFileRefs": false
-                                                                    }, function(err, resolved, metadata) {
-
-                                                                        //console.log(JSON.stringify(resolved));
-
-
-
-                                                                        var view = new JSONSchemaView(resolved.schema, 3);
-                                                                        $('#examples-Default-copyProtectedEntity-schema-data').val(JSON.stringify(resolved.schema));
-                                                                        var result = $('#examples-Default-copyProtectedEntity-schema-201');
-                                                                        result.empty();
-                                                                        result.append(view.render());
-                                                                    });
-
-
-
-
-                                                                });
-                                                            </script>
-                                                        </div>
-                                                        <input id='examples-Default-copyProtectedEntity-schema-data' type='hidden' value=''></input>
-
-
-
-
-
-
-                                                    </div>
-
-
-
-
-                                                </div>
-
-
-
 
                                                 <h3> Status: 202 - Create in progress </h3>
 
@@ -4652,7 +4570,7 @@ try {
             </div>
             <div id="generator">
                 <div class="content">
-                    Generated 2019-10-25T08:44:07.674-07:00
+                    Generated 2019-10-25T10:32:54.098-07:00
                 </div>
             </div>
         </div>

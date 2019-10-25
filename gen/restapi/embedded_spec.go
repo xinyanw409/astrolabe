@@ -162,12 +162,6 @@ func init() {
           }
         ],
         "responses": {
-          "201": {
-            "description": "Created - returned if the protected entity can be created immediately",
-            "schema": {
-              "$ref": "#/definitions/CreatedResponse"
-            }
-          },
           "202": {
             "description": "Create in progress",
             "schema": {
@@ -325,12 +319,9 @@ func init() {
       "type": "object",
       "properties": {
         "taskID": {
-          "type": "string"
+          "$ref": "#/definitions/TaskID"
         }
       }
-    },
-    "CreatedResponse": {
-      "type": "string"
     },
     "DataTransport": {
       "type": "object",
@@ -615,12 +606,6 @@ func init() {
           }
         ],
         "responses": {
-          "201": {
-            "description": "Created - returned if the protected entity can be created immediately",
-            "schema": {
-              "$ref": "#/definitions/CreatedResponse"
-            }
-          },
           "202": {
             "description": "Create in progress",
             "schema": {
@@ -778,12 +763,9 @@ func init() {
       "type": "object",
       "properties": {
         "taskID": {
-          "type": "string"
+          "$ref": "#/definitions/TaskID"
         }
       }
-    },
-    "CreatedResponse": {
-      "type": "string"
     },
     "DataTransport": {
       "type": "object",

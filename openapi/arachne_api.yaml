@@ -114,12 +114,6 @@ paths:
           schema:
             $ref: '#/definitions/ProtectedEntityInfo'
       responses:
-        '201':
-          description: >-
-            Created - returned if the protected entity can be created
-            immediately
-          schema:
-            $ref: '#/definitions/CreatedResponse'
         '202':
           description: Create in progress
           schema:
@@ -233,10 +227,8 @@ definitions:
   CreateInProgressResponse:
     properties:
       taskID:
-        type: string
+        $ref: "#/definitions/TaskID"
     type: object
-  CreatedResponse:
-    type: string
   DataTransport:
     properties:
       transportType:

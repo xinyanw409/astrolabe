@@ -81,10 +81,7 @@ func (this *ServiceAPI) snapshot(echoContext echo.Context, pe arachne.ProtectedE
 		echoContext.String(http.StatusNotFound, "Snapshot failed for id "+pe.GetID().String()+" error = "+err.Error())
 		return
 	}
-	if snapshotID == nil {
-		echoContext.String(http.StatusInternalServerError, "snapshotID was nil for "+pe.GetID().String())
-		return
-	}
+
 	echoContext.String(http.StatusOK, snapshotID.String())
 }
 

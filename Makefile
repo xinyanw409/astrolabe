@@ -1,6 +1,6 @@
 all: build
 
-build: arachne ivd kubernetes s3repository fs server cmd
+build: deps server-gen docs-gen arachne ivd kubernetes s3repository fs server cmd
 
 deps:
 	go get k8s.io/klog
@@ -37,8 +37,12 @@ kubernetes: deps
 server: deps
 	cd pkg/server; go build
 
-server-gen:
+server-gen: gen/restapi/server.go
+
+gen/restapi/server.go: openapi/arachne_api.yaml
 	swagger generate server -f openapi/arachne_api.yaml -t gen --exclude-main -A arachne
 
-doc-gen:
+docs-gen: docs/api/index.html
+
+docs/api/index.html: openapi/arachne_api.yaml
 	java -jar bin/swagger-codegen-cli-2.2.1.jar generate -o docs/api -i openapi/arachne_api.yaml -l html2
