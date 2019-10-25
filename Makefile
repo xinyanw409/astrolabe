@@ -39,3 +39,6 @@ server: deps
 
 server-gen:
 	swagger generate server -f openapi/arachne_api.yaml -t gen --exclude-main -A arachne
+
+doc-gen:
+	java -jar bin/swagger-codegen-cli-2.2.1.jar generate -o docs/api -i openapi/arachne_api.yaml -l html2

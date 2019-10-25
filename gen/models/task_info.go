@@ -35,7 +35,12 @@ type TaskInfo struct {
 
 	// progress
 	// Required: true
-	Progress *int64 `json:"progress"`
+	// Maximum: 100
+	// Minimum: 0
+	Progress *float64 `json:"progress"`
+
+	// result
+	Result interface{} `json:"result,omitempty"`
 
 	// started time
 	// Required: true
@@ -101,6 +106,14 @@ func (m *TaskInfo) validateID(formats strfmt.Registry) error {
 func (m *TaskInfo) validateProgress(formats strfmt.Registry) error {
 
 	if err := validate.Required("progress", "body", m.Progress); err != nil {
+		return err
+	}
+
+	if err := validate.Minimum("progress", "body", float64(*m.Progress), 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.Maximum("progress", "body", float64(*m.Progress), 100, false); err != nil {
 		return err
 	}
 

@@ -447,7 +447,11 @@ func init() {
           "$ref": "#/definitions/TaskID"
         },
         "progress": {
-          "type": "integer"
+          "type": "number",
+          "maximum": 100
+        },
+        "result": {
+          "type": "object"
         },
         "startedTime": {
           "type": "string"
@@ -896,7 +900,12 @@ func init() {
           "$ref": "#/definitions/TaskID"
         },
         "progress": {
-          "type": "integer"
+          "type": "number",
+          "maximum": 100,
+          "minimum": 0
+        },
+        "result": {
+          "type": "object"
         },
         "startedTime": {
           "type": "string"

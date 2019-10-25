@@ -45,7 +45,8 @@ func main() {
 		os.Exit(1)
 	}
 	_, pem := server.NewProtectedEntityManager(*confDirStr, apiPort)
-	apiHandler := server.NewOpenAPIArachneHandler(pem)
+	tm := server.NewTaskManager()
+	apiHandler := server.NewOpenAPIArachneHandler(pem, tm)
 	// load embedded swagger file
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
@@ -62,10 +63,8 @@ func main() {
 	// set the port this service will be run on
 	server.Port = apiPort
 
-	api.ListServicesHandler = operations.ListServicesHandlerFunc(apiHandler.ListServices)
-	api.ListProtectedEntitiesHandler = operations.ListProtectedEntitiesHandlerFunc(apiHandler.ListProtectedEntities)
-	api.GetProtectedEntityInfoHandler = operations.GetProtectedEntityInfoHandlerFunc(apiHandler.GetProtectedEntityInfo)
-	api.CreateSnapshotHandler = operations.CreateSnapshotHandlerFunc(apiHandler.CreateSnapshot)
+	apiHandler.AttachHandlers(api)
+
 	// serve API
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)

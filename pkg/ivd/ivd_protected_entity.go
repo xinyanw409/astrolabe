@@ -272,11 +272,11 @@ const waitTime = 3600 * time.Second
 func (this IVDProtectedEntity) Snapshot(ctx context.Context) (arachne.ProtectedEntitySnapshotID, error) {
 	vslmTask, err := this.ipetm.vsom.CreateSnapshot(ctx, NewVimIDFromPEID(this.GetID()), "ArachneSnapshot")
 	if err != nil {
-		return nil, errors.Wrap(err, "Snapshot failed")
+		return arachne.ProtectedEntitySnapshotID{}, errors.Wrap(err, "Snapshot failed")
 	}
 	ivdSnapshotIDAny, err := vslmTask.Wait(ctx, waitTime)
 	if err != nil {
-		return nil, errors.Wrap(err, "Wait failed")
+		return arachne.ProtectedEntitySnapshotID{}, errors.Wrap(err, "Wait failed")
 	}
 	ivdSnapshotID := ivdSnapshotIDAny.(vim.ID)
 	/*

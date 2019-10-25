@@ -6,16 +6,28 @@ import (
 	"github.com/vmware/arachne/gen/models"
 	"github.com/vmware/arachne/gen/restapi/operations"
 	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/govmomi/task"
+	"time"
 )
 
 type OpenAPIArachneHandler struct {
 	pem arachne.ProtectedEntityManager
+	tm TaskManager
 }
 
-func NewOpenAPIArachneHandler(pem arachne.ProtectedEntityManager) OpenAPIArachneHandler {
+
+func NewOpenAPIArachneHandler(pem arachne.ProtectedEntityManager, tm TaskManager) OpenAPIArachneHandler {
 	return OpenAPIArachneHandler{
 		pem: pem,
+		tm: tm,
 	}
+}
+func (this OpenAPIArachneHandler) AttachHandlers(api *operations.ArachneAPI) {
+	api.ListServicesHandler = operations.ListServicesHandlerFunc(this.ListServices)
+	api.ListProtectedEntitiesHandler = operations.ListProtectedEntitiesHandlerFunc(this.ListProtectedEntities)
+	api.GetProtectedEntityInfoHandler = operations.GetProtectedEntityInfoHandlerFunc(this.GetProtectedEntityInfo)
+	api.CreateSnapshotHandler = operations.CreateSnapshotHandlerFunc(this.CreateSnapshot)
+	api.CopyProtectedEntityHandler = operations.CopyProtectedEntityHandlerFunc(this.CopyProtectedEntity)
 }
 
 func (this OpenAPIArachneHandler) ListServices(params operations.ListServicesParams) middleware.Responder {
@@ -85,4 +97,33 @@ func (this OpenAPIArachneHandler) CreateSnapshot(params operations.CreateSnapsho
 	}
 
 	return operations.NewCreateSnapshotOK().WithPayload(snapshotID.GetModelProtectedEntitySnapshotID())
+}
+
+func (this OpenAPIArachneHandler) CopyProtectedEntity(params operations.CopyProtectedEntityParams) middleware.Responder {
+	petm := this.pem.GetProtectedEntityTypeManager(params.Service)
+	if petm == nil {
+
+	}
+	pei, err := arachne.NewProtectedEntityInfoFromModel(*params.Body)
+	if err != nil {
+
+	}
+	startedTime := time.Now()
+	newPE, err := petm.CopyFromInfo(context.Background(), pei, arachne.AllocateNewObject)
+	var taskStatus arachne.TaskStatus
+	if err != nil {
+		taskStatus = arachne.TaskStatus{
+
+		}
+	}
+	// Fake a task for now
+	task := arachne.GenericTask{
+		ID:           arachne.TaskID{},
+		Completed:    true,
+		TaskStatus:   0,
+		Details:      "",
+		StartedTime:  startedTime,
+		FinishedTime: time.Now(),
+		Progress:     100,
+	}
 }

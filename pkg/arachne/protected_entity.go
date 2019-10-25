@@ -50,6 +50,10 @@ func NewProtectedEntityIDFromString(peiString string) (returnPEI ProtectedEntity
 	return returnPEI, returnError
 }
 
+func NewProtectedEntityIDFromModel(mpei models.ProtectedEntityID) (ProtectedEntityID, error){
+	return NewProtectedEntityIDFromString(string(mpei))
+}
+
 func fillInProtectedEntityIDFromString(pei *ProtectedEntityID, peiString string) error {
 	components := strings.Split(peiString, ":")
 	if len(components) > 1 {

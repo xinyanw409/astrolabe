@@ -305,14 +305,16 @@ definitions:
         type: boolean
       details:
         type: string
+      startedTime:
+        type: string
       finishedTime:
         type: string
       id:
         $ref: "#/definitions/TaskID"
       progress:
-        type: integer
-      startedTime:
-        type: string
+        type: number
+        minimum: 0.0
+        maximum: 100.0
       status:
         enum:
           - running
@@ -320,6 +322,8 @@ definitions:
           - failed
           - cancelled
         type: string
+      result:
+        type: object
     required:
       - id
       - completed
@@ -327,5 +331,6 @@ definitions:
       - startedTime
       - progress
     type: object
+
 x-components: {}
 
