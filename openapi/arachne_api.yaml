@@ -72,6 +72,9 @@ paths:
           description: 200 response
           schema:
             $ref: '#/definitions/ProtectedEntityList'
+        '404':
+          description: 'Service or Protected Entity not found'
+
       operationId: listProtectedEntities
       summary: >-
         List protected entities for the service.  Results will be returned in
@@ -188,10 +191,12 @@ paths:
           type: string
       responses:
         '200':
-          description: '"200" response"'
+          description: 'List succeeded'
           schema:
             $ref: '#/definitions/ProtectedEntityList'
-      operationId: getSnapshots
+        '404':
+          description: 'Service or Protected Entity not found'
+      operationId: listSnapshots
       summary: Gets the list of snapshots for this protected entity
     post:
       produces:

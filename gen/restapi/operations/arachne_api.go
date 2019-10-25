@@ -49,9 +49,6 @@ func NewArachneAPI(spec *loads.Document) *ArachneAPI {
 		GetProtectedEntityInfoHandler: GetProtectedEntityInfoHandlerFunc(func(params GetProtectedEntityInfoParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetProtectedEntityInfo has not yet been implemented")
 		}),
-		GetSnapshotsHandler: GetSnapshotsHandlerFunc(func(params GetSnapshotsParams) middleware.Responder {
-			return middleware.NotImplemented("operation GetSnapshots has not yet been implemented")
-		}),
 		GetTaskInfoHandler: GetTaskInfoHandlerFunc(func(params GetTaskInfoParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetTaskInfo has not yet been implemented")
 		}),
@@ -60,6 +57,9 @@ func NewArachneAPI(spec *loads.Document) *ArachneAPI {
 		}),
 		ListServicesHandler: ListServicesHandlerFunc(func(params ListServicesParams) middleware.Responder {
 			return middleware.NotImplemented("operation ListServices has not yet been implemented")
+		}),
+		ListSnapshotsHandler: ListSnapshotsHandlerFunc(func(params ListSnapshotsParams) middleware.Responder {
+			return middleware.NotImplemented("operation ListSnapshots has not yet been implemented")
 		}),
 		ListTasksHandler: ListTasksHandlerFunc(func(params ListTasksParams) middleware.Responder {
 			return middleware.NotImplemented("operation ListTasks has not yet been implemented")
@@ -103,14 +103,14 @@ type ArachneAPI struct {
 	DeleteProtectedEntityHandler DeleteProtectedEntityHandler
 	// GetProtectedEntityInfoHandler sets the operation handler for the get protected entity info operation
 	GetProtectedEntityInfoHandler GetProtectedEntityInfoHandler
-	// GetSnapshotsHandler sets the operation handler for the get snapshots operation
-	GetSnapshotsHandler GetSnapshotsHandler
 	// GetTaskInfoHandler sets the operation handler for the get task info operation
 	GetTaskInfoHandler GetTaskInfoHandler
 	// ListProtectedEntitiesHandler sets the operation handler for the list protected entities operation
 	ListProtectedEntitiesHandler ListProtectedEntitiesHandler
 	// ListServicesHandler sets the operation handler for the list services operation
 	ListServicesHandler ListServicesHandler
+	// ListSnapshotsHandler sets the operation handler for the list snapshots operation
+	ListSnapshotsHandler ListSnapshotsHandler
 	// ListTasksHandler sets the operation handler for the list tasks operation
 	ListTasksHandler ListTasksHandler
 
@@ -192,10 +192,6 @@ func (o *ArachneAPI) Validate() error {
 		unregistered = append(unregistered, "GetProtectedEntityInfoHandler")
 	}
 
-	if o.GetSnapshotsHandler == nil {
-		unregistered = append(unregistered, "GetSnapshotsHandler")
-	}
-
 	if o.GetTaskInfoHandler == nil {
 		unregistered = append(unregistered, "GetTaskInfoHandler")
 	}
@@ -206,6 +202,10 @@ func (o *ArachneAPI) Validate() error {
 
 	if o.ListServicesHandler == nil {
 		unregistered = append(unregistered, "ListServicesHandler")
+	}
+
+	if o.ListSnapshotsHandler == nil {
+		unregistered = append(unregistered, "ListSnapshotsHandler")
 	}
 
 	if o.ListTasksHandler == nil {
@@ -333,11 +333,6 @@ func (o *ArachneAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/arachne/{service}/{protectedEntityID}/snapshots"] = NewGetSnapshots(o.context, o.GetSnapshotsHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
 	o.handlers["GET"]["/arachne/tasks/{taskID}"] = NewGetTaskInfo(o.context, o.GetTaskInfoHandler)
 
 	if o.handlers["GET"] == nil {
@@ -349,6 +344,11 @@ func (o *ArachneAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/arachne"] = NewListServices(o.context, o.ListServicesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/arachne/{service}/{protectedEntityID}/snapshots"] = NewListSnapshots(o.context, o.ListSnapshotsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

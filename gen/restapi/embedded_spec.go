@@ -119,6 +119,9 @@ func init() {
             "schema": {
               "$ref": "#/definitions/ProtectedEntityList"
             }
+          },
+          "404": {
+            "description": "Service or Protected Entity not found"
           }
         }
       },
@@ -241,7 +244,7 @@ func init() {
           "application/json"
         ],
         "summary": "Gets the list of snapshots for this protected entity",
-        "operationId": "getSnapshots",
+        "operationId": "listSnapshots",
         "parameters": [
           {
             "type": "string",
@@ -260,10 +263,13 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "\"200\" response\"",
+            "description": "List succeeded",
             "schema": {
               "$ref": "#/definitions/ProtectedEntityList"
             }
+          },
+          "404": {
+            "description": "Service or Protected Entity not found"
           }
         }
       },
@@ -563,6 +569,9 @@ func init() {
             "schema": {
               "$ref": "#/definitions/ProtectedEntityList"
             }
+          },
+          "404": {
+            "description": "Service or Protected Entity not found"
           }
         }
       },
@@ -685,7 +694,7 @@ func init() {
           "application/json"
         ],
         "summary": "Gets the list of snapshots for this protected entity",
-        "operationId": "getSnapshots",
+        "operationId": "listSnapshots",
         "parameters": [
           {
             "type": "string",
@@ -704,10 +713,13 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "\"200\" response\"",
+            "description": "List succeeded",
             "schema": {
               "$ref": "#/definitions/ProtectedEntityList"
             }
+          },
+          "404": {
+            "description": "Service or Protected Entity not found"
           }
         }
       },

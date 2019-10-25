@@ -56,3 +56,27 @@ func (o *ListProtectedEntitiesOK) WriteResponse(rw http.ResponseWriter, producer
 		}
 	}
 }
+
+// ListProtectedEntitiesNotFoundCode is the HTTP code returned for type ListProtectedEntitiesNotFound
+const ListProtectedEntitiesNotFoundCode int = 404
+
+/*ListProtectedEntitiesNotFound Service or Protected Entity not found
+
+swagger:response listProtectedEntitiesNotFound
+*/
+type ListProtectedEntitiesNotFound struct {
+}
+
+// NewListProtectedEntitiesNotFound creates ListProtectedEntitiesNotFound with default headers values
+func NewListProtectedEntitiesNotFound() *ListProtectedEntitiesNotFound {
+
+	return &ListProtectedEntitiesNotFound{}
+}
+
+// WriteResponse to the client
+func (o *ListProtectedEntitiesNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
+	rw.WriteHeader(404)
+}

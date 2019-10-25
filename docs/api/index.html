@@ -873,9 +873,6 @@ margin-bottom: 20px;
                                     <li data-group="Default" data-name="getProtectedEntityInfo" class="">
                                         <a href="#api-Default-getProtectedEntityInfo">getProtectedEntityInfo</a>
                                     </li>
-                                    <li data-group="Default" data-name="getSnapshots" class="">
-                                        <a href="#api-Default-getSnapshots">getSnapshots</a>
-                                    </li>
                                     <li data-group="Default" data-name="getTaskInfo" class="">
                                         <a href="#api-Default-getTaskInfo">getTaskInfo</a>
                                     </li>
@@ -884,6 +881,9 @@ margin-bottom: 20px;
                                     </li>
                                     <li data-group="Default" data-name="listServices" class="">
                                         <a href="#api-Default-listServices">listServices</a>
+                                    </li>
+                                    <li data-group="Default" data-name="listSnapshots" class="">
+                                        <a href="#api-Default-listSnapshots">listSnapshots</a>
                                     </li>
                                     <li data-group="Default" data-name="listTasks" class="">
                                         <a href="#api-Default-listTasks">listTasks</a>
@@ -2652,420 +2652,6 @@ try {
 
 
 
-                                    <div id="api-Default-getSnapshots">
-
-                                        <article id="api-Default-getSnapshots-0" data-group="User" data-name="getSnapshots" data-version="0">
-                                            <div class="pull-left">
-                                                <h1>getSnapshots</h1>
-                                            </div>
-                                            <div class="pull-right">
-
-                                            </div>
-                                            <div class="clearfix"></div>
-
-                                            <p></p>
-                                            <p></p>
-                                            <p></p>
-                                            <br />
-
-                                            <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/arachne/{service}/{protectedEntityID}/snapshots</span></code></pre>
-
-                                            <p>
-                                                <h3>Usage and SDK Samples</h3>
-                                            </p>
-
-                                            <ul class="nav nav-tabs nav-tabs-examples">
-                                                <li class="active">
-                                                    <a href="#examples-Default-getSnapshots-0-curl">Curl</a>
-                                                </li>
-                                                <li class="">
-              <a href="#examples-Default-getSnapshots-0-java">Java</a>
-            </li>
-            <li class="">
-              <a href="#examples-Default-getSnapshots-0-android">Android</a>
-            </li>
-            <!--<li class="">
-              <a href="#examples-Default-getSnapshots-0-groovy">Groovy</a>
-            </li>-->
-                                                <li class="">
-                                                    <a href="#examples-Default-getSnapshots-0-objc">Obj-C</a>
-                                                </li>
-                                                <li class="">
-                                                    <a href="#examples-Default-getSnapshots-0-javascript">JavaScript</a>
-                                                </li>
-                                                <!--<li class="">
-              <a href="#examples-Default-getSnapshots-0-angular">Angular</a>
-            </li>-->
-                                                <li class="">
-                                                    <a href="#examples-Default-getSnapshots-0-csharp">C#</a>
-                                                </li>
-                                                <li class="">
-              <a href="#examples-Default-getSnapshots-0-php">PHP</a>
-            </li>
-                                            </ul>
-
-                                            <div class="tab-content">
-                                                <div class="tab-pane active" id="examples-Default-getSnapshots-0-curl">
-                                                    <pre class="prettyprint"><code class="language-bsh">
-curl -X <span style="text-transform: uppercase;">get</span> -H "apiKey: [[apiKey]]" -H "apiSecret: [[apiSecret]]" "https://localhost/arachne/{service}/{protectedEntityID}/snapshots"
-
-
-</code></pre>
-                                                </div>
-
-                                                <div class="tab-pane" id="examples-Default-getSnapshots-0-java">
-                                                  <pre class="prettyprint"><code class="language-java">
-import io.swagger.client.*;
-import io.swagger.client.auth.*;
-import io.swagger.client.model.*;
-import .DefaultApi;
-
-import java.io.File;
-import java.util.*;
-
-public class DefaultApiExample {
-
-    public static void main(String[] args) {
-        
-        DefaultApi apiInstance = new DefaultApi();
-        String service = service_example; // String | The service for the protected entity
-        String protectedEntityID = protectedEntityID_example; // String | The protected entity ID to retrieve info for
-        try {
-            ProtectedEntityList result = apiInstance.getSnapshots(service, protectedEntityID);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling DefaultApi#getSnapshots");
-            e.printStackTrace();
-        }
-    }
-}
-
-                                                  </code></pre>
-          </div>
-
-
-                                                <div class="tab-pane" id="examples-Default-getSnapshots-0-android">
-                                                  <pre class="prettyprint"><code class="language-java">
-import .DefaultApi;
-
-public class DefaultApiExample {
-
-    public static void main(String[] args) {
-        DefaultApi apiInstance = new DefaultApi();
-        String service = service_example; // String | The service for the protected entity
-        String protectedEntityID = protectedEntityID_example; // String | The protected entity ID to retrieve info for
-        try {
-            ProtectedEntityList result = apiInstance.getSnapshots(service, protectedEntityID);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling DefaultApi#getSnapshots");
-            e.printStackTrace();
-        }
-    }
-}
-
-                                                  </code></pre>
-          </div>
-
-          <!--
-          <div class="tab-pane" id="examples-Default-getSnapshots-0-groovy">
-            <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
-          </div> -->
-
-
-                                                <div class="tab-pane" id="examples-Default-getSnapshots-0-objc">
-                                                    <pre class="prettyprint"><code class="language-cpp">
-
-String *service = service_example; // The service for the protected entity
-String *protectedEntityID = protectedEntityID_example; // The protected entity ID to retrieve info for
-
-DefaultApi *apiInstance = [[DefaultApi alloc] init];
-
-// Gets the list of snapshots for this protected entity
-[apiInstance getSnapshotsWith:service
-    protectedEntityID:protectedEntityID
-              completionHandler: ^(ProtectedEntityList output, NSError* error) {
-                            if (output) {
-                                NSLog(@"%@", output);
-                            }
-                            if (error) {
-                                NSLog(@"Error: %@", error);
-                            }
-                        }];
-
-                                                    </code></pre>
-                                                </div>
-                                                <div class="tab-pane" id="examples-Default-getSnapshots-0-javascript">
-                                                    <pre class="prettyprint"><code class="language-js">
-var  = require('');
-
-var api = new .DefaultApi()
-
-var service = service_example; // {String} The service for the protected entity
-
-var protectedEntityID = protectedEntityID_example; // {String} The protected entity ID to retrieve info for
-
-
-var callback = function(error, data, response) {
-  if (error) {
-    console.error(error);
-  } else {
-    console.log('API called successfully. Returned data: ' + data);
-  }
-};
-api.getSnapshots(service, protectedEntityID, callback);
-
-                                                    </code></pre>
-                                                </div>
-
-                                                <!--<div class="tab-pane" id="examples-Default-getSnapshots-0-angular">
-            <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
-          </div>-->
-
-                                                <div class="tab-pane" id="examples-Default-getSnapshots-0-csharp">
-                                                    <pre class="prettyprint"><code class="language-cs">
-using System;
-using System.Diagnostics;
-using .Api;
-using .Client;
-using ;
-
-namespace Example
-{
-    public class getSnapshotsExample
-    {
-        public void main()
-        {
-            
-            var apiInstance = new DefaultApi();
-            var service = service_example;  // String | The service for the protected entity
-            var protectedEntityID = protectedEntityID_example;  // String | The protected entity ID to retrieve info for
-
-            try
-            {
-                // Gets the list of snapshots for this protected entity
-                ProtectedEntityList result = apiInstance.getSnapshots(service, protectedEntityID);
-                Debug.WriteLine(result);
-            }
-            catch (Exception e)
-            {
-                Debug.Print("Exception when calling DefaultApi.getSnapshots: " + e.Message );
-            }
-        }
-    }
-}
-
-                                                    </code></pre>
-                                                </div>
-
-
-                                                <div class="tab-pane" id="examples-Default-getSnapshots-0-php">
-                                                  <pre class="prettyprint"><code class="language-php">
-<?php
-require_once(__DIR__ . '/vendor/autoload.php');
-
-$api_instance = new io.swagger.client\Api\DefaultApi();
-$service = service_example; // String | The service for the protected entity
-$protectedEntityID = protectedEntityID_example; // String | The protected entity ID to retrieve info for
-
-try {
-    $result = $api_instance->getSnapshots($service, $protectedEntityID);
-    print_r($result);
-} catch (Exception $e) {
-    echo 'Exception when calling DefaultApi->getSnapshots: ', $e->getMessage(), PHP_EOL;
-}
-
-                                                  </code></pre>
-          </div>
-
-                                            </div>
-
-
-
-
-
-                                            <h2>Parameters</h2>
-
-
-
-                                                <div class="methodsubtabletitle">Path parameters</div>
-                                                <table id="methodsubtable">
-                                                    <tr>
-                                                        <th width="150px">Name</th>
-                                                        <th>Description</th>
-                                                    </tr>
-                                                    <!---->
-                                                        <tr><td style="width:150px;">service*</td>
-<td>
-
-
-<script>
-												$(document).ready(function() {
-													var schemaWrapper = {
-  "name" : "service",
-  "in" : "path",
-  "description" : "The service for the protected entity",
-  "required" : true,
-  "type" : "string"
-};
-													var schema = schemaWrapper;
-
-
-
-
-													var view = new JSONSchemaView(schema,0);
-													var result = $('#d2e199_getSnapshots_service');
-													result.empty();
-													result.append(view.render());
-
-
-
-
-
-												});
-												</script>
-												<div id="d2e199_getSnapshots_service"></div>
-</td>
-</tr>
-
-                                                        <tr><td style="width:150px;">protectedEntityID*</td>
-<td>
-
-
-<script>
-												$(document).ready(function() {
-													var schemaWrapper = {
-  "name" : "protectedEntityID",
-  "in" : "path",
-  "description" : "The protected entity ID to retrieve info for",
-  "required" : true,
-  "type" : "string"
-};
-													var schema = schemaWrapper;
-
-
-
-
-													var view = new JSONSchemaView(schema,0);
-													var result = $('#d2e199_getSnapshots_protectedEntityID');
-													result.empty();
-													result.append(view.render());
-
-
-
-
-
-												});
-												</script>
-												<div id="d2e199_getSnapshots_protectedEntityID"></div>
-</td>
-</tr>
-
-                                                </table>
-
-
-
-
-
-                                            <h2>Responses</h2>
-
-                                                <h3> Status: 200 - \&quot;200\&quot; response\&quot; </h3>
-
-                                                <ul class="nav nav-tabs nav-tabs-examples" >
-
-                                                    <li class="active">
-                                                        <a href="#examples-Default-getSnapshots-schema">Schema</a>
-                                                    </li>
-
-
-                                                </ul>
-
-
-
-
-
-
-
-                                                <div class="tab-content" style='margin-bottom: 10px;'>
-
-
-
-                                                    <div class="tab-pane active" id="examples-Default-getSnapshots-schema">
-
-
-
-
-                                                        <div id='examples-Default-getSnapshots-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
-
-                                                            <script>
-                                                                $(document).ready(function() {
-                                                                    var schemaWrapper = {
-  "description" : "\"200\" response\"",
-  "schema" : {
-    "$ref" : "#/definitions/ProtectedEntityList"
-  }
-};
-                                                                    var schema = schemaWrapper.schema;
-                                                                    schemaWrapper.definitions = defs;
-                                                                    //console.log(JSON.stringify(schema))
-                                                                    JsonRefs.resolveRefs(schemaWrapper, {
-                                                                        "depth": 3,
-                                                                        "resolveRemoteRefs": false,
-                                                                        "resolveFileRefs": false
-                                                                    }, function(err, resolved, metadata) {
-
-                                                                        //console.log(JSON.stringify(resolved));
-
-
-
-                                                                        var view = new JSONSchemaView(resolved.schema, 3);
-                                                                        $('#examples-Default-getSnapshots-schema-data').val(JSON.stringify(resolved.schema));
-                                                                        var result = $('#examples-Default-getSnapshots-schema-200');
-                                                                        result.empty();
-                                                                        result.append(view.render());
-                                                                    });
-
-
-
-
-                                                                });
-                                                            </script>
-                                                        </div>
-                                                        <input id='examples-Default-getSnapshots-schema-data' type='hidden' value=''></input>
-
-
-
-
-
-
-                                                    </div>
-
-
-
-
-                                                </div>
-
-
-
-
-
-
-
-
-
-                                        </article>
-
-                                    </div>
-
-                                    <hr>
-
-
-
-
-
-
-
-
                                     <div id="api-Default-getTaskInfo">
 
                                         <article id="api-Default-getTaskInfo-0" data-group="User" data-name="getTaskInfo" data-version="0">
@@ -3885,6 +3471,82 @@ try {
 
 
 
+                                                <h3> Status: 404 - Service or Protected Entity not found </h3>
+
+                                                <ul class="nav nav-tabs nav-tabs-examples" >
+
+                                                    <li class="active">
+                                                        <a href="#examples-Default-listProtectedEntities-schema">Schema</a>
+                                                    </li>
+
+
+                                                </ul>
+
+
+
+
+
+
+
+                                                <div class="tab-content" style='margin-bottom: 10px;'>
+
+
+
+                                                    <div class="tab-pane active" id="examples-Default-listProtectedEntities-schema">
+
+
+
+
+                                                        <div id='examples-Default-listProtectedEntities-schema-404' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+
+                                                            <script>
+                                                                $(document).ready(function() {
+                                                                    var schemaWrapper = {
+  "description" : "Service or Protected Entity not found"
+};
+                                                                    var schema = schemaWrapper.schema;
+                                                                    schemaWrapper.definitions = defs;
+                                                                    //console.log(JSON.stringify(schema))
+                                                                    JsonRefs.resolveRefs(schemaWrapper, {
+                                                                        "depth": 3,
+                                                                        "resolveRemoteRefs": false,
+                                                                        "resolveFileRefs": false
+                                                                    }, function(err, resolved, metadata) {
+
+                                                                        //console.log(JSON.stringify(resolved));
+
+
+
+                                                                        var view = new JSONSchemaView(resolved.schema, 3);
+                                                                        $('#examples-Default-listProtectedEntities-schema-data').val(JSON.stringify(resolved.schema));
+                                                                        var result = $('#examples-Default-listProtectedEntities-schema-404');
+                                                                        result.empty();
+                                                                        result.append(view.render());
+                                                                    });
+
+
+
+
+                                                                });
+                                                            </script>
+                                                        </div>
+                                                        <input id='examples-Default-listProtectedEntities-schema-data' type='hidden' value=''></input>
+
+
+
+
+
+
+                                                    </div>
+
+
+
+
+                                                </div>
+
+
+
+
 
 
 
@@ -4193,6 +3855,496 @@ try {
                                                             </script>
                                                         </div>
                                                         <input id='examples-Default-listServices-schema-data' type='hidden' value=''></input>
+
+
+
+
+
+
+                                                    </div>
+
+
+
+
+                                                </div>
+
+
+
+
+
+
+
+
+
+                                        </article>
+
+                                    </div>
+
+                                    <hr>
+
+
+
+
+
+
+
+
+                                    <div id="api-Default-listSnapshots">
+
+                                        <article id="api-Default-listSnapshots-0" data-group="User" data-name="listSnapshots" data-version="0">
+                                            <div class="pull-left">
+                                                <h1>listSnapshots</h1>
+                                            </div>
+                                            <div class="pull-right">
+
+                                            </div>
+                                            <div class="clearfix"></div>
+
+                                            <p></p>
+                                            <p></p>
+                                            <p></p>
+                                            <br />
+
+                                            <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/arachne/{service}/{protectedEntityID}/snapshots</span></code></pre>
+
+                                            <p>
+                                                <h3>Usage and SDK Samples</h3>
+                                            </p>
+
+                                            <ul class="nav nav-tabs nav-tabs-examples">
+                                                <li class="active">
+                                                    <a href="#examples-Default-listSnapshots-0-curl">Curl</a>
+                                                </li>
+                                                <li class="">
+              <a href="#examples-Default-listSnapshots-0-java">Java</a>
+            </li>
+            <li class="">
+              <a href="#examples-Default-listSnapshots-0-android">Android</a>
+            </li>
+            <!--<li class="">
+              <a href="#examples-Default-listSnapshots-0-groovy">Groovy</a>
+            </li>-->
+                                                <li class="">
+                                                    <a href="#examples-Default-listSnapshots-0-objc">Obj-C</a>
+                                                </li>
+                                                <li class="">
+                                                    <a href="#examples-Default-listSnapshots-0-javascript">JavaScript</a>
+                                                </li>
+                                                <!--<li class="">
+              <a href="#examples-Default-listSnapshots-0-angular">Angular</a>
+            </li>-->
+                                                <li class="">
+                                                    <a href="#examples-Default-listSnapshots-0-csharp">C#</a>
+                                                </li>
+                                                <li class="">
+              <a href="#examples-Default-listSnapshots-0-php">PHP</a>
+            </li>
+                                            </ul>
+
+                                            <div class="tab-content">
+                                                <div class="tab-pane active" id="examples-Default-listSnapshots-0-curl">
+                                                    <pre class="prettyprint"><code class="language-bsh">
+curl -X <span style="text-transform: uppercase;">get</span> -H "apiKey: [[apiKey]]" -H "apiSecret: [[apiSecret]]" "https://localhost/arachne/{service}/{protectedEntityID}/snapshots"
+
+
+</code></pre>
+                                                </div>
+
+                                                <div class="tab-pane" id="examples-Default-listSnapshots-0-java">
+                                                  <pre class="prettyprint"><code class="language-java">
+import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import .DefaultApi;
+
+import java.io.File;
+import java.util.*;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        
+        DefaultApi apiInstance = new DefaultApi();
+        String service = service_example; // String | The service for the protected entity
+        String protectedEntityID = protectedEntityID_example; // String | The protected entity ID to retrieve info for
+        try {
+            ProtectedEntityList result = apiInstance.listSnapshots(service, protectedEntityID);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#listSnapshots");
+            e.printStackTrace();
+        }
+    }
+}
+
+                                                  </code></pre>
+          </div>
+
+
+                                                <div class="tab-pane" id="examples-Default-listSnapshots-0-android">
+                                                  <pre class="prettyprint"><code class="language-java">
+import .DefaultApi;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        DefaultApi apiInstance = new DefaultApi();
+        String service = service_example; // String | The service for the protected entity
+        String protectedEntityID = protectedEntityID_example; // String | The protected entity ID to retrieve info for
+        try {
+            ProtectedEntityList result = apiInstance.listSnapshots(service, protectedEntityID);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#listSnapshots");
+            e.printStackTrace();
+        }
+    }
+}
+
+                                                  </code></pre>
+          </div>
+
+          <!--
+          <div class="tab-pane" id="examples-Default-listSnapshots-0-groovy">
+            <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+          </div> -->
+
+
+                                                <div class="tab-pane" id="examples-Default-listSnapshots-0-objc">
+                                                    <pre class="prettyprint"><code class="language-cpp">
+
+String *service = service_example; // The service for the protected entity
+String *protectedEntityID = protectedEntityID_example; // The protected entity ID to retrieve info for
+
+DefaultApi *apiInstance = [[DefaultApi alloc] init];
+
+// Gets the list of snapshots for this protected entity
+[apiInstance listSnapshotsWith:service
+    protectedEntityID:protectedEntityID
+              completionHandler: ^(ProtectedEntityList output, NSError* error) {
+                            if (output) {
+                                NSLog(@"%@", output);
+                            }
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+
+                                                    </code></pre>
+                                                </div>
+                                                <div class="tab-pane" id="examples-Default-listSnapshots-0-javascript">
+                                                    <pre class="prettyprint"><code class="language-js">
+var  = require('');
+
+var api = new .DefaultApi()
+
+var service = service_example; // {String} The service for the protected entity
+
+var protectedEntityID = protectedEntityID_example; // {String} The protected entity ID to retrieve info for
+
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.listSnapshots(service, protectedEntityID, callback);
+
+                                                    </code></pre>
+                                                </div>
+
+                                                <!--<div class="tab-pane" id="examples-Default-listSnapshots-0-angular">
+            <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+          </div>-->
+
+                                                <div class="tab-pane" id="examples-Default-listSnapshots-0-csharp">
+                                                    <pre class="prettyprint"><code class="language-cs">
+using System;
+using System.Diagnostics;
+using .Api;
+using .Client;
+using ;
+
+namespace Example
+{
+    public class listSnapshotsExample
+    {
+        public void main()
+        {
+            
+            var apiInstance = new DefaultApi();
+            var service = service_example;  // String | The service for the protected entity
+            var protectedEntityID = protectedEntityID_example;  // String | The protected entity ID to retrieve info for
+
+            try
+            {
+                // Gets the list of snapshots for this protected entity
+                ProtectedEntityList result = apiInstance.listSnapshots(service, protectedEntityID);
+                Debug.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling DefaultApi.listSnapshots: " + e.Message );
+            }
+        }
+    }
+}
+
+                                                    </code></pre>
+                                                </div>
+
+
+                                                <div class="tab-pane" id="examples-Default-listSnapshots-0-php">
+                                                  <pre class="prettyprint"><code class="language-php">
+<?php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$api_instance = new io.swagger.client\Api\DefaultApi();
+$service = service_example; // String | The service for the protected entity
+$protectedEntityID = protectedEntityID_example; // String | The protected entity ID to retrieve info for
+
+try {
+    $result = $api_instance->listSnapshots($service, $protectedEntityID);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DefaultApi->listSnapshots: ', $e->getMessage(), PHP_EOL;
+}
+
+                                                  </code></pre>
+          </div>
+
+                                            </div>
+
+
+
+
+
+                                            <h2>Parameters</h2>
+
+
+
+                                                <div class="methodsubtabletitle">Path parameters</div>
+                                                <table id="methodsubtable">
+                                                    <tr>
+                                                        <th width="150px">Name</th>
+                                                        <th>Description</th>
+                                                    </tr>
+                                                    <!---->
+                                                        <tr><td style="width:150px;">service*</td>
+<td>
+
+
+<script>
+												$(document).ready(function() {
+													var schemaWrapper = {
+  "name" : "service",
+  "in" : "path",
+  "description" : "The service for the protected entity",
+  "required" : true,
+  "type" : "string"
+};
+													var schema = schemaWrapper;
+
+
+
+
+													var view = new JSONSchemaView(schema,0);
+													var result = $('#d2e199_listSnapshots_service');
+													result.empty();
+													result.append(view.render());
+
+
+
+
+
+												});
+												</script>
+												<div id="d2e199_listSnapshots_service"></div>
+</td>
+</tr>
+
+                                                        <tr><td style="width:150px;">protectedEntityID*</td>
+<td>
+
+
+<script>
+												$(document).ready(function() {
+													var schemaWrapper = {
+  "name" : "protectedEntityID",
+  "in" : "path",
+  "description" : "The protected entity ID to retrieve info for",
+  "required" : true,
+  "type" : "string"
+};
+													var schema = schemaWrapper;
+
+
+
+
+													var view = new JSONSchemaView(schema,0);
+													var result = $('#d2e199_listSnapshots_protectedEntityID');
+													result.empty();
+													result.append(view.render());
+
+
+
+
+
+												});
+												</script>
+												<div id="d2e199_listSnapshots_protectedEntityID"></div>
+</td>
+</tr>
+
+                                                </table>
+
+
+
+
+
+                                            <h2>Responses</h2>
+
+                                                <h3> Status: 200 - List succeeded </h3>
+
+                                                <ul class="nav nav-tabs nav-tabs-examples" >
+
+                                                    <li class="active">
+                                                        <a href="#examples-Default-listSnapshots-schema">Schema</a>
+                                                    </li>
+
+
+                                                </ul>
+
+
+
+
+
+
+
+                                                <div class="tab-content" style='margin-bottom: 10px;'>
+
+
+
+                                                    <div class="tab-pane active" id="examples-Default-listSnapshots-schema">
+
+
+
+
+                                                        <div id='examples-Default-listSnapshots-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+
+                                                            <script>
+                                                                $(document).ready(function() {
+                                                                    var schemaWrapper = {
+  "description" : "List succeeded",
+  "schema" : {
+    "$ref" : "#/definitions/ProtectedEntityList"
+  }
+};
+                                                                    var schema = schemaWrapper.schema;
+                                                                    schemaWrapper.definitions = defs;
+                                                                    //console.log(JSON.stringify(schema))
+                                                                    JsonRefs.resolveRefs(schemaWrapper, {
+                                                                        "depth": 3,
+                                                                        "resolveRemoteRefs": false,
+                                                                        "resolveFileRefs": false
+                                                                    }, function(err, resolved, metadata) {
+
+                                                                        //console.log(JSON.stringify(resolved));
+
+
+
+                                                                        var view = new JSONSchemaView(resolved.schema, 3);
+                                                                        $('#examples-Default-listSnapshots-schema-data').val(JSON.stringify(resolved.schema));
+                                                                        var result = $('#examples-Default-listSnapshots-schema-200');
+                                                                        result.empty();
+                                                                        result.append(view.render());
+                                                                    });
+
+
+
+
+                                                                });
+                                                            </script>
+                                                        </div>
+                                                        <input id='examples-Default-listSnapshots-schema-data' type='hidden' value=''></input>
+
+
+
+
+
+
+                                                    </div>
+
+
+
+
+                                                </div>
+
+
+
+
+                                                <h3> Status: 404 - Service or Protected Entity not found </h3>
+
+                                                <ul class="nav nav-tabs nav-tabs-examples" >
+
+                                                    <li class="active">
+                                                        <a href="#examples-Default-listSnapshots-schema">Schema</a>
+                                                    </li>
+
+
+                                                </ul>
+
+
+
+
+
+
+
+                                                <div class="tab-content" style='margin-bottom: 10px;'>
+
+
+
+                                                    <div class="tab-pane active" id="examples-Default-listSnapshots-schema">
+
+
+
+
+                                                        <div id='examples-Default-listSnapshots-schema-404' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+
+                                                            <script>
+                                                                $(document).ready(function() {
+                                                                    var schemaWrapper = {
+  "description" : "Service or Protected Entity not found"
+};
+                                                                    var schema = schemaWrapper.schema;
+                                                                    schemaWrapper.definitions = defs;
+                                                                    //console.log(JSON.stringify(schema))
+                                                                    JsonRefs.resolveRefs(schemaWrapper, {
+                                                                        "depth": 3,
+                                                                        "resolveRemoteRefs": false,
+                                                                        "resolveFileRefs": false
+                                                                    }, function(err, resolved, metadata) {
+
+                                                                        //console.log(JSON.stringify(resolved));
+
+
+
+                                                                        var view = new JSONSchemaView(resolved.schema, 3);
+                                                                        $('#examples-Default-listSnapshots-schema-data').val(JSON.stringify(resolved.schema));
+                                                                        var result = $('#examples-Default-listSnapshots-schema-404');
+                                                                        result.empty();
+                                                                        result.append(view.render());
+                                                                    });
+
+
+
+
+                                                                });
+                                                            </script>
+                                                        </div>
+                                                        <input id='examples-Default-listSnapshots-schema-data' type='hidden' value=''></input>
 
 
 
@@ -4570,7 +4722,7 @@ try {
             </div>
             <div id="generator">
                 <div class="content">
-                    Generated 2019-10-25T10:32:54.098-07:00
+                    Generated 2019-10-25T11:02:32.000-07:00
                 </div>
             </div>
         </div>

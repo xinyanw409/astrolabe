@@ -26,7 +26,7 @@ func (this OpenAPIArachneHandler) AttachHandlers(api *operations.ArachneAPI) {
 	api.ListProtectedEntitiesHandler = operations.ListProtectedEntitiesHandlerFunc(this.ListProtectedEntities)
 	api.GetProtectedEntityInfoHandler = operations.GetProtectedEntityInfoHandlerFunc(this.GetProtectedEntityInfo)
 	api.CreateSnapshotHandler = operations.CreateSnapshotHandlerFunc(this.CreateSnapshot)
-	api.GetSnapshotsHandler = operations.GetSnapshotsHandlerFunc(this.GetSnapshots)
+	api.ListSnapshotsHandler = operations.ListSnapshotsHandlerFunc(this.ListSnapshots)
 	api.CopyProtectedEntityHandler = operations.CopyProtectedEntityHandlerFunc(this.CopyProtectedEntity)
 }
 
@@ -42,7 +42,7 @@ func (this OpenAPIArachneHandler) ListServices(params operations.ListServicesPar
 func (this OpenAPIArachneHandler) ListProtectedEntities(params operations.ListProtectedEntitiesParams) middleware.Responder {
 	petm := this.pem.GetProtectedEntityTypeManager(params.Service)
 	if petm == nil {
-
+		return operations.NewListProtectedEntitiesNotFound()
 	}
 	peids, err := petm.GetProtectedEntities(context.Background())
 	if err != nil {
@@ -99,7 +99,7 @@ func (this OpenAPIArachneHandler) CreateSnapshot(params operations.CreateSnapsho
 	return operations.NewCreateSnapshotOK().WithPayload(snapshotID.GetModelProtectedEntitySnapshotID())
 }
 
-func (this OpenAPIArachneHandler) GetSnapshots(params operations.GetSnapshotsParams) middleware.Responder {
+func (this OpenAPIArachneHandler) ListSnapshots(params operations.ListSnapshotsParams) middleware.Responder {
 	return nil
 }
 
