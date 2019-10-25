@@ -39,10 +39,10 @@ server: deps
 
 server-gen: gen/restapi/server.go
 
-gen/restapi/server.go: openapi/arachne_api.yaml
-	swagger generate server -f openapi/arachne_api.yaml -t gen --exclude-main -A arachne
+gen/restapi/server.go: openapi/astrolabe_api.yaml
+	swagger generate server -f openapi/astrolabe_api.yaml -t gen --exclude-main -A astrolabe
 
 docs-gen: docs/api/index.html
 
-docs/api/index.html: openapi/arachne_api.yaml
-	java -jar bin/swagger-codegen-cli-2.2.1.jar generate -o docs/api -i openapi/arachne_api.yaml -l html2
+docs/api/index.html: openapi/astrolabe_api.yaml
+	java -jar bin/swagger-codegen-cli-2.2.1.jar generate -o docs/api -i openapi/astrolabe_api.yaml -l html2

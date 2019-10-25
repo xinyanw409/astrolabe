@@ -1,29 +1,18 @@
-Welcome to Arachne
+## Overview
 
-To build
+Modern distributed applications are complex.  They may consist of containers,
+virtual machines, databases, load balancers, Kubernetes namespaces and other
+objects.  These applications need to be protected against data loss, service
+outages and disasters.  Data protection applications have to contend with
+new types of object to protect and the complex topologies of the applications.
+Astrolabe is a framework for data protection applications to discover,
+backup/replicate data and restore complex applications.  It provides a data
+protection-centric model of applications with APIs for snapshotting, data 
+extraction, copying and restoration.
 
-go build
+The Astrolabe project consists of:
 
-To install
+* OpenAPI API specification
+* Reference server implementation
+* Reference Protected Entity implementations
 
-cd arachne_server
-go install
-
-To run the Arachne server
-$GOPATH/bin/arachne_server -confDir=<your configuration dir> [-port=<desired port number>]
-
-The default port for the server is 1323
-
-Access via <ip>:/api/arachne
-
-VMWare IVDs (Improved Virtual Disks aka First Class Disks/FCDs) are supported
-
-Configure with a configuration directory that you specify with -confDir.  
-To configure IVD a file named ivd.pe.json needs to be created
-
-{
-	"vcHost":"<host name/IP>",
-	"insecureVC":"<Y unless your server has a proper certificate>",
-	"vcUser":"<VC login>",
-	"vcPassword":"<VC password>"
-}
