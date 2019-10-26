@@ -29,7 +29,7 @@ func NewListTasks(ctx *middleware.Context, handler ListTasksHandler) *ListTasks 
 	return &ListTasks{Context: ctx, Handler: handler}
 }
 
-/*ListTasks swagger:route GET /arachne/tasks listTasks
+/*ListTasks swagger:route GET /astrolabe/tasks listTasks
 
 Lists running and recent tasks
 

@@ -29,7 +29,7 @@ func NewGetTaskInfo(ctx *middleware.Context, handler GetTaskInfoHandler) *GetTas
 	return &GetTaskInfo{Context: ctx, Handler: handler}
 }
 
-/*GetTaskInfo swagger:route GET /arachne/tasks/{taskID} getTaskInfo
+/*GetTaskInfo swagger:route GET /astrolabe/tasks/{taskID} getTaskInfo
 
 Gets info about a running or recently completed task
 

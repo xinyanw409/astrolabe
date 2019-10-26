@@ -40,7 +40,7 @@ func (o *GetTaskInfoURL) SetBasePath(bp string) {
 func (o *GetTaskInfoURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/arachne/tasks/{taskID}"
+	var _path = "/astrolabe/tasks/{taskID}"
 
 	taskID := o.TaskID
 	if taskID != "" {

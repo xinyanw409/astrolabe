@@ -41,7 +41,7 @@ func (o *DeleteProtectedEntityURL) SetBasePath(bp string) {
 func (o *DeleteProtectedEntityURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/arachne/{service}/{protectedEntityID}"
+	var _path = "/astrolabe/{service}/{protectedEntityID}"
 
 	protectedEntityID := o.ProtectedEntityID
 	if protectedEntityID != "" {

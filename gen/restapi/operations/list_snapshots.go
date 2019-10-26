@@ -29,7 +29,7 @@ func NewListSnapshots(ctx *middleware.Context, handler ListSnapshotsHandler) *Li
 	return &ListSnapshots{Context: ctx, Handler: handler}
 }
 
-/*ListSnapshots swagger:route GET /arachne/{service}/{protectedEntityID}/snapshots listSnapshots
+/*ListSnapshots swagger:route GET /astrolabe/{service}/{protectedEntityID}/snapshots listSnapshots
 
 Gets the list of snapshots for this protected entity
 

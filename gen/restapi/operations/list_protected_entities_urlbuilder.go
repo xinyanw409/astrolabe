@@ -45,7 +45,7 @@ func (o *ListProtectedEntitiesURL) SetBasePath(bp string) {
 func (o *ListProtectedEntitiesURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/arachne/{service}"
+	var _path = "/astrolabe/{service}"
 
 	service := o.Service
 	if service != "" {

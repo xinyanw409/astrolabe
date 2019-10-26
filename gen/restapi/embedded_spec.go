@@ -20,11 +20,11 @@ func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
   "swagger": "2.0",
   "info": {
-    "title": "Arachne API",
+    "title": "Astrolabe API",
     "version": "1.0.0"
   },
   "paths": {
-    "/arachne": {
+    "/astrolabe": {
       "get": {
         "produces": [
           "application/json"
@@ -41,7 +41,7 @@ func init() {
         }
       }
     },
-    "/arachne/tasks": {
+    "/astrolabe/tasks": {
       "get": {
         "produces": [
           "application/json"
@@ -58,7 +58,7 @@ func init() {
         }
       }
     },
-    "/arachne/tasks/{taskID}": {
+    "/astrolabe/tasks/{taskID}": {
       "get": {
         "produces": [
           "application/json"
@@ -84,7 +84,7 @@ func init() {
         }
       }
     },
-    "/arachne/{service}": {
+    "/astrolabe/{service}": {
       "get": {
         "produces": [
           "application/json"
@@ -174,7 +174,7 @@ func init() {
         }
       }
     },
-    "/arachne/{service}/{protectedEntityID}": {
+    "/astrolabe/{service}/{protectedEntityID}": {
       "get": {
         "produces": [
           "application/json"
@@ -238,7 +238,7 @@ func init() {
         }
       }
     },
-    "/arachne/{service}/{protectedEntityID}/snapshots": {
+    "/astrolabe/{service}/{protectedEntityID}/snapshots": {
       "get": {
         "produces": [
           "application/json"
@@ -470,11 +470,11 @@ func init() {
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
   "swagger": "2.0",
   "info": {
-    "title": "Arachne API",
+    "title": "Astrolabe API",
     "version": "1.0.0"
   },
   "paths": {
-    "/arachne": {
+    "/astrolabe": {
       "get": {
         "produces": [
           "application/json"
@@ -491,7 +491,7 @@ func init() {
         }
       }
     },
-    "/arachne/tasks": {
+    "/astrolabe/tasks": {
       "get": {
         "produces": [
           "application/json"
@@ -508,7 +508,7 @@ func init() {
         }
       }
     },
-    "/arachne/tasks/{taskID}": {
+    "/astrolabe/tasks/{taskID}": {
       "get": {
         "produces": [
           "application/json"
@@ -534,7 +534,7 @@ func init() {
         }
       }
     },
-    "/arachne/{service}": {
+    "/astrolabe/{service}": {
       "get": {
         "produces": [
           "application/json"
@@ -624,7 +624,7 @@ func init() {
         }
       }
     },
-    "/arachne/{service}/{protectedEntityID}": {
+    "/astrolabe/{service}/{protectedEntityID}": {
       "get": {
         "produces": [
           "application/json"
@@ -688,7 +688,7 @@ func init() {
         }
       }
     },
-    "/arachne/{service}/{protectedEntityID}/snapshots": {
+    "/astrolabe/{service}/{protectedEntityID}/snapshots": {
       "get": {
         "produces": [
           "application/json"

@@ -29,7 +29,7 @@ func NewCopyProtectedEntity(ctx *middleware.Context, handler CopyProtectedEntity
 	return &CopyProtectedEntity{Context: ctx, Handler: handler}
 }
 
-/*CopyProtectedEntity swagger:route POST /arachne/{service} copyProtectedEntity
+/*CopyProtectedEntity swagger:route POST /astrolabe/{service} copyProtectedEntity
 
 Copy a protected entity into the repository.  There is no option to embed data on this path, for a self-contained or partially self-contained object, use the restore from zip file option in the S3 API REST API
 

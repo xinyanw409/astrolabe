@@ -13,13 +13,13 @@ import (
 	"github.com/vmware/arachne/gen/restapi/operations"
 )
 
-//go:generate swagger generate server --target ../../gen --name Arachne --spec ../../openapi/arachne_api.yaml --exclude-main
+//go:generate swagger generate server --target ../../gen --name Astrolabe --spec ../../openapi/astrolabe_api.yaml --exclude-main
 
-func configureFlags(api *operations.ArachneAPI) {
+func configureFlags(api *operations.AstrolabeAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *operations.ArachneAPI) http.Handler {
+func configureAPI(api *operations.AstrolabeAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -53,11 +53,6 @@ func configureAPI(api *operations.ArachneAPI) http.Handler {
 			return middleware.NotImplemented("operation .GetProtectedEntityInfo has not yet been implemented")
 		})
 	}
-	if api.GetSnapshotsHandler == nil {
-		api.GetSnapshotsHandler = operations.GetSnapshotsHandlerFunc(func(params operations.GetSnapshotsParams) middleware.Responder {
-			return middleware.NotImplemented("operation .GetSnapshots has not yet been implemented")
-		})
-	}
 	if api.GetTaskInfoHandler == nil {
 		api.GetTaskInfoHandler = operations.GetTaskInfoHandlerFunc(func(params operations.GetTaskInfoParams) middleware.Responder {
 			return middleware.NotImplemented("operation .GetTaskInfo has not yet been implemented")
@@ -71,6 +66,11 @@ func configureAPI(api *operations.ArachneAPI) http.Handler {
 	if api.ListServicesHandler == nil {
 		api.ListServicesHandler = operations.ListServicesHandlerFunc(func(params operations.ListServicesParams) middleware.Responder {
 			return middleware.NotImplemented("operation .ListServices has not yet been implemented")
+		})
+	}
+	if api.ListSnapshotsHandler == nil {
+		api.ListSnapshotsHandler = operations.ListSnapshotsHandlerFunc(func(params operations.ListSnapshotsParams) middleware.Responder {
+			return middleware.NotImplemented("operation .ListSnapshots has not yet been implemented")
 		})
 	}
 	if api.ListTasksHandler == nil {

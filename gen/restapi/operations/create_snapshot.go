@@ -29,7 +29,7 @@ func NewCreateSnapshot(ctx *middleware.Context, handler CreateSnapshotHandler) *
 	return &CreateSnapshot{Context: ctx, Handler: handler}
 }
 
-/*CreateSnapshot swagger:route POST /arachne/{service}/{protectedEntityID}/snapshots createSnapshot
+/*CreateSnapshot swagger:route POST /astrolabe/{service}/{protectedEntityID}/snapshots createSnapshot
 
 Creates a new snapshot for this protected entity
 

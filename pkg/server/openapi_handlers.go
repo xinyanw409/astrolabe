@@ -21,7 +21,7 @@ func NewOpenAPIArachneHandler(pem arachne.ProtectedEntityManager, tm TaskManager
 		tm: tm,
 	}
 }
-func (this OpenAPIArachneHandler) AttachHandlers(api *operations.ArachneAPI) {
+func (this OpenAPIArachneHandler) AttachHandlers(api *operations.AstrolabeAPI) {
 	api.ListServicesHandler = operations.ListServicesHandlerFunc(this.ListServices)
 	api.ListProtectedEntitiesHandler = operations.ListProtectedEntitiesHandlerFunc(this.ListProtectedEntities)
 	api.GetProtectedEntityInfoHandler = operations.GetProtectedEntityInfoHandlerFunc(this.GetProtectedEntityInfo)

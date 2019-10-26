@@ -29,7 +29,7 @@ func NewListServices(ctx *middleware.Context, handler ListServicesHandler) *List
 	return &ListServices{Context: ctx, Handler: handler}
 }
 
-/*ListServices swagger:route GET /arachne listServices
+/*ListServices swagger:route GET /astrolabe listServices
 
 List available services
 

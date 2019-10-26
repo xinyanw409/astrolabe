@@ -35,7 +35,7 @@ func (o *ListTasksURL) SetBasePath(bp string) {
 func (o *ListTasksURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/arachne/tasks"
+	var _path = "/astrolabe/tasks"
 
 	_basePath := o._basePath
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)

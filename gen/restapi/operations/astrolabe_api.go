@@ -20,9 +20,9 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewArachneAPI creates a new Arachne instance
-func NewArachneAPI(spec *loads.Document) *ArachneAPI {
-	return &ArachneAPI{
+// NewAstrolabeAPI creates a new Astrolabe instance
+func NewAstrolabeAPI(spec *loads.Document) *AstrolabeAPI {
+	return &AstrolabeAPI{
 		handlers:            make(map[string]map[string]http.Handler),
 		formats:             strfmt.Default,
 		defaultConsumes:     "application/json",
@@ -67,8 +67,8 @@ func NewArachneAPI(spec *loads.Document) *ArachneAPI {
 	}
 }
 
-/*ArachneAPI the arachne API */
-type ArachneAPI struct {
+/*AstrolabeAPI the astrolabe API */
+type AstrolabeAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
@@ -130,42 +130,42 @@ type ArachneAPI struct {
 }
 
 // SetDefaultProduces sets the default produces media type
-func (o *ArachneAPI) SetDefaultProduces(mediaType string) {
+func (o *AstrolabeAPI) SetDefaultProduces(mediaType string) {
 	o.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func (o *ArachneAPI) SetDefaultConsumes(mediaType string) {
+func (o *AstrolabeAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
 }
 
 // SetSpec sets a spec that will be served for the clients.
-func (o *ArachneAPI) SetSpec(spec *loads.Document) {
+func (o *AstrolabeAPI) SetSpec(spec *loads.Document) {
 	o.spec = spec
 }
 
 // DefaultProduces returns the default produces media type
-func (o *ArachneAPI) DefaultProduces() string {
+func (o *AstrolabeAPI) DefaultProduces() string {
 	return o.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func (o *ArachneAPI) DefaultConsumes() string {
+func (o *AstrolabeAPI) DefaultConsumes() string {
 	return o.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func (o *ArachneAPI) Formats() strfmt.Registry {
+func (o *AstrolabeAPI) Formats() strfmt.Registry {
 	return o.formats
 }
 
 // RegisterFormat registers a custom format validator
-func (o *ArachneAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func (o *AstrolabeAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
 	o.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the ArachneAPI
-func (o *ArachneAPI) Validate() error {
+// Validate validates the registrations in the AstrolabeAPI
+func (o *AstrolabeAPI) Validate() error {
 	var unregistered []string
 
 	if o.JSONConsumer == nil {
@@ -220,26 +220,26 @@ func (o *ArachneAPI) Validate() error {
 }
 
 // ServeErrorFor gets a error handler for a given operation id
-func (o *ArachneAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func (o *AstrolabeAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return o.ServeError
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *ArachneAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
+func (o *AstrolabeAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	return nil
 
 }
 
 // Authorizer returns the registered authorizer
-func (o *ArachneAPI) Authorizer() runtime.Authorizer {
+func (o *AstrolabeAPI) Authorizer() runtime.Authorizer {
 
 	return nil
 
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func (o *ArachneAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
+func (o *AstrolabeAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 
 	result := make(map[string]runtime.Consumer)
 	for _, mt := range mediaTypes {
@@ -259,7 +259,7 @@ func (o *ArachneAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consum
 }
 
 // ProducersFor gets the producers for the specified media types
-func (o *ArachneAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
+func (o *AstrolabeAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 
 	result := make(map[string]runtime.Producer)
 	for _, mt := range mediaTypes {
@@ -279,7 +279,7 @@ func (o *ArachneAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produc
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
-func (o *ArachneAPI) HandlerFor(method, path string) (http.Handler, bool) {
+func (o *AstrolabeAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
@@ -294,8 +294,8 @@ func (o *ArachneAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
-// Context returns the middleware context for the arachne API
-func (o *ArachneAPI) Context() *middleware.Context {
+// Context returns the middleware context for the astrolabe API
+func (o *AstrolabeAPI) Context() *middleware.Context {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
@@ -303,7 +303,7 @@ func (o *ArachneAPI) Context() *middleware.Context {
 	return o.context
 }
 
-func (o *ArachneAPI) initHandlerCache() {
+func (o *AstrolabeAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
 
 	if o.handlers == nil {
@@ -313,53 +313,53 @@ func (o *ArachneAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/arachne/{service}"] = NewCopyProtectedEntity(o.context, o.CopyProtectedEntityHandler)
+	o.handlers["POST"]["/astrolabe/{service}"] = NewCopyProtectedEntity(o.context, o.CopyProtectedEntityHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/arachne/{service}/{protectedEntityID}/snapshots"] = NewCreateSnapshot(o.context, o.CreateSnapshotHandler)
+	o.handlers["POST"]["/astrolabe/{service}/{protectedEntityID}/snapshots"] = NewCreateSnapshot(o.context, o.CreateSnapshotHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
-	o.handlers["DELETE"]["/arachne/{service}/{protectedEntityID}"] = NewDeleteProtectedEntity(o.context, o.DeleteProtectedEntityHandler)
+	o.handlers["DELETE"]["/astrolabe/{service}/{protectedEntityID}"] = NewDeleteProtectedEntity(o.context, o.DeleteProtectedEntityHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/arachne/{service}/{protectedEntityID}"] = NewGetProtectedEntityInfo(o.context, o.GetProtectedEntityInfoHandler)
+	o.handlers["GET"]["/astrolabe/{service}/{protectedEntityID}"] = NewGetProtectedEntityInfo(o.context, o.GetProtectedEntityInfoHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/arachne/tasks/{taskID}"] = NewGetTaskInfo(o.context, o.GetTaskInfoHandler)
+	o.handlers["GET"]["/astrolabe/tasks/{taskID}"] = NewGetTaskInfo(o.context, o.GetTaskInfoHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/arachne/{service}"] = NewListProtectedEntities(o.context, o.ListProtectedEntitiesHandler)
+	o.handlers["GET"]["/astrolabe/{service}"] = NewListProtectedEntities(o.context, o.ListProtectedEntitiesHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/arachne"] = NewListServices(o.context, o.ListServicesHandler)
+	o.handlers["GET"]["/astrolabe"] = NewListServices(o.context, o.ListServicesHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/arachne/{service}/{protectedEntityID}/snapshots"] = NewListSnapshots(o.context, o.ListSnapshotsHandler)
+	o.handlers["GET"]["/astrolabe/{service}/{protectedEntityID}/snapshots"] = NewListSnapshots(o.context, o.ListSnapshotsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/arachne/tasks"] = NewListTasks(o.context, o.ListTasksHandler)
+	o.handlers["GET"]["/astrolabe/tasks"] = NewListTasks(o.context, o.ListTasksHandler)
 
 }
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
-func (o *ArachneAPI) Serve(builder middleware.Builder) http.Handler {
+func (o *AstrolabeAPI) Serve(builder middleware.Builder) http.Handler {
 	o.Init()
 
 	if o.Middleware != nil {
@@ -369,18 +369,18 @@ func (o *ArachneAPI) Serve(builder middleware.Builder) http.Handler {
 }
 
 // Init allows you to just initialize the handler cache, you can then recompose the middleware as you see fit
-func (o *ArachneAPI) Init() {
+func (o *AstrolabeAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
 }
 
 // RegisterConsumer allows you to add (or override) a consumer for a media type.
-func (o *ArachneAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
+func (o *AstrolabeAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
 	o.customConsumers[mediaType] = consumer
 }
 
 // RegisterProducer allows you to add (or override) a producer for a media type.
-func (o *ArachneAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
+func (o *AstrolabeAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
 }

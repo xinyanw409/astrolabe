@@ -29,7 +29,7 @@ func NewDeleteProtectedEntity(ctx *middleware.Context, handler DeleteProtectedEn
 	return &DeleteProtectedEntity{Context: ctx, Handler: handler}
 }
 
-/*DeleteProtectedEntity swagger:route DELETE /arachne/{service}/{protectedEntityID} deleteProtectedEntity
+/*DeleteProtectedEntity swagger:route DELETE /astrolabe/{service}/{protectedEntityID} deleteProtectedEntity
 
 Deletes a protected entity or snapshot of a protected entity (if the snapshot ID is specified)
 

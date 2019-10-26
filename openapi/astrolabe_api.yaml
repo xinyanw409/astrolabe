@@ -1,9 +1,9 @@
 swagger: '2.0'
 info:
-  title: Arachne API
+  title: Astrolabe API
   version: 1.0.0
 paths:
-  /arachne:
+  /astrolabe:
     get:
       produces:
         - application/json
@@ -15,7 +15,7 @@ paths:
             $ref: '#/definitions/ServiceList'
       operationId: listServices
       summary: List available services
-  /arachne/tasks:
+  /astrolabe/tasks:
     get:
       produces:
         - application/json
@@ -27,7 +27,7 @@ paths:
             $ref: '#/definitions/TaskIDList'
       operationId: listTasks
       summary: Lists running and recent tasks
-  '/arachne/tasks/{taskID}':
+  '/astrolabe/tasks/{taskID}':
     get:
       produces:
         - application/json
@@ -44,7 +44,7 @@ paths:
             $ref: '#/definitions/TaskInfo'
       operationId: getTaskInfo
       summary: Gets info about a running or recently completed task
-  '/arachne/{service}':
+  '/astrolabe/{service}':
     get:
       produces:
         - application/json
@@ -127,7 +127,7 @@ paths:
         embed data on this path, for a self-contained or partially
         self-contained object, use the restore from zip file option in the S3
         API REST API
-  '/arachne/{service}/{protectedEntityID}':
+  '/astrolabe/{service}/{protectedEntityID}':
     delete:
       produces:
         - application/json
@@ -174,7 +174,7 @@ paths:
       summary: >-
         Get the info for a Protected Entity including name, data access and
         components
-  '/arachne/{service}/{protectedEntityID}/snapshots':
+  '/astrolabe/{service}/{protectedEntityID}/snapshots':
     get:
       produces:
         - application/json

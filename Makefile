@@ -40,7 +40,7 @@ server: deps
 server-gen: gen/restapi/server.go
 
 gen/restapi/server.go: openapi/astrolabe_api.yaml
-	swagger generate server -f openapi/astrolabe_api.yaml -t gen --exclude-main -A astrolabe
+	$(GOPATH)/bin/swagger generate server -f openapi/astrolabe_api.yaml -t gen --exclude-main -A astrolabe
 
 docs-gen: docs/api/index.html
 
