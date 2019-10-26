@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package arachne
+package astrolabe
 
 import (
 	"context"
@@ -64,7 +64,7 @@ func fillInProtectedEntityIDFromString(pei *ProtectedEntityID, peiString string)
 		}
 		log.Print("pei = " + pei.String())
 	} else {
-		return errors.New("arachne: '" + peiString + "' is not a valid protected entity ID")
+		return errors.New("astrolabe: '" + peiString + "' is not a valid protected entity ID")
 	}
 	return nil
 }

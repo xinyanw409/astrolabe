@@ -14,25 +14,32 @@
  * limitations under the License.
  */
 
-package arachne
+package astrolabe
 
 import (
-	//	"archive/zip"
+	"archive/zip"
 	"context"
+	"encoding/json"
+	"io"
 )
 
-type CopyCreateOptions int
-
-const (
-	AllocateNewObject    CopyCreateOptions = 1
-	UpdateExistingObject CopyCreateOptions = 2
-	AllocateObjectWithID CopyCreateOptions = 3
-)
-
-type ProtectedEntityTypeManager interface {
-	GetTypeName() string
-	GetProtectedEntity(ctx context.Context, id ProtectedEntityID) (ProtectedEntity, error)
-	GetProtectedEntities(ctx context.Context) ([]ProtectedEntityID, error)
-	Copy(ctx context.Context, pe ProtectedEntity, options CopyCreateOptions) (ProtectedEntity, error)
-	CopyFromInfo(ctx context.Context, info ProtectedEntityInfo, options CopyCreateOptions) (ProtectedEntity, error)
+func ZipProtectedEntity(ctx context.Context, entity ProtectedEntity, writer io.Writer) error {
+	zipWriter := zip.NewWriter(writer)
+	peInfo, err := entity.GetInfo(ctx)
+	if (err != nil) {
+		return err
+	}
+	jsonBuf, err := json.Marshal(peInfo)
+	if (err != nil) {
+		return err
+	}
+	peInfoWriter, err := zipWriter.Create(entity.GetID().String() + ".peinfo")
+	if (err != nil) {
+		return err
+	}
+	_, err = peInfoWriter.Write(jsonBuf)
+	if (err != nil) {
+		return err
+	}
+	return nil
 }

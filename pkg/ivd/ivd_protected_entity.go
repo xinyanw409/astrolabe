@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	vim "github.com/vmware/govmomi/vim25/types"
 	"github.com/vmware/govmomi/vim25/xml"
 	"github.com/vmware/gvddk/gDiskLib"
@@ -38,10 +38,10 @@ import (
 
 type IVDProtectedEntity struct {
 	ipetm    *IVDProtectedEntityTypeManager
-	id       arachne.ProtectedEntityID
-	data     []arachne.DataTransport
-	metadata []arachne.DataTransport
-	combined []arachne.DataTransport
+	id       astrolabe.ProtectedEntityID
+	data     []astrolabe.DataTransport
+	metadata []astrolabe.DataTransport
+	combined []astrolabe.DataTransport
 	logger   logrus.FieldLogger
 }
 
@@ -214,15 +214,15 @@ func readMetadataFromBuf(ctx context.Context, buf []byte) (metadata, error) {
 	return retVal, err
 }
 
-func newProtectedEntityID(id vim.ID) arachne.ProtectedEntityID {
-	return arachne.NewProtectedEntityID("ivd", id.Id)
+func newProtectedEntityID(id vim.ID) astrolabe.ProtectedEntityID {
+	return astrolabe.NewProtectedEntityID("ivd", id.Id)
 }
 
-func newProtectedEntityIDWithSnapshotID(id vim.ID, snapshotID arachne.ProtectedEntitySnapshotID) arachne.ProtectedEntityID {
-	return arachne.NewProtectedEntityIDWithSnapshotID("ivd", id.Id, snapshotID)
+func newProtectedEntityIDWithSnapshotID(id vim.ID, snapshotID astrolabe.ProtectedEntitySnapshotID) astrolabe.ProtectedEntityID {
+	return astrolabe.NewProtectedEntityIDWithSnapshotID("ivd", id.Id, snapshotID)
 }
 
-func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.ProtectedEntityID) (IVDProtectedEntity, error) {
+func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id astrolabe.ProtectedEntityID) (IVDProtectedEntity, error) {
 	data, metadata, combined, err := ipetm.getDataTransports(id)
 	if err != nil {
 		return IVDProtectedEntity{}, err
@@ -237,7 +237,7 @@ func newIVDProtectedEntity(ipetm *IVDProtectedEntityTypeManager, id arachne.Prot
 	}
 	return newIPE, nil
 }
-func (this IVDProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEntityInfo, error) {
+func (this IVDProtectedEntity) GetInfo(ctx context.Context) (astrolabe.ProtectedEntityInfo, error) {
 	vsoID := vim.ID{
 		Id: this.id.GetID(),
 	}
@@ -246,22 +246,22 @@ func (this IVDProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEn
 		return nil, errors.Wrap(err, "Retrieve failed")
 	}
 
-	retVal := arachne.NewProtectedEntityInfo(
+	retVal := astrolabe.NewProtectedEntityInfo(
 		this.id,
 		vso.Config.Name,
 		this.data,
 		this.metadata,
 		this.combined,
-		[]arachne.ProtectedEntityID{})
+		[]astrolabe.ProtectedEntityID{})
 	return retVal, nil
 }
 
-func (this IVDProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.ProtectedEntityInfo, error) {
+func (this IVDProtectedEntity) GetCombinedInfo(ctx context.Context) ([]astrolabe.ProtectedEntityInfo, error) {
 	ivdIPE, err := this.GetInfo(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return []arachne.ProtectedEntityInfo{ivdIPE}, nil
+	return []astrolabe.ProtectedEntityInfo{ivdIPE}, nil
 }
 
 const waitTime = 3600 * time.Second
@@ -269,14 +269,14 @@ const waitTime = 3600 * time.Second
 /*
  * Snapshot APIs
  */
-func (this IVDProtectedEntity) Snapshot(ctx context.Context) (arachne.ProtectedEntitySnapshotID, error) {
+func (this IVDProtectedEntity) Snapshot(ctx context.Context) (astrolabe.ProtectedEntitySnapshotID, error) {
 	vslmTask, err := this.ipetm.vsom.CreateSnapshot(ctx, NewVimIDFromPEID(this.GetID()), "ArachneSnapshot")
 	if err != nil {
-		return arachne.ProtectedEntitySnapshotID{}, errors.Wrap(err, "Snapshot failed")
+		return astrolabe.ProtectedEntitySnapshotID{}, errors.Wrap(err, "Snapshot failed")
 	}
 	ivdSnapshotIDAny, err := vslmTask.Wait(ctx, waitTime)
 	if err != nil {
-		return arachne.ProtectedEntitySnapshotID{}, errors.Wrap(err, "Wait failed")
+		return astrolabe.ProtectedEntitySnapshotID{}, errors.Wrap(err, "Wait failed")
 	}
 	ivdSnapshotID := ivdSnapshotIDAny.(vim.ID)
 	/*
@@ -285,22 +285,22 @@ func (this IVDProtectedEntity) Snapshot(ctx context.Context) (arachne.ProtectedE
 			id: ivdSnapshotStr,
 		}
 	*/
-	retVal := arachne.NewProtectedEntitySnapshotID(ivdSnapshotID.Id)
+	retVal := astrolabe.NewProtectedEntitySnapshotID(ivdSnapshotID.Id)
 	return retVal, nil
 }
 
-func (this IVDProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
+func (this IVDProtectedEntity) ListSnapshots(ctx context.Context) ([]astrolabe.ProtectedEntitySnapshotID, error) {
 	snapshotInfo, err := this.ipetm.vsom.RetrieveSnapshotInfo(ctx, NewVimIDFromPEID(this.GetID()))
 	if err != nil {
 		return nil, errors.Wrap(err, "RetrieveSnapshotInfo failed")
 	}
-	peSnapshotIDs := []arachne.ProtectedEntitySnapshotID{}
+	peSnapshotIDs := []astrolabe.ProtectedEntitySnapshotID{}
 	for _, curSnapshotInfo := range snapshotInfo {
-		peSnapshotIDs = append(peSnapshotIDs, arachne.NewProtectedEntitySnapshotID(curSnapshotInfo.Id.Id))
+		peSnapshotIDs = append(peSnapshotIDs, astrolabe.NewProtectedEntitySnapshotID(curSnapshotInfo.Id.Id))
 	}
 	return peSnapshotIDs, nil
 }
-func (this IVDProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
+func (this IVDProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete astrolabe.ProtectedEntitySnapshotID) (bool, error) {
 	vslmTask, err := this.ipetm.vsom.DeleteSnapshot(ctx, NewVimIDFromPEID(this.id), NewVimSnapshotIDFromPESnapshotID(snapshotToDelete))
 	this.logger.Infof("IVD DeleteSnapshot API get called. Error: %v", err)
 	if err != nil {
@@ -314,15 +314,15 @@ func (this IVDProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDel
 	return true, nil
 }
 
-func (this IVDProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotID arachne.ProtectedEntitySnapshotID) (*arachne.ProtectedEntityInfo, error) {
+func (this IVDProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotID astrolabe.ProtectedEntitySnapshotID) (*astrolabe.ProtectedEntityInfo, error) {
 	return nil, nil
 }
 
-func (this IVDProtectedEntity) GetComponents(ctx context.Context) ([]arachne.ProtectedEntity, error) {
-	return make([]arachne.ProtectedEntity, 0), nil
+func (this IVDProtectedEntity) GetComponents(ctx context.Context) ([]astrolabe.ProtectedEntity, error) {
+	return make([]astrolabe.ProtectedEntity, 0), nil
 }
 
-func (this IVDProtectedEntity) GetID() arachne.ProtectedEntityID {
+func (this IVDProtectedEntity) GetID() astrolabe.ProtectedEntityID {
 	return this.id
 }
 
@@ -332,7 +332,7 @@ func NewIDFromString(idStr string) vim.ID {
 	}
 }
 
-func NewVimIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
+func NewVimIDFromPEID(peid astrolabe.ProtectedEntityID) vim.ID {
 	if peid.GetPeType() == "ivd" {
 		return vim.ID{
 			Id: peid.GetID(),
@@ -342,7 +342,7 @@ func NewVimIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
 	}
 }
 
-func NewVimSnapshotIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
+func NewVimSnapshotIDFromPEID(peid astrolabe.ProtectedEntityID) vim.ID {
 	if peid.HasSnapshot() {
 		return vim.ID{
 			Id: peid.GetSnapshotID().GetID(),
@@ -352,7 +352,7 @@ func NewVimSnapshotIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
 	}
 }
 
-func NewVimSnapshotIDFromPESnapshotID(peSnapshotID arachne.ProtectedEntitySnapshotID) vim.ID {
+func NewVimSnapshotIDFromPESnapshotID(peSnapshotID astrolabe.ProtectedEntitySnapshotID) vim.ID {
 	return vim.ID{
 		Id: peSnapshotID.GetID(),
 	}

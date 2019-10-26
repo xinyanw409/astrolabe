@@ -19,7 +19,7 @@ package kubernetes
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -60,14 +60,14 @@ func (this *KubernetesNamespaceProtectedEntityTypeManager) GetTypeName() string 
 	return "kubernetes-ns"
 }
 
-func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (
-	arachne.ProtectedEntity, error) {
+func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id astrolabe.ProtectedEntityID) (
+	astrolabe.ProtectedEntity, error) {
 	return nil, nil
 }
 
-func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntityID, error) {
+func (this *KubernetesNamespaceProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]astrolabe.ProtectedEntityID, error) {
 	//TODO - fix concurrency issues here
-	protectedEntities := make([]arachne.ProtectedEntityID, 0, len(this.namespaces))
+	protectedEntities := make([]astrolabe.ProtectedEntityID, 0, len(this.namespaces))
 
 	for _, pe := range this.namespaces {
 		protectedEntities = append(protectedEntities, pe.GetID())
@@ -94,10 +94,10 @@ func (this *KubernetesNamespaceProtectedEntityTypeManager) loadNamespaceEntities
 	return nil
 }
 
-func (this *KubernetesNamespaceProtectedEntityTypeManager) Copy(ctx context.Context, pe arachne.ProtectedEntity, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
+func (this *KubernetesNamespaceProtectedEntityTypeManager) Copy(ctx context.Context, pe astrolabe.ProtectedEntity, options astrolabe.CopyCreateOptions) (astrolabe.ProtectedEntity, error) {
 	return nil, nil
 }
 
-func (this *KubernetesNamespaceProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, pe arachne.ProtectedEntityInfo, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
+func (this *KubernetesNamespaceProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, pe astrolabe.ProtectedEntityInfo, options astrolabe.CopyCreateOptions) (astrolabe.ProtectedEntity, error) {
 	return nil, nil
 }

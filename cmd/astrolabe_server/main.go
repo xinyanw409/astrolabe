@@ -54,7 +54,7 @@ func main() {
 	}
 
 	// create new service API
-	api := operations.NewArachneAPI(swaggerSpec)
+	api := operations.NewAstrolabeAPI(swaggerSpec)
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 

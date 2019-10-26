@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"github.com/vmware/arachne/pkg/fs"
 	"github.com/vmware/arachne/pkg/ivd"
 	"github.com/vmware/arachne/pkg/kubernetes"
@@ -33,13 +33,13 @@ import (
 )
 
 type DirectProtectedEntityManager struct {
-	typeManager map[string]arachne.ProtectedEntityTypeManager
+	typeManager map[string]astrolabe.ProtectedEntityTypeManager
 	s3URLBase   string
 }
 
-func NewDirectProtectedEntityManager(petms []arachne.ProtectedEntityTypeManager, s3URLBase string) (returnPEM *DirectProtectedEntityManager) {
+func NewDirectProtectedEntityManager(petms []astrolabe.ProtectedEntityTypeManager, s3URLBase string) (returnPEM *DirectProtectedEntityManager) {
 	returnPEM = &DirectProtectedEntityManager{
-		typeManager: make(map[string]arachne.ProtectedEntityTypeManager),
+		typeManager: make(map[string]astrolabe.ProtectedEntityTypeManager),
 	}
 	for _, curPETM := range petms {
 		returnPEM.typeManager[curPETM.GetTypeName()] = curPETM
@@ -58,11 +58,11 @@ func NewDirectProtectedEntityManagerFromConfigDir(confDirPath string, s3URLBase 
 
 func NewDirectProtectedEntityManagerFromParamMap(configMap map[string]map[string]interface{}, s3URLBase string) (
 *DirectProtectedEntityManager) {
-	petms := make([]arachne.ProtectedEntityTypeManager, 0) // No guarantee all configs will be valid, so don't preallocate
+	petms := make([]astrolabe.ProtectedEntityTypeManager, 0) // No guarantee all configs will be valid, so don't preallocate
 	var err error
 	logger := logrus.New()
 	for serviceName, params := range configMap {
-		var curService arachne.ProtectedEntityTypeManager
+		var curService astrolabe.ProtectedEntityTypeManager
 		switch serviceName {
 		case "ivd":
 			curService, err = ivd.NewIVDProtectedEntityTypeManagerFromConfig(params, s3URLBase, logger)
@@ -129,16 +129,16 @@ func readConfigFile(confFile string) (map[string]interface{}, error) {
 	return result, nil
 }
 
-func (this *DirectProtectedEntityManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (arachne.ProtectedEntity, error) {
+func (this *DirectProtectedEntityManager) GetProtectedEntity(ctx context.Context, id astrolabe.ProtectedEntityID) (astrolabe.ProtectedEntity, error) {
 	return this.typeManager[id.GetPeType()].GetProtectedEntity(ctx, id);
 }
 
-func (this *DirectProtectedEntityManager) GetProtectedEntityTypeManager(peType string) arachne.ProtectedEntityTypeManager {
+func (this *DirectProtectedEntityManager) GetProtectedEntityTypeManager(peType string) astrolabe.ProtectedEntityTypeManager {
 	return this.typeManager[peType]
 }
 
-func (this *DirectProtectedEntityManager) ListEntityTypeManagers() []arachne.ProtectedEntityTypeManager {
-	returnArr := []arachne.ProtectedEntityTypeManager{}
+func (this *DirectProtectedEntityManager) ListEntityTypeManagers() []astrolabe.ProtectedEntityTypeManager {
+	returnArr := []astrolabe.ProtectedEntityTypeManager{}
 	for _, curPETM := range this.typeManager {
 		returnArr = append(returnArr, curPETM)
 	}

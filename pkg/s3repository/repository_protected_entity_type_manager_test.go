@@ -21,7 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"github.com/vmware/arachne/pkg/fs"
 	"github.com/vmware/arachne/pkg/ivd"
 	"log"
@@ -64,9 +64,9 @@ func TestCreateDeleteProtectedEntity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	peID := arachne.NewProtectedEntityIDWithSnapshotID("test", "unique1", arachne.NewProtectedEntitySnapshotID("snapshot1"))
-	peInfo := arachne.NewProtectedEntityInfo(peID, "testPE", nil, nil, nil, nil)
-	repoPE, err := s3petm.CopyFromInfo(context.Background(), peInfo, arachne.AllocateNewObject)
+	peID := astrolabe.NewProtectedEntityIDWithSnapshotID("test", "unique1", astrolabe.NewProtectedEntitySnapshotID("snapshot1"))
+	peInfo := astrolabe.NewProtectedEntityInfo(peID, "testPE", nil, nil, nil, nil)
+	repoPE, err := s3petm.CopyFromInfo(context.Background(), peInfo, astrolabe.AllocateNewObject)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,18 +95,18 @@ func TestCopyFSProtectedEntity(t *testing.T) {
 	}
 	for _, fsPEID := range fsPEs {
 		// FS doesn't have snapshots, but repository likes them, so fake one
-		snapPEID := arachne.NewProtectedEntityIDWithSnapshotID(fsPEID.GetPeType(), fsPEID.GetID(),
-			arachne.NewProtectedEntitySnapshotID("dummy-snap-id"))
+		snapPEID := astrolabe.NewProtectedEntityIDWithSnapshotID(fsPEID.GetPeType(), fsPEID.GetID(),
+			astrolabe.NewProtectedEntitySnapshotID("dummy-snap-id"))
 		fsPE, err := fsPETM.GetProtectedEntity(ctx, snapPEID)
 		if err != nil {
 			t.Fatal(err)
 		}
-		s3PE, err := s3petm.Copy(ctx, fsPE, arachne.AllocateNewObject)
+		s3PE, err := s3petm.Copy(ctx, fsPE, astrolabe.AllocateNewObject)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		newFSPE, err := fsPETM.Copy(ctx, s3PE, arachne.AllocateNewObject)
+		newFSPE, err := fsPETM.Copy(ctx, s3PE, astrolabe.AllocateNewObject)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -132,8 +132,8 @@ func TestRetrieveEntity(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	peid := arachne.NewProtectedEntityIDWithSnapshotID("ivd", "ff9ac770-7ecd-405d-841b-6232857520d4",
-		arachne.NewProtectedEntitySnapshotID("bde7e96d-8065-4bd5-a82a-edd7b2f540de"))
+	peid := astrolabe.NewProtectedEntityIDWithSnapshotID("ivd", "ff9ac770-7ecd-405d-841b-6232857520d4",
+		astrolabe.NewProtectedEntitySnapshotID("bde7e96d-8065-4bd5-a82a-edd7b2f540de"))
 	s3PE, err := s3petm.GetProtectedEntity(ctx, peid)
 	if err != nil {
 		t.Fatal(err)
@@ -159,7 +159,7 @@ func TestRetrieveEntity(t *testing.T) {
 
 		fmt.Printf("%d bytes copied\n", bytesCopied)
 	*/
-	newIVDPE, err := ivdPETM.Copy(ctx, s3PE, arachne.AllocateNewObject)
+	newIVDPE, err := ivdPETM.Copy(ctx, s3PE, astrolabe.AllocateNewObject)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,26 +210,26 @@ func TestCopyIVDProtectedEntity(t *testing.T) {
 	*/
 	ctx = context.Background()
 
-	//PESSID := arachne.NewProtectedEntitySnapshotID("ecb7fa78-cef9-4459-b898-17a39f582d9b")
-	//ivdPEID := arachne.NewProtectedEntityIDWithSnapshotID("ivd", "cf29221a-381b-4036-825a-56bf8294ed38", ivdPESSID)
-	ivdPEID := arachne.NewProtectedEntityID("ivd", "9d886896-f7f4-46d4-b6ab-f50b30013467")
+	//PESSID := astrolabe.NewProtectedEntitySnapshotID("ecb7fa78-cef9-4459-b898-17a39f582d9b")
+	//ivdPEID := astrolabe.NewProtectedEntityIDWithSnapshotID("ivd", "cf29221a-381b-4036-825a-56bf8294ed38", ivdPESSID)
+	ivdPEID := astrolabe.NewProtectedEntityID("ivd", "9d886896-f7f4-46d4-b6ab-f50b30013467")
 	ivdPE, err := ivdPETM.GetProtectedEntity(ctx, ivdPEID)
 
 	snapID, err := ivdPE.Snapshot(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	snapPEID := arachne.NewProtectedEntityIDWithSnapshotID("ivd", ivdPEID.GetID(), *snapID)
+	snapPEID := astrolabe.NewProtectedEntityIDWithSnapshotID("ivd", ivdPEID.GetID(), *snapID)
 	snapPE, err := ivdPETM.GetProtectedEntity(ctx, snapPEID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	s3PE, err := s3petm.Copy(ctx, snapPE, arachne.AllocateNewObject)
+	s3PE, err := s3petm.Copy(ctx, snapPE, astrolabe.AllocateNewObject)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	newIVDPE, err := ivdPETM.Copy(ctx, s3PE, arachne.AllocateNewObject)
+	newIVDPE, err := ivdPETM.Copy(ctx, s3PE, astrolabe.AllocateNewObject)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -244,17 +244,17 @@ func TestCopyIVDProtectedEntity(t *testing.T) {
 			snapID, err := ivdPE.Snapshot(ctx)
 			if err == nil {
 
-				snapPEID := arachne.NewProtectedEntityIDWithSnapshotID("ivd", ivdPEID.GetID(), *snapID)
+				snapPEID := astrolabe.NewProtectedEntityIDWithSnapshotID("ivd", ivdPEID.GetID(), *snapID)
 				snapPE, err := ivdPETM.GetProtectedEntity(ctx, snapPEID)
 				if err != nil {
 					t.Fatal(err)
 				}
-				s3PE, err := s3petm.Copy(ctx, snapPE, arachne.AllocateNewObject)
+				s3PE, err := s3petm.Copy(ctx, snapPE, astrolabe.AllocateNewObject)
 				if err != nil {
 					t.Fatal(err)
 				}
 
-				newIVDPE, err := ivdPETM.Copy(ctx, s3PE, arachne.AllocateNewObject)
+				newIVDPE, err := ivdPETM.Copy(ctx, s3PE, astrolabe.AllocateNewObject)
 				if err != nil {
 					t.Fatal(err)
 				}

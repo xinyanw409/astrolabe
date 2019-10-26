@@ -20,7 +20,7 @@ import (
 	"context"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/vim25/soap"
 	"github.com/vmware/govmomi/vim25/types"
@@ -120,7 +120,7 @@ func (this *IVDProtectedEntityTypeManager) GetTypeName() string {
 	return "ivd"
 }
 
-func (this *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (arachne.ProtectedEntity, error) {
+func (this *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id astrolabe.ProtectedEntityID) (astrolabe.ProtectedEntity, error) {
 	retIPE, err := newIVDProtectedEntity(this, id)
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntity(ctx context.Contex
 	return retIPE, nil
 }
 
-func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntityID, error) {
+func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]astrolabe.ProtectedEntityID, error) {
 	// Kludge because of PR
 	spec := types2.VslmVsoVStorageObjectQuerySpec{
 		QueryField:    "createTime",
@@ -139,7 +139,7 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Cont
 	if err != nil {
 		return nil, err
 	}
-	retIDs := make([]arachne.ProtectedEntityID, len(res.Id))
+	retIDs := make([]astrolabe.ProtectedEntityID, len(res.Id))
 	for idNum, curVSOID := range res.Id {
 		arachneId := newProtectedEntityID(curVSOID)
 		retIDs[idNum] = arachneId
@@ -147,7 +147,7 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Cont
 	return retIDs, nil
 }
 
-func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE arachne.ProtectedEntity, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
+func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE astrolabe.ProtectedEntity, options astrolabe.CopyCreateOptions) (astrolabe.ProtectedEntity, error) {
 	sourcePEInfo, err := sourcePE.GetInfo(ctx)
 	if err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ func (this *IVDProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE ar
 	return this.copyInt(ctx, sourcePEInfo, options, dataReader, metadataReader)
 }
 
-func (this *IVDProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, peInfo arachne.ProtectedEntityInfo, options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
+func (this *IVDProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, peInfo astrolabe.ProtectedEntityInfo, options astrolabe.CopyCreateOptions) (astrolabe.ProtectedEntity, error) {
 	return nil, nil
 }
 
@@ -184,8 +184,8 @@ func (this backingSpec) GetVslmCreateSpecBackingSpec() *types.VslmCreateSpecBack
 	return this.createSpec
 }
 
-func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePEInfo arachne.ProtectedEntityInfo,
-	options arachne.CopyCreateOptions, dataReader io.Reader, metadataReader io.Reader) (arachne.ProtectedEntity, error) {
+func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePEInfo astrolabe.ProtectedEntityInfo,
+	options astrolabe.CopyCreateOptions, dataReader io.Reader, metadataReader io.Reader) (astrolabe.ProtectedEntity, error) {
 	if (sourcePEInfo.GetID().GetPeType() != "ivd") {
 		return nil, errors.New("Copy source must be an ivd")
 	}
@@ -277,9 +277,9 @@ func (this *IVDProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePE
 	return retPE, nil
 }
 
-func (this *IVDProtectedEntityTypeManager) getDataTransports(id arachne.ProtectedEntityID) ([]arachne.DataTransport,
-	[]arachne.DataTransport,
-	[]arachne.DataTransport, error) {
+func (this *IVDProtectedEntityTypeManager) getDataTransports(id astrolabe.ProtectedEntityID) ([]astrolabe.DataTransport,
+	[]astrolabe.DataTransport,
+	[]astrolabe.DataTransport, error) {
 	vadpParams := make(map[string]string)
 	vadpParams["id"] = id.GetID()
 	if id.GetSnapshotID().String() != "" {
@@ -288,20 +288,20 @@ func (this *IVDProtectedEntityTypeManager) getDataTransports(id arachne.Protecte
 	vadpParams["vcenter"] = this.client.URL().Host
 
 	dataS3URL := this.s3URLBase + "ivd/" + id.String()
-	data := []arachne.DataTransport{
-		arachne.NewDataTransport("vadp", vadpParams),
-		arachne.NewDataTransportForS3URL(dataS3URL),
+	data := []astrolabe.DataTransport{
+		astrolabe.NewDataTransport("vadp", vadpParams),
+		astrolabe.NewDataTransportForS3URL(dataS3URL),
 	}
 
 	mdS3URL := dataS3URL + ".md"
 
-	md := []arachne.DataTransport{
-		arachne.NewDataTransportForS3URL(mdS3URL),
+	md := []astrolabe.DataTransport{
+		astrolabe.NewDataTransportForS3URL(mdS3URL),
 	}
 
 	combinedS3URL := dataS3URL + ".zip"
-	combined := []arachne.DataTransport{
-		arachne.NewDataTransportForS3URL(combinedS3URL),
+	combined := []astrolabe.DataTransport{
+		astrolabe.NewDataTransportForS3URL(combinedS3URL),
 	}
 
 	return data, md, combined, nil

@@ -19,14 +19,14 @@ package kubernetes
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"io"
 	v1 "k8s.io/api/core/v1"
 )
 
 type KubernetesNamespaceProtectedEntity struct {
 	knpetm    *KubernetesNamespaceProtectedEntityTypeManager
-	id        arachne.ProtectedEntityID
+	id        astrolabe.ProtectedEntityID
 	namespace *v1.Namespace
 	logger    logrus.FieldLogger
 }
@@ -41,7 +41,7 @@ func (this *KubernetesNamespaceProtectedEntity) GetMetadataReader(context.Contex
 
 func NewKubernetesNamespaceProtectedEntity(knpetm *KubernetesNamespaceProtectedEntityTypeManager,
 	namespace *v1.Namespace) (*KubernetesNamespaceProtectedEntity, error) {
-	nsPEID := arachne.NewProtectedEntityID("k8sns", namespace.Name)
+	nsPEID := astrolabe.NewProtectedEntityID("k8sns", namespace.Name)
 	returnPE := KubernetesNamespaceProtectedEntity{
 		knpetm:    knpetm,
 		id:        nsPEID,
@@ -51,38 +51,38 @@ func NewKubernetesNamespaceProtectedEntity(knpetm *KubernetesNamespaceProtectedE
 	return &returnPE, nil
 }
 
-func (this *KubernetesNamespaceProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEntityInfo, error) {
+func (this *KubernetesNamespaceProtectedEntity) GetInfo(ctx context.Context) (astrolabe.ProtectedEntityInfo, error) {
 	return nil, nil
 }
-func (this *KubernetesNamespaceProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.ProtectedEntityInfo, error) {
+func (this *KubernetesNamespaceProtectedEntity) GetCombinedInfo(ctx context.Context) ([]astrolabe.ProtectedEntityInfo, error) {
 	return nil, nil
 
 }
 
-func (this *KubernetesNamespaceProtectedEntity) Snapshot(ctx context.Context) (arachne.ProtectedEntitySnapshotID, error) {
-	return arachne.ProtectedEntitySnapshotID{}, nil
+func (this *KubernetesNamespaceProtectedEntity) Snapshot(ctx context.Context) (astrolabe.ProtectedEntitySnapshotID, error) {
+	return astrolabe.ProtectedEntitySnapshotID{}, nil
 
 }
-func (this *KubernetesNamespaceProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
+func (this *KubernetesNamespaceProtectedEntity) ListSnapshots(ctx context.Context) ([]astrolabe.ProtectedEntitySnapshotID, error) {
 	return nil, nil
 
 }
 func (this *KubernetesNamespaceProtectedEntity) DeleteSnapshot(ctx context.Context,
-	snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
+	snapshotToDelete astrolabe.ProtectedEntitySnapshotID) (bool, error) {
 	return false, nil
 
 }
 func (this *KubernetesNamespaceProtectedEntity) GetInfoForSnapshot(ctx context.Context,
-	snapshotID arachne.ProtectedEntitySnapshotID) (*arachne.ProtectedEntityInfo, error) {
+	snapshotID astrolabe.ProtectedEntitySnapshotID) (*astrolabe.ProtectedEntityInfo, error) {
 	return nil, nil
 
 }
 
-func (this *KubernetesNamespaceProtectedEntity) GetComponents(ctx context.Context) ([]arachne.ProtectedEntity, error) {
+func (this *KubernetesNamespaceProtectedEntity) GetComponents(ctx context.Context) ([]astrolabe.ProtectedEntity, error) {
 	return nil, nil
 
 }
 
-func (this *KubernetesNamespaceProtectedEntity) GetID() arachne.ProtectedEntityID {
+func (this *KubernetesNamespaceProtectedEntity) GetID() astrolabe.ProtectedEntityID {
 	return this.id
 }

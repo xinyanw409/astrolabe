@@ -20,7 +20,7 @@ import (
 	"archive/tar"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	vim "github.com/vmware/govmomi/vim25/types"
 	"io"
 	"log"
@@ -34,20 +34,20 @@ import (
 
 type FSProtectedEntity struct {
 	fspetm   *FSProtectedEntityTypeManager
-	id       arachne.ProtectedEntityID
+	id       astrolabe.ProtectedEntityID
 	name     string
 	root     string
-	data     []arachne.DataTransport
-	metadata []arachne.DataTransport
-	combined []arachne.DataTransport
+	data     []astrolabe.DataTransport
+	metadata []astrolabe.DataTransport
+	combined []astrolabe.DataTransport
 	logger   logrus.FieldLogger
 }
 
-func newProtectedEntityID(id vim.ID) arachne.ProtectedEntityID {
-	return arachne.NewProtectedEntityID("fs", id.Id)
+func newProtectedEntityID(id vim.ID) astrolabe.ProtectedEntityID {
+	return astrolabe.NewProtectedEntityID("fs", id.Id)
 }
 
-func newFSProtectedEntity(fspetm *FSProtectedEntityTypeManager, id arachne.ProtectedEntityID,
+func newFSProtectedEntity(fspetm *FSProtectedEntityTypeManager, id astrolabe.ProtectedEntityID,
 	name string, root string) (FSProtectedEntity, error) {
 	data, metadata, combined, err := fspetm.getDataTransports(id)
 	if err != nil {
@@ -65,47 +65,47 @@ func newFSProtectedEntity(fspetm *FSProtectedEntityTypeManager, id arachne.Prote
 	}
 	return newFSPE, nil
 }
-func (this FSProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEntityInfo, error) {
-	retVal := arachne.NewProtectedEntityInfo(
+func (this FSProtectedEntity) GetInfo(ctx context.Context) (astrolabe.ProtectedEntityInfo, error) {
+	retVal := astrolabe.NewProtectedEntityInfo(
 		this.id,
 		this.name,
 		this.data,
 		this.metadata,
 		this.combined,
-		[]arachne.ProtectedEntityID{})
+		[]astrolabe.ProtectedEntityID{})
 	return retVal, nil
 }
 
-func (this FSProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.ProtectedEntityInfo, error) {
+func (this FSProtectedEntity) GetCombinedInfo(ctx context.Context) ([]astrolabe.ProtectedEntityInfo, error) {
 	fsIPE, err := this.GetInfo(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return []arachne.ProtectedEntityInfo{fsIPE}, nil
+	return []astrolabe.ProtectedEntityInfo{fsIPE}, nil
 }
 
 /*
  * Snapshot APIs
  */
-func (this FSProtectedEntity) Snapshot(ctx context.Context) (arachne.ProtectedEntitySnapshotID, error) {
-	return arachne.ProtectedEntitySnapshotID{}, nil
+func (this FSProtectedEntity) Snapshot(ctx context.Context) (astrolabe.ProtectedEntitySnapshotID, error) {
+	return astrolabe.ProtectedEntitySnapshotID{}, nil
 }
 
-func (this FSProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
+func (this FSProtectedEntity) ListSnapshots(ctx context.Context) ([]astrolabe.ProtectedEntitySnapshotID, error) {
 	return nil, nil
 }
-func (this FSProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
+func (this FSProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete astrolabe.ProtectedEntitySnapshotID) (bool, error) {
 	return true, nil
 }
-func (this FSProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotID arachne.ProtectedEntitySnapshotID) (*arachne.ProtectedEntityInfo, error) {
+func (this FSProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotID astrolabe.ProtectedEntitySnapshotID) (*astrolabe.ProtectedEntityInfo, error) {
 	return nil, nil
 }
 
-func (this FSProtectedEntity) GetComponents(ctx context.Context) ([]arachne.ProtectedEntity, error) {
-	return make([]arachne.ProtectedEntity, 0), nil
+func (this FSProtectedEntity) GetComponents(ctx context.Context) ([]astrolabe.ProtectedEntity, error) {
+	return make([]astrolabe.ProtectedEntity, 0), nil
 }
 
-func (this FSProtectedEntity) GetID() arachne.ProtectedEntityID {
+func (this FSProtectedEntity) GetID() astrolabe.ProtectedEntityID {
 	return this.id
 }
 
@@ -115,7 +115,7 @@ func NewIDFromString(idStr string) vim.ID {
 	}
 }
 
-func NewVimIDFromPEID(peid arachne.ProtectedEntityID) vim.ID {
+func NewVimIDFromPEID(peid astrolabe.ProtectedEntityID) vim.ID {
 	return vim.ID{
 		Id: peid.GetID(),
 	}

@@ -19,7 +19,7 @@ package server
 import (
 	"context"
 	"github.com/labstack/echo"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"log"
 	"net"
 	"net/http"
@@ -54,13 +54,13 @@ func NewArachne(confDirPath string, port int) *Arachne {
 	return &retArachne
 }
 
-func NewProtectedEntityManager(confDirPath string, port int) (string, arachne.ProtectedEntityManager) {
+func NewProtectedEntityManager(confDirPath string, port int) (string, astrolabe.ProtectedEntityManager) {
 	s3URLBase, err := configS3URL(port)
 	if err != nil {
 		log.Fatal("Could not get host IP address", err)
 	}
 	dpem := NewDirectProtectedEntityManagerFromConfigDir(confDirPath, s3URLBase)
-	var pem arachne.ProtectedEntityManager
+	var pem astrolabe.ProtectedEntityManager
 	pem = dpem
 	return s3URLBase, pem
 }
@@ -83,13 +83,13 @@ func (this *Arachne) Get(c echo.Context) error {
 }
 
 func (this *Arachne) ConnectArachneAPIToEcho(echo *echo.Echo) error {
-	echo.GET("/arachne", this.Get)
+	echo.GET("/astrolabe", this.Get)
 
 	for serviceName, service := range this.api_services {
-		echo.GET("/arachne/"+serviceName, service.listObjects)
-		echo.POST("/arachne/"+serviceName, service.handleCopyObject)
-		echo.GET("/arachne/"+serviceName+"/:id", service.handleObjectRequest)
-		echo.GET("/arachne/"+serviceName+"/:id/snapshots", service.handleSnapshotListRequest)
+		echo.GET("/astrolabe/"+serviceName, service.listObjects)
+		echo.POST("/astrolabe/"+serviceName, service.handleCopyObject)
+		echo.GET("/astrolabe/"+serviceName+"/:id", service.handleObjectRequest)
+		echo.GET("/astrolabe/"+serviceName+"/:id/snapshots", service.handleSnapshotListRequest)
 
 	}
 	return nil
@@ -123,13 +123,13 @@ func (this *Arachne) ConnectMiniS3ToEcho(echo *echo.Echo) error {
 
 const fileSuffix = ".pe.json"
 
-func getProtectedEntityForIDStr(petm arachne.ProtectedEntityTypeManager, idStr string,
-	echoContext echo.Context) (arachne.ProtectedEntityID, arachne.ProtectedEntity, error) {
-	var id arachne.ProtectedEntityID
-	var pe arachne.ProtectedEntity
+func getProtectedEntityForIDStr(petm astrolabe.ProtectedEntityTypeManager, idStr string,
+	echoContext echo.Context) (astrolabe.ProtectedEntityID, astrolabe.ProtectedEntity, error) {
+	var id astrolabe.ProtectedEntityID
+	var pe astrolabe.ProtectedEntity
 	var err error
 
-	id, err = arachne.NewProtectedEntityIDFromString(idStr)
+	id, err = astrolabe.NewProtectedEntityIDFromString(idStr)
 	if err != nil {
 		echoContext.String(http.StatusBadRequest, "id = "+idStr+" is invalid "+err.Error())
 		return id, pe, err

@@ -1,4 +1,4 @@
-package arachne
+package astrolabe
 
 import (
 	"github.com/google/uuid"

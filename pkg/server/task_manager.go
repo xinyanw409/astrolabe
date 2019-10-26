@@ -1,13 +1,13 @@
 package server
 
 import (
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"sync"
 	"time"
 )
 
 type TaskManager struct {
-	tasks map[arachne.TaskID]arachne.Task
+	tasks map[astrolabe.TaskID]astrolabe.Task
 	mutex sync.RWMutex
 
 	// For the clean up routine
@@ -22,10 +22,10 @@ func NewTaskManager() TaskManager {
 	return newTM
 }
 
-func (this *TaskManager) ListTasks() []arachne.TaskID {
+func (this *TaskManager) ListTasks() []astrolabe.TaskID {
 	this.mutex.RLock()
 	defer this.mutex.Unlock()
-	retTasks := make([]arachne.TaskID, len(this.tasks))
+	retTasks := make([]astrolabe.TaskID, len(this.tasks))
 	curTaskNum := 0
 	for curTask := range this.tasks {
 		retTasks[curTaskNum] = curTask
@@ -34,13 +34,13 @@ func (this *TaskManager) ListTasks() []arachne.TaskID {
 	return retTasks
 }
 
-func (this *TaskManager) AddTask(addTask arachne.Task) {
+func (this *TaskManager) AddTask(addTask astrolabe.Task) {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 	this.tasks[addTask.GetID()] = addTask
 }
 
-func (this *TaskManager) RetrieveTask(taskID arachne.TaskID) (retTask arachne.Task, ok bool) {
+func (this *TaskManager) RetrieveTask(taskID astrolabe.TaskID) (retTask astrolabe.Task, ok bool) {
 	this.mutex.RLock()
 	defer this.mutex.Unlock()
 	retTask, ok =  this.tasks[taskID]

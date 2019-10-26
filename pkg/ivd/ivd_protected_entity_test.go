@@ -17,7 +17,7 @@
 package ivd
 
 import (
-	//"arachne"
+	//"astrolabe"
 	"testing"
 	//"gotest.tools/assert"
 )

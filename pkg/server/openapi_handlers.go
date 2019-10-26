@@ -5,17 +5,17 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/vmware/arachne/gen/models"
 	"github.com/vmware/arachne/gen/restapi/operations"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"time"
 )
 
 type OpenAPIArachneHandler struct {
-	pem arachne.ProtectedEntityManager
-	tm TaskManager
+	pem astrolabe.ProtectedEntityManager
+	tm  TaskManager
 }
 
 
-func NewOpenAPIArachneHandler(pem arachne.ProtectedEntityManager, tm TaskManager) OpenAPIArachneHandler {
+func NewOpenAPIArachneHandler(pem astrolabe.ProtectedEntityManager, tm TaskManager) OpenAPIArachneHandler {
 	return OpenAPIArachneHandler{
 		pem: pem,
 		tm: tm,
@@ -65,7 +65,7 @@ func (this OpenAPIArachneHandler) GetProtectedEntityInfo(params operations.GetPr
 	if petm == nil {
 
 	}
-	peid, err := arachne.NewProtectedEntityIDFromString(params.ProtectedEntityID)
+	peid, err := astrolabe.NewProtectedEntityIDFromString(params.ProtectedEntityID)
 	if err != nil {
 
 	}
@@ -83,7 +83,7 @@ func (this OpenAPIArachneHandler) CreateSnapshot(params operations.CreateSnapsho
 	if petm == nil {
 
 	}
-	peid, err := arachne.NewProtectedEntityIDFromString(params.ProtectedEntityID)
+	peid, err := astrolabe.NewProtectedEntityIDFromString(params.ProtectedEntityID)
 	if err != nil {
 
 	}
@@ -109,20 +109,20 @@ func (this OpenAPIArachneHandler) CopyProtectedEntity(params operations.CopyProt
 	if petm == nil {
 
 	}
-	pei, err := arachne.NewProtectedEntityInfoFromModel(*params.Body)
+	pei, err := astrolabe.NewProtectedEntityInfoFromModel(*params.Body)
 	if err != nil {
 
 	}
 	startedTime := time.Now()
-	newPE, err := petm.CopyFromInfo(context.Background(), pei, arachne.AllocateNewObject)
-	var taskStatus arachne.TaskStatus
+	newPE, err := petm.CopyFromInfo(context.Background(), pei, astrolabe.AllocateNewObject)
+	var taskStatus astrolabe.TaskStatus
 	if err != nil {
-		taskStatus = arachne.Failed
+		taskStatus = astrolabe.Failed
 	} else {
-		taskStatus = arachne.Success
+		taskStatus = astrolabe.Success
 	}
 	// Fake a task for now
-	task := arachne.NewGenericTask()
+	task := astrolabe.NewGenericTask()
 	task.Completed = true
 	task.StartedTime = startedTime
 	task.FinishedTime = time.Now()

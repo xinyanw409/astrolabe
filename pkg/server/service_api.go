@@ -19,15 +19,15 @@ package server
 import (
 	"context"
 	"github.com/labstack/echo"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"net/http"
 )
 
 type ServiceAPI struct {
-	petm arachne.ProtectedEntityTypeManager
+	petm astrolabe.ProtectedEntityTypeManager
 }
 
-func NewServiceAPI(petm arachne.ProtectedEntityTypeManager) *ServiceAPI {
+func NewServiceAPI(petm astrolabe.ProtectedEntityTypeManager) *ServiceAPI {
 	return &ServiceAPI{
 		petm: petm,
 	}
@@ -75,7 +75,7 @@ func (this *ServiceAPI) handleObjectRequest(echoContext echo.Context) error {
 	return nil
 }
 
-func (this *ServiceAPI) snapshot(echoContext echo.Context, pe arachne.ProtectedEntity) {
+func (this *ServiceAPI) snapshot(echoContext echo.Context, pe astrolabe.ProtectedEntity) {
 	snapshotID, err := pe.Snapshot(context.Background())
 	if err != nil {
 		echoContext.String(http.StatusNotFound, "Snapshot failed for id "+pe.GetID().String()+" error = "+err.Error())
@@ -85,7 +85,7 @@ func (this *ServiceAPI) snapshot(echoContext echo.Context, pe arachne.ProtectedE
 	echoContext.String(http.StatusOK, snapshotID.String())
 }
 
-func (this *ServiceAPI) deleteSnapshot(echoContext echo.Context, pe arachne.ProtectedEntity) {
+func (this *ServiceAPI) deleteSnapshot(echoContext echo.Context, pe astrolabe.ProtectedEntity) {
 	snapshotID := pe.GetID().GetSnapshotID()
 	if snapshotID.GetID() == "" {
 		echoContext.String(http.StatusBadRequest, "No snapshot ID specified in id "+pe.GetID().String()+" for delete")
@@ -123,11 +123,11 @@ func (this *ServiceAPI) handleSnapshotListRequest(echoContext echo.Context) erro
 }
 
 func (this *ServiceAPI) handleCopyObject(echoContext echo.Context) (err error) {
-	pei := new(arachne.ProtectedEntityInfoImpl)
+	pei := new(astrolabe.ProtectedEntityInfoImpl)
 	if err = echoContext.Bind(pei); err != nil {
 		return
 	}
-	newPE, err := this.petm.CopyFromInfo(context.Background(), pei, arachne.AllocateNewObject)
+	newPE, err := this.petm.CopyFromInfo(context.Background(), pei, astrolabe.AllocateNewObject)
 	if err != nil {
 		return err
 	}

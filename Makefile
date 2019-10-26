@@ -1,6 +1,6 @@
 all: build
 
-build: deps server-gen docs-gen arachne ivd kubernetes s3repository fs server cmd
+build: deps server-gen docs-gen astrolabe ivd kubernetes s3repository fs server cmd
 
 deps:
 	go get k8s.io/klog
@@ -17,10 +17,10 @@ deps:
 	go get github.com/sirupsen/logrus
 
 cmd: deps
-	cd cmd/arachne_server; go build
+	cd cmd/astrolabe_server; go build
 
-arachne: deps
-	cd pkg/arachne; go build
+astrolabe: deps
+	cd pkg/astrolabe; go build
 
 ivd: deps
 	cd pkg/ivd; go build

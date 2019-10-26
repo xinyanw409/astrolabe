@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-package arachne
+package astrolabe
 
-import "context"
+import (
+	//	"archive/zip"
+	"context"
+)
 
-type ProtectedEntityManager interface {
+type CopyCreateOptions int
+
+const (
+	AllocateNewObject    CopyCreateOptions = 1
+	UpdateExistingObject CopyCreateOptions = 2
+	AllocateObjectWithID CopyCreateOptions = 3
+)
+
+type ProtectedEntityTypeManager interface {
+	GetTypeName() string
 	GetProtectedEntity(ctx context.Context, id ProtectedEntityID) (ProtectedEntity, error)
-	GetProtectedEntityTypeManager(peType string) ProtectedEntityTypeManager
-	ListEntityTypeManagers() []ProtectedEntityTypeManager
+	GetProtectedEntities(ctx context.Context) ([]ProtectedEntityID, error)
+	Copy(ctx context.Context, pe ProtectedEntity, options CopyCreateOptions) (ProtectedEntity, error)
+	CopyFromInfo(ctx context.Context, info ProtectedEntityInfo, options CopyCreateOptions) (ProtectedEntity, error)
 }

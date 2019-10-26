@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"io"
 	"strings"
 )
@@ -64,33 +64,33 @@ func NewS3RepositoryProtectedEntityTypeManager(typeName string, session session.
  * Protected Entities are stored in the S3 repo as 1-3 files.  The peinfo file contains the Protected Entity JSON,
  * the md file contains the Protected Entity metadata, if present and the data file contains the Protected Entity data,
  * if present.  The basic structure of the repository is
- *    <bucket>/arachne-repo/<type>/{peinfo, md, data}/<peid>[, .md, .data]
+ *    <bucket>/astrolabe-repo/<type>/{peinfo, md, data}/<peid>[, .md, .data]
  * The PEID must have a snapshot component
  * For example, an IVD would be represented as three S3 objects:
- *     /arachne-repo/ivd/peinfo/ivd:e1c3cb20-db88-4c1c-9f02-5f5347e435d5:67469e1c-50a8-4f63-9a6a-ad8a2265197c
- *     /arachne-repo/ivd/md/ivd:e1c3cb20-db88-4c1c-9f02-5f5347e435d5:67469e1c-50a8-4f63-9a6a-ad8a2265197c.md
- *     /arachne-repo/ivd/data/ivd:e1c3cb20-db88-4c1c-9f02-5f5347e435d5:67469e1c-50a8-4f63-9a6a-ad8a2265197c.data
+ *     /astrolabe-repo/ivd/peinfo/ivd:e1c3cb20-db88-4c1c-9f02-5f5347e435d5:67469e1c-50a8-4f63-9a6a-ad8a2265197c
+ *     /astrolabe-repo/ivd/md/ivd:e1c3cb20-db88-4c1c-9f02-5f5347e435d5:67469e1c-50a8-4f63-9a6a-ad8a2265197c.md
+ *     /astrolabe-repo/ivd/data/ivd:e1c3cb20-db88-4c1c-9f02-5f5347e435d5:67469e1c-50a8-4f63-9a6a-ad8a2265197c.data
  *
  * The combined stream is not stored in S3 but could be synthesized on demand (figure out how this would actually work)
  */
 const MD_SUFFIX = ".md"
 const DATA_SUFFIX = ".data"
 
-func (this *ProtectedEntityTypeManager) peinfoName(id arachne.ProtectedEntityID) (string) {
+func (this *ProtectedEntityTypeManager) peinfoName(id astrolabe.ProtectedEntityID) (string) {
 	if !id.HasSnapshot() {
 		panic("Cannot store objects that do not have snapshots")
 	}
 	return this.peinfoPrefix + id.String()
 }
 
-func (this *ProtectedEntityTypeManager) metadataName(id arachne.ProtectedEntityID) (string) {
+func (this *ProtectedEntityTypeManager) metadataName(id astrolabe.ProtectedEntityID) (string) {
 	if !id.HasSnapshot() {
 		panic("Cannot store objects that do not have snapshots")
 	}
 	return this.mdPrefix + id.String() + MD_SUFFIX
 }
 
-func (this *ProtectedEntityTypeManager) metadataTransportsForID(id arachne.ProtectedEntityID) ([]arachne.DataTransport, error) {
+func (this *ProtectedEntityTypeManager) metadataTransportsForID(id astrolabe.ProtectedEntityID) ([]astrolabe.DataTransport, error) {
 	endpointPtr := this.session.Config.Endpoint
 	var endpoint string
 	if endpointPtr != nil {
@@ -98,18 +98,18 @@ func (this *ProtectedEntityTypeManager) metadataTransportsForID(id arachne.Prote
 	} else {
 		endpoint = ""
 	}
-	mdTransport := arachne.NewDataTransportForS3(endpoint, this.bucket, this.metadataName(id))
-	return []arachne.DataTransport{mdTransport}, nil
+	mdTransport := astrolabe.NewDataTransportForS3(endpoint, this.bucket, this.metadataName(id))
+	return []astrolabe.DataTransport{mdTransport}, nil
 }
 
-func (this *ProtectedEntityTypeManager) dataName(id arachne.ProtectedEntityID) (string) {
+func (this *ProtectedEntityTypeManager) dataName(id astrolabe.ProtectedEntityID) (string) {
 	if !id.HasSnapshot() {
 		panic("Cannot store objects that do not have snapshots")
 	}
 	return this.dataPrefix + id.String() + DATA_SUFFIX
 }
 
-func (this *ProtectedEntityTypeManager) dataTransportsForID(id arachne.ProtectedEntityID) ([]arachne.DataTransport, error) {
+func (this *ProtectedEntityTypeManager) dataTransportsForID(id astrolabe.ProtectedEntityID) ([]astrolabe.DataTransport, error) {
 	endpointPtr := this.session.Config.Endpoint
 	var endpoint string
 	if endpointPtr != nil {
@@ -117,32 +117,32 @@ func (this *ProtectedEntityTypeManager) dataTransportsForID(id arachne.Protected
 	} else {
 		endpoint = ""
 	}
-	mdTransport := arachne.NewDataTransportForS3(endpoint, this.bucket, this.dataName(id))
-	return []arachne.DataTransport{mdTransport}, nil
+	mdTransport := astrolabe.NewDataTransportForS3(endpoint, this.bucket, this.dataName(id))
+	return []astrolabe.DataTransport{mdTransport}, nil
 }
 
-func (this *ProtectedEntityTypeManager) objectPEID(key string) (arachne.ProtectedEntityID, error) {
+func (this *ProtectedEntityTypeManager) objectPEID(key string) (astrolabe.ProtectedEntityID, error) {
 	var idStr string
 	if strings.HasPrefix(key, this.peinfoPrefix) {
 		idStr = strings.TrimPrefix(key, this.peinfoPrefix)
 	}
 	if strings.HasPrefix(key, this.mdPrefix) {
 		if !strings.HasSuffix(key, MD_SUFFIX) {
-			return arachne.ProtectedEntityID{}, errors.New(key + " has md prefix, but does not have .md suffix")
+			return astrolabe.ProtectedEntityID{}, errors.New(key + " has md prefix, but does not have .md suffix")
 		}
 		idStr = strings.TrimPrefix(key, this.mdPrefix)
 		idStr = strings.TrimSuffix(key, MD_SUFFIX)
 	}
 	if strings.HasPrefix(key, this.dataPrefix) {
 		if !strings.HasSuffix(key, DATA_SUFFIX) {
-			return arachne.ProtectedEntityID{}, errors.New(key + " has data prefix, but does not have .data suffix")
+			return astrolabe.ProtectedEntityID{}, errors.New(key + " has data prefix, but does not have .data suffix")
 		}
 		idStr = strings.TrimPrefix(key, this.dataPrefix)
 		idStr = strings.TrimSuffix(key, DATA_SUFFIX)
 	}
-	retPEID, err := arachne.NewProtectedEntityIDFromString(idStr)
+	retPEID, err := astrolabe.NewProtectedEntityIDFromString(idStr)
 	if err != nil {
-		return arachne.ProtectedEntityID{}, err
+		return astrolabe.ProtectedEntityID{}, err
 	}
 	return retPEID, nil
 }
@@ -153,7 +153,7 @@ func (this *ProtectedEntityTypeManager) GetTypeName() string {
 
 const maxPEInfoSize int = 16 * 1024
 
-func (this *ProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id arachne.ProtectedEntityID) (arachne.ProtectedEntity, error) {
+func (this *ProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, id astrolabe.ProtectedEntityID) (astrolabe.ProtectedEntity, error) {
 	peKey := this.peinfoName(id)
 	oi := s3.GetObjectInput{
 		Bucket: &this.bucket,
@@ -173,14 +173,14 @@ func (this *ProtectedEntityTypeManager) GetProtectedEntity(ctx context.Context, 
 
 const maxS3ObjectsToFetch int64 = 1000
 
-func (this *ProtectedEntityTypeManager) GetProtectedEntitiesByIDPrefix(ctx context.Context, idPrefix string) ([]arachne.ProtectedEntityID, error) {
+func (this *ProtectedEntityTypeManager) GetProtectedEntitiesByIDPrefix(ctx context.Context, idPrefix string) ([]astrolabe.ProtectedEntityID, error) {
 	hasMore := true
 	var continuationToken *string = nil
 	var prefix string
 	if idPrefix != "" {
 		prefix = this.peinfoPrefix + idPrefix
 	}
-	retPEIDs := make([]arachne.ProtectedEntityID, 0)
+	retPEIDs := make([]astrolabe.ProtectedEntityID, 0)
 	for hasMore {
 		maxKeys := maxS3ObjectsToFetch
 		listParams := s3.ListObjectsV2Input{
@@ -214,14 +214,14 @@ func (this *ProtectedEntityTypeManager) GetProtectedEntitiesByIDPrefix(ctx conte
 	return retPEIDs, nil
 }
 
-func (this *ProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]arachne.ProtectedEntityID, error) {
+func (this *ProtectedEntityTypeManager) GetProtectedEntities(ctx context.Context) ([]astrolabe.ProtectedEntityID, error) {
 	return this.GetProtectedEntitiesByIDPrefix(ctx, "")
 }
 
 const peInfoFileType = "application/json"
 
-func (this *ProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE arachne.ProtectedEntity,
-	options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
+func (this *ProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE astrolabe.ProtectedEntity,
+	options astrolabe.CopyCreateOptions) (astrolabe.ProtectedEntity, error) {
 	sourcePEInfo, err := sourcePE.GetInfo(ctx)
 	if err != nil {
 		return nil, err
@@ -246,22 +246,22 @@ func (this *ProtectedEntityTypeManager) Copy(ctx context.Context, sourcePE arach
 	return this.copyInt(ctx, sourcePEInfo, options, dataReader, metadataReader)
 }
 
-func (this *ProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, sourcePEInfo arachne.ProtectedEntityInfo,
-	options arachne.CopyCreateOptions) (arachne.ProtectedEntity, error) {
+func (this *ProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, sourcePEInfo astrolabe.ProtectedEntityInfo,
+	options astrolabe.CopyCreateOptions) (astrolabe.ProtectedEntity, error) {
 	return nil, nil
 }
 
-func (this *ProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePEInfo arachne.ProtectedEntityInfo,
-	options arachne.CopyCreateOptions, dataReader io.Reader, metadataReader io.Reader) (arachne.ProtectedEntity, error) {
+func (this *ProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePEInfo astrolabe.ProtectedEntityInfo,
+	options astrolabe.CopyCreateOptions, dataReader io.Reader, metadataReader io.Reader) (astrolabe.ProtectedEntity, error) {
 	id := sourcePEInfo.GetID()
 	if id.GetPeType() != this.typeName {
 		return nil, errors.New(id.GetPeType() + " is not of type " + this.typeName)
 	}
-	if options == arachne.AllocateObjectWithID {
+	if options == astrolabe.AllocateObjectWithID {
 		return nil, errors.New("AllocateObjectWithID not supported")
 	}
 
-	if options == arachne.UpdateExistingObject {
+	if options == astrolabe.UpdateExistingObject {
 		return nil, errors.New("UpdateExistingObject not supported")
 	}
 
@@ -270,29 +270,29 @@ func (this *ProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePEInf
 		return nil, errors.New("id " + id.String() + " already exists")
 	}
 
-	var dataTransports []arachne.DataTransport
+	var dataTransports []astrolabe.DataTransport
 	if len(sourcePEInfo.GetDataTransports()) > 0 {
 		dataTransports, err = this.dataTransportsForID(id)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		dataTransports = []arachne.DataTransport{}
+		dataTransports = []astrolabe.DataTransport{}
 	}
 
-	var metadataTransports []arachne.DataTransport
+	var metadataTransports []astrolabe.DataTransport
 	if len(sourcePEInfo.GetMetadataTransports()) > 0 {
 		metadataTransports, err = this.metadataTransportsForID(id)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		metadataTransports = []arachne.DataTransport{}
+		metadataTransports = []astrolabe.DataTransport{}
 	}
 
-	combinedTransports := []arachne.DataTransport{}
+	combinedTransports := []astrolabe.DataTransport{}
 
-	rPEInfo := arachne.NewProtectedEntityInfo(sourcePEInfo.GetID(), sourcePEInfo.GetName(),
+	rPEInfo := astrolabe.NewProtectedEntityInfo(sourcePEInfo.GetID(), sourcePEInfo.GetName(),
 		dataTransports, metadataTransports, combinedTransports, sourcePEInfo.GetComponentIDs())
 
 	rpe := ProtectedEntity{
@@ -307,23 +307,23 @@ func (this *ProtectedEntityTypeManager) copyInt(ctx context.Context, sourcePEInf
 	return rpe, nil
 }
 
-func (this *ProtectedEntityTypeManager) getDataTransports(id arachne.ProtectedEntityID) ([]arachne.DataTransport,
-	[]arachne.DataTransport,
-	[]arachne.DataTransport, error) {
+func (this *ProtectedEntityTypeManager) getDataTransports(id astrolabe.ProtectedEntityID) ([]astrolabe.DataTransport,
+	[]astrolabe.DataTransport,
+	[]astrolabe.DataTransport, error) {
 	dataS3URL := this.dataName(id)
-	data := []arachne.DataTransport{
-		arachne.NewDataTransportForS3URL(dataS3URL),
+	data := []astrolabe.DataTransport{
+		astrolabe.NewDataTransportForS3URL(dataS3URL),
 	}
 
 	mdS3URL := dataS3URL + ".md"
 
-	md := []arachne.DataTransport{
-		arachne.NewDataTransportForS3URL(mdS3URL),
+	md := []astrolabe.DataTransport{
+		astrolabe.NewDataTransportForS3URL(mdS3URL),
 	}
 
 	combinedS3URL := dataS3URL + ".zip"
-	combined := []arachne.DataTransport{
-		arachne.NewDataTransportForS3URL(combinedS3URL),
+	combined := []astrolabe.DataTransport{
+		astrolabe.NewDataTransportForS3URL(combinedS3URL),
 	}
 
 	return data, md, combined, nil

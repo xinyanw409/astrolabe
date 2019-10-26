@@ -18,7 +18,7 @@ package fs
 
 import (
 	"fmt"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"io"
 	"testing"
 )
@@ -26,7 +26,7 @@ import (
 func TestFSDataSource(t *testing.T) {
 	t.Log("TestFSDataSource called")
 
-	fs, err := newFSProtectedEntity(nil, arachne.ProtectedEntityID{}, "test", "/Users/dsmithuchida/Downloads")
+	fs, err := newFSProtectedEntity(nil, astrolabe.ProtectedEntityID{}, "test", "/Users/dsmithuchida/Downloads")
 	if err != nil {
 		t.Fatal("Got error " + err.Error())
 	}

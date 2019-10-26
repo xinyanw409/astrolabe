@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/pkg/errors"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"io"
 	"io/ioutil"
 	"log"
@@ -33,11 +33,11 @@ import (
 
 type ProtectedEntity struct {
 	rpetm  *ProtectedEntityTypeManager
-	peinfo arachne.ProtectedEntityInfo
+	peinfo astrolabe.ProtectedEntityInfo
 }
 
 func NewProtectedEntityFromJSONBuf(rpetm *ProtectedEntityTypeManager, buf [] byte) (pe ProtectedEntity, err error) {
-	peii := arachne.ProtectedEntityInfoImpl{}
+	peii := astrolabe.ProtectedEntityInfoImpl{}
 	err = json.Unmarshal(buf, &peii)
 	if err != nil {
 		return
@@ -49,7 +49,7 @@ func NewProtectedEntityFromJSONBuf(rpetm *ProtectedEntityTypeManager, buf [] byt
 
 func NewProtectedEntityFromJSONReader(rpetm *ProtectedEntityTypeManager, reader io.Reader) (pe ProtectedEntity, err error) {
 	decoder := json.NewDecoder(reader)
-	peInfo := arachne.ProtectedEntityInfoImpl{}
+	peInfo := astrolabe.ProtectedEntityInfoImpl{}
 	err = decoder.Decode(&peInfo)
 	if err == nil {
 		pe.peinfo = peInfo
@@ -57,33 +57,33 @@ func NewProtectedEntityFromJSONReader(rpetm *ProtectedEntityTypeManager, reader 
 	}
 	return
 }
-func (this ProtectedEntity) GetInfo(ctx context.Context) (arachne.ProtectedEntityInfo, error) {
+func (this ProtectedEntity) GetInfo(ctx context.Context) (astrolabe.ProtectedEntityInfo, error) {
 	return this.peinfo, nil
 }
 
-func (ProtectedEntity) GetCombinedInfo(ctx context.Context) ([]arachne.ProtectedEntityInfo, error) {
+func (ProtectedEntity) GetCombinedInfo(ctx context.Context) ([]astrolabe.ProtectedEntityInfo, error) {
 	panic("implement me")
 }
 
-func (ProtectedEntity) Snapshot(ctx context.Context) (arachne.ProtectedEntitySnapshotID, error) {
-	return arachne.ProtectedEntitySnapshotID{}, errors.New("Snapshot not supported")
+func (ProtectedEntity) Snapshot(ctx context.Context) (astrolabe.ProtectedEntitySnapshotID, error) {
+	return astrolabe.ProtectedEntitySnapshotID{}, errors.New("Snapshot not supported")
 }
 
-func (this ProtectedEntity) ListSnapshots(ctx context.Context) ([]arachne.ProtectedEntitySnapshotID, error) {
+func (this ProtectedEntity) ListSnapshots(ctx context.Context) ([]astrolabe.ProtectedEntitySnapshotID, error) {
 	peID := this.peinfo.GetID()
 	idPrefix := peID.GetPeType() + ":" + peID.GetID()
 	retPEIDs, err := this.rpetm.GetProtectedEntitiesByIDPrefix(ctx, idPrefix)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to get PEs by the id prefix, %s", idPrefix)
 	}
-	retPESnapshotIDs := make([]arachne.ProtectedEntitySnapshotID, len(retPEIDs))
+	retPESnapshotIDs := make([]astrolabe.ProtectedEntitySnapshotID, len(retPEIDs))
 	for index, retPEID := range retPEIDs {
 		retPESnapshotIDs[index] = retPEID.GetSnapshotID()
 	}
 	return retPESnapshotIDs, nil
 }
 
-func (this ProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete arachne.ProtectedEntitySnapshotID) (bool, error) {
+func (this ProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete astrolabe.ProtectedEntitySnapshotID) (bool, error) {
 	bucket := this.rpetm.bucket
 	peID := this.rpetm.peinfoName(this.peinfo.GetID())
 	_, err := this.rpetm.s3.DeleteObject(&s3.DeleteObjectInput{
@@ -104,15 +104,15 @@ func (this ProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete
 	return true, nil
 }
 
-func (ProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotID arachne.ProtectedEntitySnapshotID) (*arachne.ProtectedEntityInfo, error) {
+func (ProtectedEntity) GetInfoForSnapshot(ctx context.Context, snapshotID astrolabe.ProtectedEntitySnapshotID) (*astrolabe.ProtectedEntityInfo, error) {
 	panic("implement me")
 }
 
-func (ProtectedEntity) GetComponents(ctx context.Context) ([]arachne.ProtectedEntity, error) {
+func (ProtectedEntity) GetComponents(ctx context.Context) ([]astrolabe.ProtectedEntity, error) {
 	panic("implement me")
 }
 
-func (this ProtectedEntity) GetID() arachne.ProtectedEntityID {
+func (this ProtectedEntity) GetID() astrolabe.ProtectedEntityID {
 	return this.peinfo.GetID()
 }
 

@@ -19,17 +19,17 @@ package server
 import (
 	"context"
 	"github.com/labstack/echo"
-	"github.com/vmware/arachne/pkg/arachne"
+	"github.com/vmware/arachne/pkg/astrolabe"
 	"io"
 	"net/http"
 	"strings"
 )
 
 type ServiceS3 struct {
-	petm arachne.ProtectedEntityTypeManager
+	petm astrolabe.ProtectedEntityTypeManager
 }
 
-func NewServiceS3(petm arachne.ProtectedEntityTypeManager) *ServiceS3 {
+func NewServiceS3(petm astrolabe.ProtectedEntityTypeManager) *ServiceS3 {
 	return &ServiceS3{
 		petm: petm,
 	}
