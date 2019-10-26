@@ -27,14 +27,14 @@ import (
 	"strings"
 )
 
-type Arachne struct {
+type Astrolabe struct {
 	petm         *DirectProtectedEntityManager
 	api_services map[string]*ServiceAPI
 	s3_services  map[string]*ServiceS3
 	s3URLBase    string
 }
 
-func NewArachne(confDirPath string, port int) *Arachne {
+func NewAstrolabe(confDirPath string, port int) *Astrolabe {
 
 	s3URLBase, pem := NewProtectedEntityManager(confDirPath, port)
 	api_services := make(map[string]*ServiceAPI)
@@ -45,13 +45,13 @@ func NewArachne(confDirPath string, port int) *Arachne {
 		s3_services[serviceName] = NewServiceS3(curService)
 	}
 
-	retArachne := Arachne{
+	retAstrolabe := Astrolabe{
 		api_services: api_services,
 		s3_services:  s3_services,
 		s3URLBase:    s3URLBase,
 	}
 
-	return &retArachne
+	return &retAstrolabe
 }
 
 func NewProtectedEntityManager(confDirPath string, port int) (string, astrolabe.ProtectedEntityManager) {
@@ -65,11 +65,11 @@ func NewProtectedEntityManager(confDirPath string, port int) (string, astrolabe.
 	return s3URLBase, pem
 }
 
-func NewArachneRepository() *Arachne {
+func NewAstrolabeRepository() *Astrolabe {
 	return nil
 }
 
-func (this *Arachne) Get(c echo.Context) error {
+func (this *Astrolabe) Get(c echo.Context) error {
 	var servicesList strings.Builder
 	needsComma := false
 	for serviceName := range this.api_services {
@@ -82,7 +82,7 @@ func (this *Arachne) Get(c echo.Context) error {
 	return c.String(http.StatusOK, servicesList.String())
 }
 
-func (this *Arachne) ConnectArachneAPIToEcho(echo *echo.Echo) error {
+func (this *Astrolabe) ConnectAstrolabeAPIToEcho(echo *echo.Echo) error {
 	echo.GET("/astrolabe", this.Get)
 
 	for serviceName, service := range this.api_services {
@@ -111,7 +111,7 @@ func configS3URL(port int) (string, error) {
 	return "", nil
 }
 
-func (this *Arachne) ConnectMiniS3ToEcho(echo *echo.Echo) error {
+func (this *Astrolabe) ConnectMiniS3ToEcho(echo *echo.Echo) error {
 	echo.GET("/s3", this.Get)
 
 	for serviceName, service := range this.s3_services {

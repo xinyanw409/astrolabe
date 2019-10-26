@@ -270,7 +270,7 @@ const waitTime = 3600 * time.Second
  * Snapshot APIs
  */
 func (this IVDProtectedEntity) Snapshot(ctx context.Context) (astrolabe.ProtectedEntitySnapshotID, error) {
-	vslmTask, err := this.ipetm.vsom.CreateSnapshot(ctx, NewVimIDFromPEID(this.GetID()), "ArachneSnapshot")
+	vslmTask, err := this.ipetm.vsom.CreateSnapshot(ctx, NewVimIDFromPEID(this.GetID()), "AstrolabeSnapshot")
 	if err != nil {
 		return astrolabe.ProtectedEntitySnapshotID{}, errors.Wrap(err, "Snapshot failed")
 	}
