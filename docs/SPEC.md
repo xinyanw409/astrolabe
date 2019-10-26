@@ -1,7 +1,7 @@
-Arachne Specification
+Astrolabe Specification
 # Overview
-Arachne is a framework for data protection.
-It provides an abstraction designed for data protection.  Arachne abstracts the different
+Astrolabe is a framework for data protection.
+It provides an abstraction designed for data protection.  Astrolabe abstracts the different
 objects to be backed up as *Protected Entities*.  All Protected Entities implement the same
 basic API.  Examples of Protected Entites (PEs) include:
 * Virtual disks
@@ -17,13 +17,13 @@ basic API.  Examples of Protected Entites (PEs) include:
 Any type of entity that needs to be protected should be able to be described by the
 Protected Entity object.
 
-Arachne provides APIs and data access end points to support backup, remote replication,
-disaster recovery and other data protection use cases.  Arachne provides a single model
+Astrolabe provides APIs and data access end points to support backup, remote replication,
+disaster recovery and other data protection use cases.  Astrolabe provides a single model
 for discovery and control for all of these use cases ensuring that there will be no gaps.
 
 # Objects
 ## Services
-A *service* in Arachne is a class of Protected Entities.
+A *service* in Astrolabe is a class of Protected Entities.
 ## Protected Entities
 Protected Entities represent objects that can be protected.  A Protected Entity can be a simple entity, with no components, or a complex entity with component protected entities referenced by it.  
 ### Protected Entity Graph
@@ -44,7 +44,7 @@ With a snapshot, it can be referred to as:
 k8s:nginx-example:0ce7b1ca-43cc-4ec2-8ed7-cf58ce0951aa
 
 ### JSON Format
-A protected entity JSON describes a protected entity from the Arachne point-of-view.  This JSON can be viewed as a description of the state of the protected entity at a point in time.  This state is used both for backup and restore.
+A protected entity JSON describes a protected entity from the Astrolabe point-of-view.  This JSON can be viewed as a description of the state of the protected entity at a point in time.  This state is used both for backup and restore.
 ```
 {  
    "id":"<protected entity ID>",
@@ -88,8 +88,8 @@ This would be the JSON for a single Kubernetes namespace
 The following data types are required to be supported:
 #### S3
 Takes an S3 URL.
-Care should be taken by the Arachne implementation to control where URIs can be
-directed.  Since the Arachne server will often be running within a datacenter
+Care should be taken by the Astrolabe implementation to control where URIs can be
+directed.  Since the Astrolabe server will often be running within a datacenter
 firewall, it may have access to many RESTful services which could be triggered 
 via URIs.
 #### zip
@@ -132,28 +132,28 @@ this protected entity.
     /components/<component PE ID>.zip
 
 # Server Types
-All Arachne servers support both the control and data paths.  There are two styles of 
+All Astrolabe servers support both the control and data paths.  There are two styles of 
 server defined currently, Active and Repository
 ## Active Archne Server
-An Active Arachne Server provides an interface to one or more services.  The services are
+An Active Astrolabe Server provides an interface to one or more services.  The services are
 backed by the real service and will usually be providing the actual service,
 such as virtual disk, virtual machines, or Kubernetes.  Changes to the state of the
-Services and Protected Entities can occur independent of the Arachne APIs and server.
-## Repository Arachne Server
-A Repository Arachne Server is a passive store for Protected Entity states.  A PE's
+Services and Protected Entities can occur independent of the Astrolabe APIs and server.
+## Repository Astrolabe Server
+A Repository Astrolabe Server is a passive store for Protected Entity states.  A PE's
 state can be copied into the repository but once there it will not change unless
-actions are taken via the Arachne APIs.  A Repository server may be able to store
-all Protected Entity types.  In that case, the Arachne List Services API may return a
+actions are taken via the Astrolabe APIs.  A Repository server may be able to store
+all Protected Entity types.  In that case, the Astrolabe List Services API may return a
 single service, "*" (it may also list other named services as well).
 # APIs
 ## Control Path
-### Arachne
+### Astrolabe
 #### List Services
-This returns the list of services that this Arachne server supports
+This returns the list of services that this Astrolabe server supports
 
 REST API
 
-    GET /arachne
+    GET /Astrolabe
 Returns a JSON formatted as:
 ```
 {
@@ -166,14 +166,14 @@ Repository servers
 This lists the protected entities available from this service by ID.  The list is returned in ID order.  The number of results returned is limited and pagination is accomplished by specifying the previous ending ID
 REST API
 
-    GET /arachne/<service>?maxResults=<max results to return>&idsAfter=<starting ID, non-inclusive>
+    GET /Astrolabe/<service>?maxResults=<max results to return>&idsAfter=<starting ID, non-inclusive>
 #### Copy
 Copy will update or create an based on a ProtectedEntity JSON. The data paths must be specified in the JSON.   
 There is no option to embed data on this path, for a self-contained or partially self-contained object, 
 use the restore from zip file option in the S3 API
 REST API
 
-    POST /arachne/<service>?mode=[create, create_new, update]
+    POST /Astrolabe/<service>?mode=[create, create_new, update]
 The data posted will be a Protected Entity JSON (described above).  
 There are three modes for copy:
 * create - A Persistent Entity with the same ID will be created.  Snapshot ID will be discarded
@@ -188,7 +188,7 @@ If the restore task can be completed immediately,
 a 201 CREATED response is given with the path of the new
 Protected Entity (see below).  If it cannot be completed
 immediately, a 202 Accepted response is returned with Location
-set to be /arachne/tasks/<task id>
+set to be /Astrolabe/tasks/<task id>
 
 Open questions:
 IDs are automatically reassigned by the Service when a Protected Entity
@@ -208,19 +208,19 @@ snapshot of a ProtectedEntity.
 
 REST API
 
-    GET /arachne/<service>/<protected entity ID>
+    GET /Astrolabe/<service>/<protected entity ID>
 Returns the Protected Entity's JSON (defined above)
 #### Create Snapshot
 Takes a snapshot of a Protected Entity.
 
 REST API
 
-    GET /arachne/<service>/<protected entity ID>:<snapshot ID>?action=deleteSnapshot
+    GET /Astrolabe/<service>/<protected entity ID>:<snapshot ID>?action=deleteSnapshot
 If the snapshot can be completed immediately, a 201 CREATED
 response is given with the path of the new
 Protected Entity (see below).  If it cannot be completed
 immediately, a 202 Accepted response is returned with Location
-set to be /arachne/tasks/<task id>
+set to be /Astrolabe/tasks/<task id>
 
 Open Questions:
 Are snapshots independent entities in this model?  CSI takes that approach, as does EBS.
@@ -231,7 +231,7 @@ Deletes a snapshot of a Protected Entity
 
 REST API
 
-    GET /arachne/<service>/<protected entity ID>:<snapshot ID>?action=deleteSnapshot
+    GET /Astrolabe/<service>/<protected entity ID>:<snapshot ID>?action=deleteSnapshot
 ####List Snapshots
 Lists snapshots of a Protected Entity
 ###Task
@@ -243,7 +243,7 @@ Retrieves the status of the task
 
 REST API
 
-    GET /arachne/tasks/<task ID>
+    GET /Astrolabe/tasks/<task ID>
 
 Returns the task's JSON.
 ```
@@ -260,15 +260,15 @@ Cancels a running task
 
 REST API
 
-    GET /arachne/tasks/<task ID>?action=cancel
+    GET /Astrolabe/tasks/<task ID>?action=cancel
 
 ## Data Path
-Arachne supports multiple data protocols per Protected Entity.  Which protocols
+Astrolabe supports multiple data protocols per Protected Entity.  Which protocols
 are supported is different for each type and can be different for individual
 Protected Entities within a type.  The S3 API is required for all Protected Entities
 to ensure access.
 ### S3 API
-The Arachne S3 server provides access to data, metadata and combined data for
+The Astrolabe S3 server provides access to data, metadata and combined data for
 protected entities.  The S3 server may be implemented in the same process
 as the API server or separately.  The S3 server API specified here is *optional*.  The URLs given
 should not be assumed, instead the S3 transport type URL for a protected entity should be used.
@@ -281,7 +281,7 @@ server is not a copy of existing data but just another way to access.
 For example, accessing a virtual disk (IVD) through the S3 API actually
 reads the data from the virtual disk using the VADP APIs.
 The combined data stream in a zip file can be assembled on the fly
-and does not need to be stored by the Arachne server.
+and does not need to be stored by the Astrolabe server.
 
 The URIs shown below are completely independent of the REST API and may be
 served on a different port or host from the API server.
@@ -308,7 +308,7 @@ may be accessed via URIs defined in the JSONs for the protected entities.
 
 
 ### Other paths
-Arachne supports multiple data paths per Protected Entity.  All data paths should provide
+Astrolabe supports multiple data paths per Protected Entity.  All data paths should provide
 the same data, though it may be formatted differently.  Each path will be specified by a
 separate data section
 # Workflows
@@ -316,10 +316,10 @@ separate data section
 Via the unified stream API
 
 Create snapshot
-GET /arachne/k8s/<namespace ID>?action=snapshot
+GET /Astrolabe/k8s/<namespace ID>?action=snapshot
 This will snapshot the Kubernetes metadata and all associated Persistent Entites (all PVs at the moment).
 Retrieve Snapshot JSON
-GET /api/arachne/<service>/<ID>/snapshots/<snapshot ID>
+GET /api/Astrolabe/<service>/<ID>/snapshots/<snapshot ID>
 This will return the snapshot info generated by the create snapshot
 Retrieve the unified kubernetes stream
 

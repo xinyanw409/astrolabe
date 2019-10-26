@@ -9,19 +9,19 @@ import (
 	"time"
 )
 
-type OpenAPIArachneHandler struct {
+type OpenAPIAstrolabeHandler struct {
 	pem astrolabe.ProtectedEntityManager
 	tm  TaskManager
 }
 
 
-func NewOpenAPIArachneHandler(pem astrolabe.ProtectedEntityManager, tm TaskManager) OpenAPIArachneHandler {
-	return OpenAPIArachneHandler{
+func NewOpenAPIAstrolabeHandler(pem astrolabe.ProtectedEntityManager, tm TaskManager) OpenAPIAstrolabeHandler {
+	return OpenAPIAstrolabeHandler{
 		pem: pem,
 		tm: tm,
 	}
 }
-func (this OpenAPIArachneHandler) AttachHandlers(api *operations.AstrolabeAPI) {
+func (this OpenAPIAstrolabeHandler) AttachHandlers(api *operations.AstrolabeAPI) {
 	api.ListServicesHandler = operations.ListServicesHandlerFunc(this.ListServices)
 	api.ListProtectedEntitiesHandler = operations.ListProtectedEntitiesHandlerFunc(this.ListProtectedEntities)
 	api.GetProtectedEntityInfoHandler = operations.GetProtectedEntityInfoHandlerFunc(this.GetProtectedEntityInfo)
@@ -30,7 +30,7 @@ func (this OpenAPIArachneHandler) AttachHandlers(api *operations.AstrolabeAPI) {
 	api.CopyProtectedEntityHandler = operations.CopyProtectedEntityHandlerFunc(this.CopyProtectedEntity)
 }
 
-func (this OpenAPIArachneHandler) ListServices(params operations.ListServicesParams) middleware.Responder {
+func (this OpenAPIAstrolabeHandler) ListServices(params operations.ListServicesParams) middleware.Responder {
 	etms := this.pem.ListEntityTypeManagers()
 	var serviceNames = make(models.ServiceList, len(etms))
 	for curETMNum, curETM := range etms {
@@ -39,7 +39,7 @@ func (this OpenAPIArachneHandler) ListServices(params operations.ListServicesPar
 	return operations.NewListServicesOK().WithPayload(serviceNames)
 }
 
-func (this OpenAPIArachneHandler) ListProtectedEntities(params operations.ListProtectedEntitiesParams) middleware.Responder {
+func (this OpenAPIAstrolabeHandler) ListProtectedEntities(params operations.ListProtectedEntitiesParams) middleware.Responder {
 	petm := this.pem.GetProtectedEntityTypeManager(params.Service)
 	if petm == nil {
 		return operations.NewListProtectedEntitiesNotFound()
@@ -59,7 +59,7 @@ func (this OpenAPIArachneHandler) ListProtectedEntities(params operations.ListPr
 	return operations.NewListProtectedEntitiesOK().WithPayload(&peList)
 }
 
-func (this OpenAPIArachneHandler) GetProtectedEntityInfo(params operations.GetProtectedEntityInfoParams) middleware.Responder {
+func (this OpenAPIAstrolabeHandler) GetProtectedEntityInfo(params operations.GetProtectedEntityInfoParams) middleware.Responder {
 
 	petm := this.pem.GetProtectedEntityTypeManager(params.Service)
 	if petm == nil {
@@ -78,7 +78,7 @@ func (this OpenAPIArachneHandler) GetProtectedEntityInfo(params operations.GetPr
 	return operations.NewGetProtectedEntityInfoOK().WithPayload(&peInfoResponse);
 }
 
-func (this OpenAPIArachneHandler) CreateSnapshot(params operations.CreateSnapshotParams) middleware.Responder {
+func (this OpenAPIAstrolabeHandler) CreateSnapshot(params operations.CreateSnapshotParams) middleware.Responder {
 	petm := this.pem.GetProtectedEntityTypeManager(params.Service)
 	if petm == nil {
 
@@ -99,12 +99,12 @@ func (this OpenAPIArachneHandler) CreateSnapshot(params operations.CreateSnapsho
 	return operations.NewCreateSnapshotOK().WithPayload(snapshotID.GetModelProtectedEntitySnapshotID())
 }
 
-func (this OpenAPIArachneHandler) ListSnapshots(params operations.ListSnapshotsParams) middleware.Responder {
+func (this OpenAPIAstrolabeHandler) ListSnapshots(params operations.ListSnapshotsParams) middleware.Responder {
 	return nil
 }
 
 
-func (this OpenAPIArachneHandler) CopyProtectedEntity(params operations.CopyProtectedEntityParams) middleware.Responder {
+func (this OpenAPIAstrolabeHandler) CopyProtectedEntity(params operations.CopyProtectedEntityParams) middleware.Responder {
 	petm := this.pem.GetProtectedEntityTypeManager(params.Service)
 	if petm == nil {
 

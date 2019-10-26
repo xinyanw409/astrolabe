@@ -141,8 +141,7 @@ func (this *IVDProtectedEntityTypeManager) GetProtectedEntities(ctx context.Cont
 	}
 	retIDs := make([]astrolabe.ProtectedEntityID, len(res.Id))
 	for idNum, curVSOID := range res.Id {
-		arachneId := newProtectedEntityID(curVSOID)
-		retIDs[idNum] = arachneId
+		retIDs[idNum] = newProtectedEntityID(curVSOID)
 	}
 	return retIDs, nil
 }

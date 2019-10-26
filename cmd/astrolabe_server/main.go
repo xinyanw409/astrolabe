@@ -46,7 +46,7 @@ func main() {
 	}
 	_, pem := server.NewProtectedEntityManager(*confDirStr, apiPort)
 	tm := server.NewTaskManager()
-	apiHandler := server.NewOpenAPIArachneHandler(pem, tm)
+	apiHandler := server.NewOpenAPIAstrolabeHandler(pem, tm)
 	// load embedded swagger file
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
