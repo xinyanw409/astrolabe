@@ -21,7 +21,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/astrolabe"
+	"github.com/vmware-tanzu/astrolabe/pkg/astrolabe"
 	"io"
 	"io/ioutil"
 	"path/filepath"

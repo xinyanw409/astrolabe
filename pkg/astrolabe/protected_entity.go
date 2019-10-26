@@ -20,7 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/vmware/arachne/gen/models"
+	"github.com/vmware-tanzu/astrolabe/gen/models"
 	"io"
 	"log"
 	"strings"

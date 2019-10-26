@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/vmware/arachne/pkg/astrolabe"
+	"github.com/vmware-tanzu/astrolabe/pkg/astrolabe"
 	"sync"
 	"time"
 )

@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/pkg/errors"
-	"github.com/vmware/arachne/pkg/astrolabe"
+	"github.com/vmware-tanzu/astrolabe/pkg/astrolabe"
 	"io"
 	"io/ioutil"
 	"log"

@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/vmware/arachne/gen/models"
+	models "github.com/vmware-tanzu/astrolabe/gen/models"
 )
 
 // GetProtectedEntityInfoOKCode is the HTTP code returned for type GetProtectedEntityInfoOK

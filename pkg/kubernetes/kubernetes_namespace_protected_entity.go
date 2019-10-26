@@ -19,7 +19,7 @@ package kubernetes
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/astrolabe"
+	"github.com/vmware-tanzu/astrolabe/pkg/astrolabe"
 	"io"
 	v1 "k8s.io/api/core/v1"
 )

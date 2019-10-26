@@ -18,7 +18,7 @@ package astrolabe
 
 import (
 	"encoding/json"
-	"github.com/vmware/arachne/gen/models"
+	"github.com/vmware-tanzu/astrolabe/gen/models"
 )
 
 // DataTransport is our internal interface representing the data transport for Protected Entity

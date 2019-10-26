@@ -10,7 +10,7 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/vmware/arachne/gen/restapi/operations"
+	"github.com/vmware-tanzu/astrolabe/gen/restapi/operations"
 )
 
 //go:generate swagger generate server --target ../../gen --name Astrolabe --spec ../../openapi/astrolabe_api.yaml --exclude-main

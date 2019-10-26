@@ -18,7 +18,7 @@ package fs
 
 import (
 	"fmt"
-	"github.com/vmware/arachne/pkg/astrolabe"
+	"github.com/vmware-tanzu/astrolabe/pkg/astrolabe"
 	"io"
 	"testing"
 )

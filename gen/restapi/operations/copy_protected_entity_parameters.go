@@ -16,7 +16,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/vmware/arachne/gen/models"
+	models "github.com/vmware-tanzu/astrolabe/gen/models"
 )
 
 // NewCopyProtectedEntityParams creates a new CopyProtectedEntityParams object

@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/vmware/arachne/gen/models"
-	"github.com/vmware/arachne/gen/restapi/operations"
-	"github.com/vmware/arachne/pkg/astrolabe"
+	"github.com/vmware-tanzu/astrolabe/gen/models"
+	"github.com/vmware-tanzu/astrolabe/gen/restapi/operations"
+	"github.com/vmware-tanzu/astrolabe/pkg/astrolabe"
 	"time"
 )
 

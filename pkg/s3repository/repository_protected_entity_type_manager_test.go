@@ -21,9 +21,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/arachne/pkg/astrolabe"
-	"github.com/vmware/arachne/pkg/fs"
-	"github.com/vmware/arachne/pkg/ivd"
+	"github.com/vmware-tanzu/astrolabe/pkg/astrolabe"
+	"github.com/vmware-tanzu/astrolabe/pkg/fs"
+	"github.com/vmware-tanzu/astrolabe/pkg/ivd"
 	"log"
 	"testing"
 )

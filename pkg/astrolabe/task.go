@@ -2,7 +2,7 @@ package astrolabe
 
 import (
 	"github.com/google/uuid"
-	"github.com/vmware/arachne/gen/models"
+	"github.com/vmware-tanzu/astrolabe/gen/models"
 	"log"
 	"time"
 )

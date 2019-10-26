@@ -20,9 +20,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-openapi/loads"
-	"github.com/vmware/arachne/gen/restapi"
-	"github.com/vmware/arachne/gen/restapi/operations"
-	"github.com/vmware/arachne/pkg/server"
+	"github.com/vmware-tanzu/astrolabe/gen/restapi"
+	"github.com/vmware-tanzu/astrolabe/gen/restapi/operations"
+	"github.com/vmware-tanzu/astrolabe/pkg/server"
 	"os"
 	"strconv"
 

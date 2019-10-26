@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/vmware/arachne/gen/models"
+	"github.com/vmware-tanzu/astrolabe/gen/models"
 	"net/url"
 )
 
