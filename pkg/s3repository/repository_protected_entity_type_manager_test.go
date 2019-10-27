@@ -81,7 +81,7 @@ func TestCopyFSProtectedEntity(t *testing.T) {
 	}
 
 	fsParams := make(map[string]interface{})
-	fsParams["root"] = "/Users/dsmithuchida/arachne_fs_root"
+	fsParams["root"] = "/Users/dsmithuchida/astrolabe_fs_root"
 
 	fsPETM, err := fs.NewFSProtectedEntityTypeManagerFromConfig(fsParams, "notUsed", logrus.New())
 	if err != nil {

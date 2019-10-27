@@ -33,6 +33,9 @@ func NewListServices(ctx *middleware.Context, handler ListServicesHandler) *List
 
 List available services
 
+This returns the list of services that this Astrolabe server supports
+
+
 */
 type ListServices struct {
 	Context *middleware.Context

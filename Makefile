@@ -5,16 +5,10 @@ build: deps server-gen docs-gen astrolabe ivd kubernetes s3repository fs server 
 deps:
 	go get k8s.io/klog
 	cd $(GOPATH)/src/k8s.io/klog ; git checkout v0.4.0
-	go get k8s.io/api/core/v1
-	go get k8s.io/apimachinery/pkg/apis/meta/v1
-	go get k8s.io/client-go/tools/clientcmd
-	go get k8s.io/client-go/kubernetes
-	go get github.com/aws/aws-sdk-go
-	go get github.com/pkg/errors
-	go get github.com/vmware/govmomi
-	go get github.com/google/uuid
-	go get github.com/labstack/echo
-	go get github.com/sirupsen/logrus
+	go get ./...
+	go get github.com/go-swagger/go-swagger
+	go get github.com/go-swagger/go-swagger/...
+	go install github.com/go-swagger/go-swagger/cmd/swagger
 
 cmd: deps
 	cd cmd/astrolabe_server; go build

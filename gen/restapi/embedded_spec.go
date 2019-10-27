@@ -26,6 +26,7 @@ func init() {
   "paths": {
     "/astrolabe": {
       "get": {
+        "description": "This returns the list of services that this Astrolabe server supports\n",
         "produces": [
           "application/json"
         ],
@@ -407,9 +408,14 @@ func init() {
       "type": "string"
     },
     "ServiceList": {
-      "type": "array",
-      "items": {
-        "type": "string"
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "TaskID": {
@@ -476,6 +482,7 @@ func init() {
   "paths": {
     "/astrolabe": {
       "get": {
+        "description": "This returns the list of services that this Astrolabe server supports\n",
         "produces": [
           "application/json"
         ],
@@ -857,9 +864,14 @@ func init() {
       "type": "string"
     },
     "ServiceList": {
-      "type": "array",
-      "items": {
-        "type": "string"
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "TaskID": {

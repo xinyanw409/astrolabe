@@ -25,7 +25,7 @@ type ListServicesOK struct {
 	/*
 	  In: Body
 	*/
-	Payload models.ServiceList `json:"body,omitempty"`
+	Payload *models.ServiceList `json:"body,omitempty"`
 }
 
 // NewListServicesOK creates ListServicesOK with default headers values
@@ -35,13 +35,13 @@ func NewListServicesOK() *ListServicesOK {
 }
 
 // WithPayload adds the payload to the list services o k response
-func (o *ListServicesOK) WithPayload(payload models.ServiceList) *ListServicesOK {
+func (o *ListServicesOK) WithPayload(payload *models.ServiceList) *ListServicesOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the list services o k response
-func (o *ListServicesOK) SetPayload(payload models.ServiceList) {
+func (o *ListServicesOK) SetPayload(payload *models.ServiceList) {
 	o.Payload = payload
 }
 
@@ -49,13 +49,10 @@ func (o *ListServicesOK) SetPayload(payload models.ServiceList) {
 func (o *ListServicesOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if payload == nil {
-		// return empty array
-		payload = models.ServiceList{}
-	}
-
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }

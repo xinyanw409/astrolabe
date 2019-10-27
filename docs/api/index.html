@@ -793,9 +793,14 @@ margin-bottom: 20px;
   "type" : "string"
 };
   defs.ServiceList = {
-  "type" : "array",
-  "items" : {
-    "type" : "string"
+  "type" : "object",
+  "properties" : {
+    "services" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    }
   }
 };
   defs.TaskID = {
@@ -3577,7 +3582,7 @@ try {
                                             <div class="clearfix"></div>
 
                                             <p></p>
-                                            <p></p>
+                                            <p>This returns the list of services that this Astrolabe server supports </p>
                                             <p></p>
                                             <br />
 
@@ -4722,7 +4727,7 @@ try {
             </div>
             <div id="generator">
                 <div class="content">
-                    Generated 2019-10-26T00:06:02.176-07:00
+                    Generated 2019-10-27T09:05:04.115-07:00
                 </div>
             </div>
         </div>

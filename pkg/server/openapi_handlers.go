@@ -32,11 +32,13 @@ func (this OpenAPIAstrolabeHandler) AttachHandlers(api *operations.AstrolabeAPI)
 
 func (this OpenAPIAstrolabeHandler) ListServices(params operations.ListServicesParams) middleware.Responder {
 	etms := this.pem.ListEntityTypeManagers()
-	var serviceNames = make(models.ServiceList, len(etms))
-	for curETMNum, curETM := range etms {
-		serviceNames[curETMNum] = curETM.GetTypeName()
+	var serviceList = models.ServiceList{
+		Services: make([]string, len(etms)),
 	}
-	return operations.NewListServicesOK().WithPayload(serviceNames)
+	for curETMNum, curETM := range etms {
+		serviceList.Services[curETMNum] = curETM.GetTypeName()
+	}
+	return operations.NewListServicesOK().WithPayload(&serviceList)
 }
 
 func (this OpenAPIAstrolabeHandler) ListProtectedEntities(params operations.ListProtectedEntitiesParams) middleware.Responder {
