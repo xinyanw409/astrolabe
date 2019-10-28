@@ -29,6 +29,9 @@ type TaskInfo struct {
 	// finished time
 	FinishedTime string `json:"finishedTime,omitempty"`
 
+	// Finished time in nanoseconds
+	FinishedTimeNS int64 `json:"finishedTimeNS,omitempty"`
+
 	// id
 	// Required: true
 	ID TaskID `json:"id"`
@@ -45,6 +48,10 @@ type TaskInfo struct {
 	// started time
 	// Required: true
 	StartedTime *string `json:"startedTime"`
+
+	// Start time in nanoseconds
+	// Required: true
+	StartedTimeNS *int64 `json:"startedTimeNS"`
 
 	// status
 	// Required: true
@@ -69,6 +76,10 @@ func (m *TaskInfo) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateStartedTime(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateStartedTimeNS(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -123,6 +134,15 @@ func (m *TaskInfo) validateProgress(formats strfmt.Registry) error {
 func (m *TaskInfo) validateStartedTime(formats strfmt.Registry) error {
 
 	if err := validate.Required("startedTime", "body", m.StartedTime); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TaskInfo) validateStartedTimeNS(formats strfmt.Registry) error {
+
+	if err := validate.Required("startedTimeNS", "body", m.StartedTimeNS); err != nil {
 		return err
 	}
 

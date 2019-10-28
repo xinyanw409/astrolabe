@@ -33,6 +33,7 @@ func NewListSnapshots(ctx *middleware.Context, handler ListSnapshotsHandler) *Li
 
 Gets the list of snapshots for this protected entity
 
+
 */
 type ListSnapshots struct {
 	Context *middleware.Context

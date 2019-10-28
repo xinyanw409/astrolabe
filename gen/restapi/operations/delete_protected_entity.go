@@ -31,7 +31,9 @@ func NewDeleteProtectedEntity(ctx *middleware.Context, handler DeleteProtectedEn
 
 /*DeleteProtectedEntity swagger:route DELETE /astrolabe/{service}/{protectedEntityID} deleteProtectedEntity
 
-Deletes a protected entity or snapshot of a protected entity (if the snapshot ID is specified)
+Deletes a protected entity or snapshot of a protected entity (if the
+snapshot ID is specified)
+
 
 */
 type DeleteProtectedEntity struct {

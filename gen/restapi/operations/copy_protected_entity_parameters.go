@@ -40,7 +40,16 @@ type CopyProtectedEntityParams struct {
 	  In: body
 	*/
 	Body *models.ProtectedEntityInfo
-	/*How to handle the copy.  create - a new protected entity with the Protected Entity ID will be created.  If the Protected Entity ID already exists, the copy will fail.  create_new - A Protected Entity with a new ID will be created with data and metadata from the source protected entity.  Update - If a protected entity with the same ID exists it will be overwritten.  If there is no PE with that ID, one will be created with the same ID. For complex Persistent Entities, the mode will be applied to all of the component entities that are part of this operation as well.
+	/*How to handle the copy.  create - a new protected entity with the
+	Protected Entity ID will be created.  If the Protected Entity ID
+	already exists, the copy will fail.  create_new - A Protected Entity
+	with a new ID will be created with data and metadata from the source
+	protected entity.  Update - If a protected entity with the same ID
+	exists it will be overwritten.  If there is no PE with that ID, one
+	will be created with the same ID. For complex Persistent Entities,
+	the mode will be applied to all of the component entities that are
+	part of this operation as well.
+
 	  Required: true
 	  In: query
 	*/

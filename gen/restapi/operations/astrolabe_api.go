@@ -37,6 +37,12 @@ func NewAstrolabeAPI(spec *loads.Document) *AstrolabeAPI {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		GetAstrolabeTasksNexusTaskNexusIDHandler: GetAstrolabeTasksNexusTaskNexusIDHandlerFunc(func(params GetAstrolabeTasksNexusTaskNexusIDParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetAstrolabeTasksNexusTaskNexusID has not yet been implemented")
+		}),
+		PostAstrolabeTasksNexusHandler: PostAstrolabeTasksNexusHandlerFunc(func(params PostAstrolabeTasksNexusParams) middleware.Responder {
+			return middleware.NotImplemented("operation PostAstrolabeTasksNexus has not yet been implemented")
+		}),
 		CopyProtectedEntityHandler: CopyProtectedEntityHandlerFunc(func(params CopyProtectedEntityParams) middleware.Responder {
 			return middleware.NotImplemented("operation CopyProtectedEntity has not yet been implemented")
 		}),
@@ -61,13 +67,16 @@ func NewAstrolabeAPI(spec *loads.Document) *AstrolabeAPI {
 		ListSnapshotsHandler: ListSnapshotsHandlerFunc(func(params ListSnapshotsParams) middleware.Responder {
 			return middleware.NotImplemented("operation ListSnapshots has not yet been implemented")
 		}),
+		ListTaskNexusHandler: ListTaskNexusHandlerFunc(func(params ListTaskNexusParams) middleware.Responder {
+			return middleware.NotImplemented("operation ListTaskNexus has not yet been implemented")
+		}),
 		ListTasksHandler: ListTasksHandlerFunc(func(params ListTasksParams) middleware.Responder {
 			return middleware.NotImplemented("operation ListTasks has not yet been implemented")
 		}),
 	}
 }
 
-/*AstrolabeAPI the astrolabe API */
+/*AstrolabeAPI Astrolabe data protection framework API */
 type AstrolabeAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
@@ -95,6 +104,10 @@ type AstrolabeAPI struct {
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
 
+	// GetAstrolabeTasksNexusTaskNexusIDHandler sets the operation handler for the get astrolabe tasks nexus task nexus ID operation
+	GetAstrolabeTasksNexusTaskNexusIDHandler GetAstrolabeTasksNexusTaskNexusIDHandler
+	// PostAstrolabeTasksNexusHandler sets the operation handler for the post astrolabe tasks nexus operation
+	PostAstrolabeTasksNexusHandler PostAstrolabeTasksNexusHandler
 	// CopyProtectedEntityHandler sets the operation handler for the copy protected entity operation
 	CopyProtectedEntityHandler CopyProtectedEntityHandler
 	// CreateSnapshotHandler sets the operation handler for the create snapshot operation
@@ -111,6 +124,8 @@ type AstrolabeAPI struct {
 	ListServicesHandler ListServicesHandler
 	// ListSnapshotsHandler sets the operation handler for the list snapshots operation
 	ListSnapshotsHandler ListSnapshotsHandler
+	// ListTaskNexusHandler sets the operation handler for the list task nexus operation
+	ListTaskNexusHandler ListTaskNexusHandler
 	// ListTasksHandler sets the operation handler for the list tasks operation
 	ListTasksHandler ListTasksHandler
 
@@ -176,6 +191,14 @@ func (o *AstrolabeAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
+	if o.GetAstrolabeTasksNexusTaskNexusIDHandler == nil {
+		unregistered = append(unregistered, "GetAstrolabeTasksNexusTaskNexusIDHandler")
+	}
+
+	if o.PostAstrolabeTasksNexusHandler == nil {
+		unregistered = append(unregistered, "PostAstrolabeTasksNexusHandler")
+	}
+
 	if o.CopyProtectedEntityHandler == nil {
 		unregistered = append(unregistered, "CopyProtectedEntityHandler")
 	}
@@ -206,6 +229,10 @@ func (o *AstrolabeAPI) Validate() error {
 
 	if o.ListSnapshotsHandler == nil {
 		unregistered = append(unregistered, "ListSnapshotsHandler")
+	}
+
+	if o.ListTaskNexusHandler == nil {
+		unregistered = append(unregistered, "ListTaskNexusHandler")
 	}
 
 	if o.ListTasksHandler == nil {
@@ -310,6 +337,16 @@ func (o *AstrolabeAPI) initHandlerCache() {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/astrolabe/tasks/nexus/{taskNexusID}"] = NewGetAstrolabeTasksNexusTaskNexusID(o.context, o.GetAstrolabeTasksNexusTaskNexusIDHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/astrolabe/tasks/nexus"] = NewPostAstrolabeTasksNexus(o.context, o.PostAstrolabeTasksNexusHandler)
+
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
@@ -349,6 +386,11 @@ func (o *AstrolabeAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/astrolabe/{service}/{protectedEntityID}/snapshots"] = NewListSnapshots(o.context, o.ListSnapshotsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/astrolabe/tasks/nexus"] = NewListTaskNexus(o.context, o.ListTaskNexusHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

@@ -2,11 +2,13 @@
 
 /*
 Package restapi Astrolabe API
+Astrolabe data protection framework API
+
 
     Schemes:
-      http
+      https
     Host: localhost
-    BasePath: /
+    BasePath: /v1
     Version: 1.0.0
 
     Consumes:

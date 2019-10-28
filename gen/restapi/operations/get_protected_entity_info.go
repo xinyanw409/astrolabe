@@ -31,7 +31,9 @@ func NewGetProtectedEntityInfo(ctx *middleware.Context, handler GetProtectedEnti
 
 /*GetProtectedEntityInfo swagger:route GET /astrolabe/{service}/{protectedEntityID} getProtectedEntityInfo
 
-Get the info for a Protected Entity including name, data access and components
+Get the info for a Protected Entity including name, data access and
+components
+
 
 */
 type GetProtectedEntityInfo struct {

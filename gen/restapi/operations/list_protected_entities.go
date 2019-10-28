@@ -31,7 +31,11 @@ func NewListProtectedEntities(ctx *middleware.Context, handler ListProtectedEnti
 
 /*ListProtectedEntities swagger:route GET /astrolabe/{service} listProtectedEntities
 
-List protected entities for the service.  Results will be returned in canonical ID order (string sorted).  Fewer results may be returned than expected, the ProtectedEntityList has a field specifying if the list has been truncated.
+List protected entities for the service.  Results will be returned in
+canonical ID order (string sorted).  Fewer results may be returned than
+expected, the ProtectedEntityList has a field specifying if the list has
+been truncated.
+
 
 */
 type ListProtectedEntities struct {

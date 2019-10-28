@@ -148,25 +148,8 @@ single service, "*" (it may also list other named services as well).
 # APIs
 ## Control Path
 ### Astrolabe
-#### List Services
-This returns the list of services that this Astrolabe server supports
-
-REST API
-
-    GET /Astrolabe
-Returns a JSON formatted as:
-```
-{
-“services”:[<service name>, <service name>]
-}
-```
 Repository servers 
 ### Service
-#### List Protected Entities
-This lists the protected entities available from this service by ID.  The list is returned in ID order.  The number of results returned is limited and pagination is accomplished by specifying the previous ending ID
-REST API
-
-    GET /Astrolabe/<service>?maxResults=<max results to return>&idsAfter=<starting ID, non-inclusive>
 #### Copy
 Copy will update or create an based on a ProtectedEntity JSON. The data paths must be specified in the JSON.   
 There is no option to embed data on this path, for a self-contained or partially self-contained object, 

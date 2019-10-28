@@ -18,11 +18,16 @@ var (
 
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
+  "schemes": [
+    "https"
+  ],
   "swagger": "2.0",
   "info": {
+    "description": "Astrolabe data protection framework API",
     "title": "Astrolabe API",
     "version": "1.0.0"
   },
+  "basePath": "/v1",
   "paths": {
     "/astrolabe": {
       "get": {
@@ -44,16 +49,85 @@ func init() {
     },
     "/astrolabe/tasks": {
       "get": {
+        "description": "Lists running and recent tasks",
         "produces": [
           "application/json"
         ],
-        "summary": "Lists running and recent tasks",
         "operationId": "listTasks",
         "responses": {
           "200": {
             "description": "List of recent task IDs",
             "schema": {
               "$ref": "#/definitions/TaskIDList"
+            }
+          }
+        }
+      }
+    },
+    "/astrolabe/tasks/nexus": {
+      "get": {
+        "description": "Provides a list of current task nexus",
+        "produces": [
+          "application/json"
+        ],
+        "operationId": "listTaskNexus",
+        "responses": {
+          "200": {
+            "description": "Task nexus list",
+            "schema": {
+              "$ref": "#/definitions/TaskNexusList"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Creates a new nexus for monitoring task completion",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "New task nexus",
+            "schema": {
+              "$ref": "#/definitions/TaskNexusID"
+            }
+          }
+        }
+      }
+    },
+    "/astrolabe/tasks/nexus/{taskNexusID}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The nexus to wait on",
+            "name": "taskNexusID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "Time to wait (milliseconds) before returning if no tasks   complete",
+            "name": "waitTime",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "Last finished time seen by this client.  Tasks that have completed after this time tick will be returned, or if no tasks\nhave finished, the call will hang until waitTime has passed or a task finishes.  Starting time tick should\nbe the finished time of the last task that the caller saw completed on this nexus.  Use 0 to get all finished\ntasks (tasks that have finished and timed out of the server will not be shown)\n",
+            "name": "lastFinishedNS",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/TaskNexusResponse"
             }
           }
         }
@@ -87,10 +161,10 @@ func init() {
     },
     "/astrolabe/{service}": {
       "get": {
+        "description": "List protected entities for the service.  Results will be returned in\ncanonical ID order (string sorted).  Fewer results may be returned than\nexpected, the ProtectedEntityList has a field specifying if the list has\nbeen truncated.\n",
         "produces": [
           "application/json"
         ],
-        "summary": "List protected entities for the service.  Results will be returned in canonical ID order (string sorted).  Fewer results may be returned than expected, the ProtectedEntityList has a field specifying if the list has been truncated.",
         "operationId": "listProtectedEntities",
         "parameters": [
           {
@@ -127,13 +201,13 @@ func init() {
         }
       },
       "post": {
+        "description": "Copy a protected entity into the repository.  There is no option to\nembed data on this path, for a self-contained or partially\nself-contained object, use the restore from zip file option in the S3\nAPI REST API\n",
         "consumes": [
           "application/json"
         ],
         "produces": [
           "application/json"
         ],
-        "summary": "Copy a protected entity into the repository.  There is no option to embed data on this path, for a self-contained or partially self-contained object, use the restore from zip file option in the S3 API REST API",
         "operationId": "copyProtectedEntity",
         "parameters": [
           {
@@ -150,7 +224,7 @@ func init() {
               "update"
             ],
             "type": "string",
-            "description": "How to handle the copy.  create - a new protected entity with the Protected Entity ID will be created.  If the Protected Entity ID already exists, the copy will fail.  create_new - A Protected Entity with a new ID will be created with data and metadata from the source protected entity.  Update - If a protected entity with the same ID exists it will be overwritten.  If there is no PE with that ID, one will be created with the same ID. For complex Persistent Entities, the mode will be applied to all of the component entities that are part of this operation as well.",
+            "description": "How to handle the copy.  create - a new protected entity with the\nProtected Entity ID will be created.  If the Protected Entity ID\nalready exists, the copy will fail.  create_new - A Protected Entity\nwith a new ID will be created with data and metadata from the source\nprotected entity.  Update - If a protected entity with the same ID\nexists it will be overwritten.  If there is no PE with that ID, one\nwill be created with the same ID. For complex Persistent Entities,\nthe mode will be applied to all of the component entities that are\npart of this operation as well.\n",
             "name": "mode",
             "in": "query",
             "required": true
@@ -177,10 +251,10 @@ func init() {
     },
     "/astrolabe/{service}/{protectedEntityID}": {
       "get": {
+        "description": "Get the info for a Protected Entity including name, data access and\ncomponents\n",
         "produces": [
           "application/json"
         ],
-        "summary": "Get the info for a Protected Entity including name, data access and components",
         "operationId": "getProtectedEntityInfo",
         "parameters": [
           {
@@ -208,10 +282,10 @@ func init() {
         }
       },
       "delete": {
+        "description": "Deletes a protected entity or snapshot of a protected entity (if the\nsnapshot ID is specified)\n",
         "produces": [
           "application/json"
         ],
-        "summary": "Deletes a protected entity or snapshot of a protected entity (if the snapshot ID is specified)",
         "operationId": "deleteProtectedEntity",
         "parameters": [
           {
@@ -241,10 +315,10 @@ func init() {
     },
     "/astrolabe/{service}/{protectedEntityID}/snapshots": {
       "get": {
+        "description": "Gets the list of snapshots for this protected entity\n",
         "produces": [
           "application/json"
         ],
-        "summary": "Gets the list of snapshots for this protected entity",
         "operationId": "listSnapshots",
         "parameters": [
           {
@@ -275,10 +349,10 @@ func init() {
         }
       },
       "post": {
+        "description": "Creates a new snapshot for this protected entity\n",
         "produces": [
           "application/json"
         ],
-        "summary": "Creates a new snapshot for this protected entity",
         "operationId": "createSnapshot",
         "parameters": [
           {
@@ -434,6 +508,7 @@ func init() {
         "completed",
         "status",
         "startedTime",
+        "startedTimeNS",
         "progress"
       ],
       "properties": {
@@ -445,6 +520,10 @@ func init() {
         },
         "finishedTime": {
           "type": "string"
+        },
+        "finishedTimeNS": {
+          "description": "Finished time in nanoseconds",
+          "type": "integer"
         },
         "id": {
           "$ref": "#/definitions/TaskID"
@@ -459,6 +538,10 @@ func init() {
         "startedTime": {
           "type": "string"
         },
+        "startedTimeNS": {
+          "description": "Start time in nanoseconds",
+          "type": "integer"
+        },
         "status": {
           "type": "string",
           "enum": [
@@ -469,16 +552,58 @@ func init() {
           ]
         }
       }
+    },
+    "TaskNexusID": {
+      "type": "string"
+    },
+    "TaskNexusInfo": {
+      "type": "object",
+      "properties": {
+        "associatedTasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TaskID"
+          }
+        },
+        "id": {
+          "$ref": "#/definitions/TaskNexusID"
+        }
+      }
+    },
+    "TaskNexusList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TaskNexusInfo"
+      }
+    },
+    "TaskNexusResponse": {
+      "type": "object",
+      "properties": {
+        "finished": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TaskInfo"
+          }
+        },
+        "id": {
+          "$ref": "#/definitions/TaskNexusID"
+        }
+      }
     }
   },
   "x-components": {}
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
+  "schemes": [
+    "https"
+  ],
   "swagger": "2.0",
   "info": {
+    "description": "Astrolabe data protection framework API",
     "title": "Astrolabe API",
     "version": "1.0.0"
   },
+  "basePath": "/v1",
   "paths": {
     "/astrolabe": {
       "get": {
@@ -500,16 +625,85 @@ func init() {
     },
     "/astrolabe/tasks": {
       "get": {
+        "description": "Lists running and recent tasks",
         "produces": [
           "application/json"
         ],
-        "summary": "Lists running and recent tasks",
         "operationId": "listTasks",
         "responses": {
           "200": {
             "description": "List of recent task IDs",
             "schema": {
               "$ref": "#/definitions/TaskIDList"
+            }
+          }
+        }
+      }
+    },
+    "/astrolabe/tasks/nexus": {
+      "get": {
+        "description": "Provides a list of current task nexus",
+        "produces": [
+          "application/json"
+        ],
+        "operationId": "listTaskNexus",
+        "responses": {
+          "200": {
+            "description": "Task nexus list",
+            "schema": {
+              "$ref": "#/definitions/TaskNexusList"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Creates a new nexus for monitoring task completion",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "New task nexus",
+            "schema": {
+              "$ref": "#/definitions/TaskNexusID"
+            }
+          }
+        }
+      }
+    },
+    "/astrolabe/tasks/nexus/{taskNexusID}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The nexus to wait on",
+            "name": "taskNexusID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "Time to wait (milliseconds) before returning if no tasks   complete",
+            "name": "waitTime",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "Last finished time seen by this client.  Tasks that have completed after this time tick will be returned, or if no tasks\nhave finished, the call will hang until waitTime has passed or a task finishes.  Starting time tick should\nbe the finished time of the last task that the caller saw completed on this nexus.  Use 0 to get all finished\ntasks (tasks that have finished and timed out of the server will not be shown)\n",
+            "name": "lastFinishedNS",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/TaskNexusResponse"
             }
           }
         }
@@ -543,10 +737,10 @@ func init() {
     },
     "/astrolabe/{service}": {
       "get": {
+        "description": "List protected entities for the service.  Results will be returned in\ncanonical ID order (string sorted).  Fewer results may be returned than\nexpected, the ProtectedEntityList has a field specifying if the list has\nbeen truncated.\n",
         "produces": [
           "application/json"
         ],
-        "summary": "List protected entities for the service.  Results will be returned in canonical ID order (string sorted).  Fewer results may be returned than expected, the ProtectedEntityList has a field specifying if the list has been truncated.",
         "operationId": "listProtectedEntities",
         "parameters": [
           {
@@ -583,13 +777,13 @@ func init() {
         }
       },
       "post": {
+        "description": "Copy a protected entity into the repository.  There is no option to\nembed data on this path, for a self-contained or partially\nself-contained object, use the restore from zip file option in the S3\nAPI REST API\n",
         "consumes": [
           "application/json"
         ],
         "produces": [
           "application/json"
         ],
-        "summary": "Copy a protected entity into the repository.  There is no option to embed data on this path, for a self-contained or partially self-contained object, use the restore from zip file option in the S3 API REST API",
         "operationId": "copyProtectedEntity",
         "parameters": [
           {
@@ -606,7 +800,7 @@ func init() {
               "update"
             ],
             "type": "string",
-            "description": "How to handle the copy.  create - a new protected entity with the Protected Entity ID will be created.  If the Protected Entity ID already exists, the copy will fail.  create_new - A Protected Entity with a new ID will be created with data and metadata from the source protected entity.  Update - If a protected entity with the same ID exists it will be overwritten.  If there is no PE with that ID, one will be created with the same ID. For complex Persistent Entities, the mode will be applied to all of the component entities that are part of this operation as well.",
+            "description": "How to handle the copy.  create - a new protected entity with the\nProtected Entity ID will be created.  If the Protected Entity ID\nalready exists, the copy will fail.  create_new - A Protected Entity\nwith a new ID will be created with data and metadata from the source\nprotected entity.  Update - If a protected entity with the same ID\nexists it will be overwritten.  If there is no PE with that ID, one\nwill be created with the same ID. For complex Persistent Entities,\nthe mode will be applied to all of the component entities that are\npart of this operation as well.\n",
             "name": "mode",
             "in": "query",
             "required": true
@@ -633,10 +827,10 @@ func init() {
     },
     "/astrolabe/{service}/{protectedEntityID}": {
       "get": {
+        "description": "Get the info for a Protected Entity including name, data access and\ncomponents\n",
         "produces": [
           "application/json"
         ],
-        "summary": "Get the info for a Protected Entity including name, data access and components",
         "operationId": "getProtectedEntityInfo",
         "parameters": [
           {
@@ -664,10 +858,10 @@ func init() {
         }
       },
       "delete": {
+        "description": "Deletes a protected entity or snapshot of a protected entity (if the\nsnapshot ID is specified)\n",
         "produces": [
           "application/json"
         ],
-        "summary": "Deletes a protected entity or snapshot of a protected entity (if the snapshot ID is specified)",
         "operationId": "deleteProtectedEntity",
         "parameters": [
           {
@@ -697,10 +891,10 @@ func init() {
     },
     "/astrolabe/{service}/{protectedEntityID}/snapshots": {
       "get": {
+        "description": "Gets the list of snapshots for this protected entity\n",
         "produces": [
           "application/json"
         ],
-        "summary": "Gets the list of snapshots for this protected entity",
         "operationId": "listSnapshots",
         "parameters": [
           {
@@ -731,10 +925,10 @@ func init() {
         }
       },
       "post": {
+        "description": "Creates a new snapshot for this protected entity\n",
         "produces": [
           "application/json"
         ],
-        "summary": "Creates a new snapshot for this protected entity",
         "operationId": "createSnapshot",
         "parameters": [
           {
@@ -890,6 +1084,7 @@ func init() {
         "completed",
         "status",
         "startedTime",
+        "startedTimeNS",
         "progress"
       ],
       "properties": {
@@ -901,6 +1096,10 @@ func init() {
         },
         "finishedTime": {
           "type": "string"
+        },
+        "finishedTimeNS": {
+          "description": "Finished time in nanoseconds",
+          "type": "integer"
         },
         "id": {
           "$ref": "#/definitions/TaskID"
@@ -916,6 +1115,10 @@ func init() {
         "startedTime": {
           "type": "string"
         },
+        "startedTimeNS": {
+          "description": "Start time in nanoseconds",
+          "type": "integer"
+        },
         "status": {
           "type": "string",
           "enum": [
@@ -924,6 +1127,43 @@ func init() {
             "failed",
             "cancelled"
           ]
+        }
+      }
+    },
+    "TaskNexusID": {
+      "type": "string"
+    },
+    "TaskNexusInfo": {
+      "type": "object",
+      "properties": {
+        "associatedTasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TaskID"
+          }
+        },
+        "id": {
+          "$ref": "#/definitions/TaskNexusID"
+        }
+      }
+    },
+    "TaskNexusList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TaskNexusInfo"
+      }
+    },
+    "TaskNexusResponse": {
+      "type": "object",
+      "properties": {
+        "finished": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TaskInfo"
+          }
+        },
+        "id": {
+          "$ref": "#/definitions/TaskNexusID"
         }
       }
     }

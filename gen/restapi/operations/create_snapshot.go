@@ -33,6 +33,7 @@ func NewCreateSnapshot(ctx *middleware.Context, handler CreateSnapshotHandler) *
 
 Creates a new snapshot for this protected entity
 
+
 */
 type CreateSnapshot struct {
 	Context *middleware.Context

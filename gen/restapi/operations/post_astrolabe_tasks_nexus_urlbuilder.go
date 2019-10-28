@@ -9,23 +9,17 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
-	"strings"
 )
 
-// GetProtectedEntityInfoURL generates an URL for the get protected entity info operation
-type GetProtectedEntityInfoURL struct {
-	ProtectedEntityID string
-	Service           string
-
+// PostAstrolabeTasksNexusURL generates an URL for the post astrolabe tasks nexus operation
+type PostAstrolabeTasksNexusURL struct {
 	_basePath string
-	// avoid unkeyed usage
-	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetProtectedEntityInfoURL) WithBasePath(bp string) *GetProtectedEntityInfoURL {
+func (o *PostAstrolabeTasksNexusURL) WithBasePath(bp string) *PostAstrolabeTasksNexusURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -33,29 +27,15 @@ func (o *GetProtectedEntityInfoURL) WithBasePath(bp string) *GetProtectedEntityI
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetProtectedEntityInfoURL) SetBasePath(bp string) {
+func (o *PostAstrolabeTasksNexusURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *GetProtectedEntityInfoURL) Build() (*url.URL, error) {
+func (o *PostAstrolabeTasksNexusURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/astrolabe/{service}/{protectedEntityID}"
-
-	protectedEntityID := o.ProtectedEntityID
-	if protectedEntityID != "" {
-		_path = strings.Replace(_path, "{protectedEntityID}", protectedEntityID, -1)
-	} else {
-		return nil, errors.New("protectedEntityId is required on GetProtectedEntityInfoURL")
-	}
-
-	service := o.Service
-	if service != "" {
-		_path = strings.Replace(_path, "{service}", service, -1)
-	} else {
-		return nil, errors.New("service is required on GetProtectedEntityInfoURL")
-	}
+	var _path = "/astrolabe/tasks/nexus"
 
 	_basePath := o._basePath
 	if _basePath == "" {
@@ -67,7 +47,7 @@ func (o *GetProtectedEntityInfoURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *GetProtectedEntityInfoURL) Must(u *url.URL, err error) *url.URL {
+func (o *PostAstrolabeTasksNexusURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -78,17 +58,17 @@ func (o *GetProtectedEntityInfoURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *GetProtectedEntityInfoURL) String() string {
+func (o *PostAstrolabeTasksNexusURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *GetProtectedEntityInfoURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *PostAstrolabeTasksNexusURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on GetProtectedEntityInfoURL")
+		return nil, errors.New("scheme is required for a full url on PostAstrolabeTasksNexusURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on GetProtectedEntityInfoURL")
+		return nil, errors.New("host is required for a full url on PostAstrolabeTasksNexusURL")
 	}
 
 	base, err := o.Build()
@@ -102,6 +82,6 @@ func (o *GetProtectedEntityInfoURL) BuildFull(scheme, host string) (*url.URL, er
 }
 
 // StringFull returns the string representation of a complete url
-func (o *GetProtectedEntityInfoURL) StringFull(scheme, host string) string {
+func (o *PostAstrolabeTasksNexusURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }
