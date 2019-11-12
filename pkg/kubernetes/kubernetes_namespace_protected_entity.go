@@ -20,12 +20,16 @@ import (
 	"context"
 	"github.com/sirupsen/logrus"
 	"github.com/vmware-tanzu/astrolabe/pkg/astrolabe"
+	"github.com/vmware-tanzu/velero/pkg/backup"
+	"github.com/vmware-tanzu/velero/pkg/client"
+	"github.com/vmware-tanzu/velero/pkg/discovery"
+	"github.com/vmware-tanzu/velero/pkg/podexec"
 	"io"
 	v1 "k8s.io/api/core/v1"
 )
 
 type KubernetesNamespaceProtectedEntity struct {
-	knpetm    *KubernetesNamespaceProtectedEntityTypeManager
+	knpetm    * KubernetesNamespaceProtectedEntityTypeManager
 	id        astrolabe.ProtectedEntityID
 	namespace *v1.Namespace
 	logger    logrus.FieldLogger
@@ -60,8 +64,78 @@ func (this *KubernetesNamespaceProtectedEntity) GetCombinedInfo(ctx context.Cont
 }
 
 func (this *KubernetesNamespaceProtectedEntity) Snapshot(ctx context.Context) (astrolabe.ProtectedEntitySnapshotID, error) {
-	return astrolabe.ProtectedEntitySnapshotID{}, nil
+	vc := client.VeleroConfig{}
+	f := client.NewFactory("astrolabe", vc)
 
+	veleroClient, err := f.Client()
+	if err != nil {
+		return astrolabe.ProtectedEntitySnapshotID{}, err
+	}
+	discoveryClient := veleroClient.Discovery()
+
+	dynamicClient, err := f.DynamicClient()
+	if err != nil {
+		return astrolabe.ProtectedEntitySnapshotID{}, err
+	}
+
+	discoveryHelper, err := discovery.NewHelper(discoveryClient, this.logger)
+	if err != nil {
+		return astrolabe.ProtectedEntitySnapshotID{}, err
+	}
+	dynamicFactory := client.NewDynamicFactory(dynamicClient)
+
+	kubeClient, err := f.KubeClient()
+	if err != nil {
+		return astrolabe.ProtectedEntitySnapshotID{}, err
+	}
+
+	kubeClientConfig, err := f.ClientConfig()
+	if err != nil {
+		return astrolabe.ProtectedEntitySnapshotID{}, err
+	}
+	podCommandExecutor := podexec.NewPodCommandExecutor(kubeClientConfig, kubeClient.CoreV1().RESTClient())
+	//resticBackupFactory := restic.BackupperFactory()
+
+
+	/*
+	vc := client.VeleroConfig{}
+	f := client.NewFactory("astrolabe", vc)
+
+	kubeClient, err := f.KubeClient()
+	if err != nil {
+		return astrolabe.ProtectedEntitySnapshotID{}, err
+	}
+
+	veleroClient, err := f.Client()
+	if err != nil {
+		return astrolabe.ProtectedEntitySnapshotID{}, err
+	}
+
+	dynamicClient, err := f.DynamicClient()
+	if err != nil {
+		return astrolabe.ProtectedEntitySnapshotID{}, err
+	}
+
+	discoveryHelper, err := discovery.NewHelper(discoveryClient, s.logger)
+	if err != nil {
+		return astrolabe.ProtectedEntitySnapshotID{}, err
+	}
+
+	/*kb, err := backup.NewKubernetesBackupper(
+		discoveryHelper,
+		client.NewDynamicFactory(dynamicClient),
+		podexec.NewPodCommandExecutor(s.kubeClientConfig, kubeClient.CoreV1().RESTClient()),
+		nil,
+		0)*/
+	kb, err := backup.NewKubernetesBackupper(discoveryHelper,
+		dynamicFactory,
+		podCommandExecutor,
+		nil,
+		0)
+	if err != nil {
+		return astrolabe.ProtectedEntitySnapshotID{}, err
+	}
+	return astrolabe.ProtectedEntitySnapshotID{}, nil
 }
 func (this *KubernetesNamespaceProtectedEntity) ListSnapshots(ctx context.Context) ([]astrolabe.ProtectedEntitySnapshotID, error) {
 	return nil, nil
