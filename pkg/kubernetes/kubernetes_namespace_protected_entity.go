@@ -127,7 +127,7 @@ func (this *KubernetesNamespaceProtectedEntity) Snapshot(ctx context.Context) (a
 		podexec.NewPodCommandExecutor(s.kubeClientConfig, kubeClient.CoreV1().RESTClient()),
 		nil,
 		0)*/
-	kb, err := backup.NewKubernetesBackupper(discoveryHelper,
+	_, err = backup.NewKubernetesBackupper(discoveryHelper,
 		dynamicFactory,
 		podCommandExecutor,
 		nil,
