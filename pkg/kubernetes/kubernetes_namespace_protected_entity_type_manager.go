@@ -18,6 +18,7 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
 	"github.com/sirupsen/logrus"
 	"github.com/vmware-tanzu/astrolabe/pkg/astrolabe"
 
@@ -100,4 +101,8 @@ func (this *KubernetesNamespaceProtectedEntityTypeManager) Copy(ctx context.Cont
 
 func (this *KubernetesNamespaceProtectedEntityTypeManager) CopyFromInfo(ctx context.Context, pe astrolabe.ProtectedEntityInfo, options astrolabe.CopyCreateOptions) (astrolabe.ProtectedEntity, error) {
 	return nil, nil
+}
+
+func (this *KubernetesNamespaceProtectedEntityTypeManager) Delete(ctx context.Context, id astrolabe.ProtectedEntityID) error {
+	return errors.New("Not implemented")
 }

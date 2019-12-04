@@ -52,12 +52,13 @@ func setupPETM(t *testing.T, typeName string) (*ProtectedEntityTypeManager, erro
 	if err != nil {
 		return nil, err
 	}
-	s3petm, err := NewS3RepositoryProtectedEntityTypeManager(typeName, *sess, "velero-plugin-s3-repo" /*"dsu-velero"*/, nil)
+	s3petm, err := NewS3RepositoryProtectedEntityTypeManager(typeName, *sess, /*"velero-plugin-s3-repo" */"dsu-velero", nil)
 	if err != nil {
 		return nil, err
 	}
 	return s3petm, err
 }
+
 
 func TestCreateDeleteProtectedEntity(t *testing.T) {
 	s3petm, err := setupPETM(t, "test")
@@ -66,13 +67,19 @@ func TestCreateDeleteProtectedEntity(t *testing.T) {
 	}
 	peID := astrolabe.NewProtectedEntityIDWithSnapshotID("test", "unique1", astrolabe.NewProtectedEntitySnapshotID("snapshot1"))
 	peInfo := astrolabe.NewProtectedEntityInfo(peID, "testPE", nil, nil, nil, nil)
-	repoPE, err := s3petm.CopyFromInfo(context.Background(), peInfo, astrolabe.AllocateNewObject)
+	ctx := context.Background()
+	repoPE, err := s3petm.CopyFromInfo(ctx, peInfo, astrolabe.AllocateNewObject)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("Create repo PE %s\n", repoPE.GetID().String())
 
+	err = s3petm.Delete(ctx, repoPE.GetID())
+	if err != nil {
+		t.Fatal(err)
+	}
 }
+
 
 func TestCopyFSProtectedEntity(t *testing.T) {
 	s3petm, err := setupPETM(t, "fs")
@@ -219,7 +226,7 @@ func TestCopyIVDProtectedEntity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	snapPEID := astrolabe.NewProtectedEntityIDWithSnapshotID("ivd", ivdPEID.GetID(), *snapID)
+	snapPEID := astrolabe.NewProtectedEntityIDWithSnapshotID("ivd", ivdPEID.GetID(), snapID)
 	snapPE, err := ivdPETM.GetProtectedEntity(ctx, snapPEID)
 	if err != nil {
 		t.Fatal(err)
