@@ -21,10 +21,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/pkg/errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/pkg/errors"
 	"github.com/vmware-tanzu/astrolabe/pkg/astrolabe"
 	"io"
 	"io/ioutil"
@@ -85,21 +85,48 @@ func (this ProtectedEntity) ListSnapshots(ctx context.Context) ([]astrolabe.Prot
 
 func (this ProtectedEntity) DeleteSnapshot(ctx context.Context, snapshotToDelete astrolabe.ProtectedEntitySnapshotID) (bool, error) {
 	bucket := this.rpetm.bucket
-	peID := this.rpetm.peinfoName(this.peinfo.GetID())
+	peID := this.GetID()
+	peInfoName := this.rpetm.peinfoName(peID)
+
 	_, err := this.rpetm.s3.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
-		Key: aws.String(peID),
+		Key:    aws.String(peInfoName),
 	})
 	if err != nil {
 		return false, errors.Wrapf(err, "Unable to delete object %q from bucket %q", peID, bucket)
 	}
 
+	// We wait to ensure the that PEInfo object is deleted.  No need to wait for the metadata and data
+	// objects, they can be removed later, we only pay attention to the PEInfo object for the inventory
 	err = this.rpetm.s3.WaitUntilObjectNotExists(&s3.HeadObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    aws.String(peID),
+		Key:    aws.String(peInfoName),
 	})
 	if err != nil {
 		return false, errors.Wrapf(err, "Error occurred while waiting for object %q to be deleted", peID)
+	}
+
+	if len(this.peinfo.GetMetadataTransports()) > 0 {
+
+		// Delete the metadata
+		_, err := this.rpetm.s3.DeleteObject(&s3.DeleteObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(this.rpetm.metadataName(peID)),
+		})
+		if err != nil {
+			return false, errors.Wrapf(err, "Unable to delete object %q from bucket %q", peID, bucket)
+		}
+	}
+
+	if len(this.peinfo.GetDataTransports()) > 0 {
+		// Delete the data
+		_, err := this.rpetm.s3.DeleteObject(&s3.DeleteObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(this.rpetm.dataName(peID)),
+		})
+		if err != nil {
+			return false, errors.Wrapf(err, "Unable to delete object %q from bucket %q", peID, bucket)
+		}
 	}
 	return true, nil
 }
