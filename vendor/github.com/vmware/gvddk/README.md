@@ -8,7 +8,20 @@ Gvddk is a Golang wrapper to access the VMware Virtual Disk Development Kit API 
 User can choose to either use main functionality via high level api, or use low level api to implement his own function combination.
 
 # Dependency
-Gvddk needs vddk library, which is under gvddk/lib/vmware-vix-disklib/lib64. Required linux libraries packages are listed below:
+Gvddk needs Virtual Disk Development Kit (VDDK) to connect with vSphere.
+The VDDK can be downloaded from here: https://code.vmware.com/web/sdk/6.7/vddk.  Gvddk requires the 6.7.3 VDDK release.
+After installing, please untar into the gvddk directory:
+
+```
+> cd $GOPATH/src/github.com/vmware-tanzu/astrolabe/vendor/github.com/vmware/gvddk
+
+> tar xzf <path to VMware-vix-disklib-*version*.x86_64.tar.gz>.
+```
+
+VDDK is free to use for personal and internal use.  Redistribution requires a no-fee license, please contact VMware to 
+obtain the license.
+
+Required Linux library packages are listed below:
 
 Ubuntu:
 * libc6
