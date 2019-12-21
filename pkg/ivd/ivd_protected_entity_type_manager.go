@@ -26,7 +26,7 @@ import (
 	"github.com/vmware/govmomi/vim25/types"
 	"github.com/vmware/govmomi/vslm"
 	types2 "github.com/vmware/govmomi/vslm/types"
-	"github.com/vmware/gvddk/gDiskLib"
+	"github.com/vmware-tanzu/astrolabe/pkg/gvddk/gDiskLib"
 	"io"
 	"net/url"
 	"time"

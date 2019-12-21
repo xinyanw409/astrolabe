@@ -18,7 +18,7 @@ package gvddk_high
 
 import "C"
 import (
-	"github.com/vmware/gvddk/gDiskLib"
+	"github.com/vmware-tanzu/astrolabe/pkg/gvddk/gDiskLib"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
