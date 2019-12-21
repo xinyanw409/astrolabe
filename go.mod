@@ -2,8 +2,6 @@ module github.com/vmware-tanzu/astrolabe
 
 go 1.13
 
-replace github.com/vmware/gvddk => ./vendor/vmware.com/gvddk
-
 require (
 	github.com/aws/aws-sdk-go v1.26.4
 	github.com/go-openapi/errors v0.19.3

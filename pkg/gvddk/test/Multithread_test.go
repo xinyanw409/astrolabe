@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/vmware/gvddk/gDiskLib"
-	"github.com/vmware/gvddk/gvddk-high"
+	"github.com/vmware-tanzu/astrolabe/pkg/gvddk/gDiskLib"
+	"github.com/vmware-tanzu/astrolabe/pkg/gvddk/gvddk-high"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"os"
