@@ -20,7 +20,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/vmware/govmomi v0.22.1
-	github.com/vmware/gvddk v0.8.0
+	github.com/vmware/gvddk v0.8.1
 	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	gotest.tools v2.2.0+incompatible
