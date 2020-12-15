@@ -188,7 +188,8 @@ VixError BlockListCopyAndFree(BlockListDescriptor *bld,  VixDiskLibBlock *ba)
 {
     VixDiskLibBlockList *bl = bld->blockList;
 
-    for (int i = 0; i < bl->numBlocks; i++) {
+    int i;
+    for (i = 0; i < bl->numBlocks; i++) {
         *ba = *(&bl->blocks[i]);
         ba++;
     }

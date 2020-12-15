@@ -21,7 +21,6 @@ func TestQueryAllocatedBlocks(t *testing.T) {
 	gDiskLib.Init(majorVersion, minorVersion, path)
 	serverName := os.Getenv("IP")
 	thumPrint := os.Getenv("THUMBPRINT")
-	//thumPrint = GetThumbPrintForServer(serverName)
 	userName := os.Getenv("USERNAME")
 	password := os.Getenv("PASSWORD")
 	fcdId := os.Getenv("FCDID")
@@ -38,10 +37,13 @@ func TestQueryAllocatedBlocks(t *testing.T) {
 
 	// Call QueryAllocatedBlocks at T1
 	abBefore, err := diskReaderWriter.QueryAllocatedBlocks(0, 2048*1024, 2048)
-	require.Nil(err)
+	if err != nil {
+		gDiskLib.EndAccess(params)
+		t.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
+	}
 	fmt.Printf("Number of blocks: %d\n", len(abBefore))
-	fmt.Printf("Offset Length\n")
-	for _, ab := range abFinal {
+	fmt.Printf("Offset     Length\n")
+	for _, ab := range abBefore {
 		fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
 	}
 
@@ -51,16 +53,16 @@ func TestQueryAllocatedBlocks(t *testing.T) {
 	for i,_ := range(buf1) {
 		buf1[i] = 'E'
 	}
-	n, err = diskReaderWriter.WriteAt(buf1, 0)
-	require.Nil(err)
+	n, err1 := diskReaderWriter.WriteAt(buf1, 0)
+	require.Nil(t, err1)
 	fmt.Printf("Write byte n = %d\n", n)
 
 	// Call QueryAllocatedBlocks at T2
 	abLater, err := diskReaderWriter.QueryAllocatedBlocks(0, 2048*1024, 2048)
-	require.Nil(err)
-	fmt.Printf("Number of blocks: %d\n", len(abInitial))
+	require.Nil(t, err)
+	fmt.Printf("Number of blocks: %d\n", len(abLater))
 	fmt.Printf("Offset      Length\n")
-	for _, ab := range abFinal {
+	for _, ab := range abLater {
 		fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
 	}
 }
