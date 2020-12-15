@@ -25,71 +25,34 @@ func main() {
 	params := gDiskLib.NewConnectParams("", "10.185.34.44","6C:5E:43:B2:26:7F:21:12:CA:4A:02:9C:D4:FF:C4:B0:93:F6:FE:E4", "administrator@vsphere.local",
 		"Admin!23", "60ad0bda-ff16-492f-8b81-8aff917872c9", "datastore-31", "", "", "vm1", "", gDiskLib.VIXDISKLIB_FLAG_OPEN_COMPRESSION_SKIPZ,
 		false, gDiskLib.NBD)
-	diskReaderWriter, err := gvddk_high.Open(params, logrus.New())
+
+
+	//diskReaderWriter, dli, err := Open_test(params, logrus.New())
+	_, dli, err := Open_test(params, logrus.New())
 	if err != nil {
 		gDiskLib.EndAccess(params)
 		fmt.Errorf("Open failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
 		return
 	}
 
-	//// Call QueryAllocatedBlocks at T1
-	//abBefore, err := diskReaderWriter.QueryAllocatedBlocks(0, 2 * gDiskLib.VIXDISKLIB_SECTOR_SIZE, gDiskLib.VIXDISKLIB_SECTOR_SIZE)
-	//if err != nil {
-	//	gDiskLib.EndAccess(params)
-	//	fmt.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
-	//	return
-	//}
-	//fmt.Printf("Number of blocks: %d\n", len(abBefore))
-	//fmt.Printf("Offset Length\n")
-	//for _, ab := range abBefore {
-	//	fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
-	//}
+	QueryBlocks(dli, params)
+}
 
-	// Write to disk
-	fmt.Println("WriteAt start")
-	buf1 := make([]byte, 20 * gDiskLib.VIXDISKLIB_SECTOR_SIZE)
-	for i,_ := range(buf1) {
-		buf1[i] = 'E'
-	}
-	n, err1 := diskReaderWriter.WriteAt(buf1, 0)
-	if err1 != nil {
-		gDiskLib.EndAccess(params)
-		fmt.Errorf("Write failed, got error %v.", err1)
-		return
-	}
-	fmt.Printf("Write byte n = %d\n", n)
+func QueryBlocks(diskHandle gvddk_high.DiskConnectHandle, params gDiskLib.ConnectParams) {
+	var offset int64
+	var capacity int64 = 10240 // Disk size in MB
 
-	buffer2 := make([]byte, gDiskLib.VIXDISKLIB_SECTOR_SIZE)
-	n2, err5 := diskReaderWriter.ReadAt(buffer2, 0)
-	fmt.Printf("Read byte n = %d\n", n2)
-	fmt.Println(buffer2)
-	fmt.Println(err5)
-
-	//// Call QueryAllocatedBlocks at T2
-	//abLater, err := diskReaderWriter.QueryAllocatedBlocks(0, 2 * gDiskLib.VIXDISKLIB_SECTOR_SIZE, gDiskLib.VIXDISKLIB_SECTOR_SIZE)
-	//if err != nil {
-	//	gDiskLib.EndAccess(params)
-	//	fmt.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
-	//	return
-	//}
-	//fmt.Printf("Number of blocks: %d\n", len(abLater))
-	//fmt.Printf("Offset      Length\n")
-	//for _, ab := range abLater {
-	//	fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
-	//}
-
-	offset := 0
-	capacity := 10240
-	chunkSize := 2048
-	numChunk := capacity /chunkSize
-	var numChunkToQuery int
+	chunkSize := gDiskLib.VIXDISKLIB_MIN_CHUNK_SIZE
+	numChunk := capacity / int64(chunkSize)
+	var numChunkToQuery int64
+	var abFinal []gDiskLib.VixDiskLibBlock
 	for numChunk > 0 {
 		if numChunk > gDiskLib.VIXDISKLIB_MAX_CHUNK_NUMBER {
 			numChunkToQuery = gDiskLib.VIXDISKLIB_MAX_CHUNK_NUMBER
 		} else {
-			numChunkToQuery = numChunk
+			numChunkToQuery = int64(numChunk)
 		}
-		abList, err := diskReaderWriter.QueryAllocatedBlocks(gDiskLib.VixDiskLibSectorType(offset), gDiskLib.VixDiskLibSectorType(numChunkToQuery) * gDiskLib.VixDiskLibSectorType(chunkSize), gDiskLib.VixDiskLibSectorType(chunkSize))
+		abList, err := diskHandle.QueryAllocatedBlocks(gDiskLib.VixDiskLibSectorType(offset), gDiskLib.VixDiskLibSectorType(numChunkToQuery)*gDiskLib.VixDiskLibSectorType(chunkSize), gDiskLib.VixDiskLibSectorType(chunkSize))
 		if err != nil {
 			gDiskLib.EndAccess(params)
 			fmt.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
@@ -99,9 +62,43 @@ func main() {
 		fmt.Printf("Offset      Length\n")
 		for _, ab := range abList {
 			fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
+			abFinal = append(abFinal, ab)
 		}
 
 		numChunk = numChunk - numChunkToQuery
-		offset = offset + numChunkToQuery * chunkSize
+		offset = offset + numChunkToQuery*int64(chunkSize)
 	}
+
+	allocatedSize := 0
+	for _, ab := range abFinal {
+		fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
+		allocatedSize = allocatedSize + int(ab.Length())
+	}
+	fmt.Printf("Allocated size is %d / capacity %d", allocatedSize, capacity)
+}
+
+func Open_test (globalParams gDiskLib.ConnectParams, logger logrus.FieldLogger) (gvddk_high.DiskReaderWriter, gvddk_high.DiskConnectHandle, gDiskLib.VddkError) {
+	err := gDiskLib.PrepareForAccess(globalParams)
+	if err != nil {
+		return gvddk_high.DiskReaderWriter{}, gvddk_high.DiskConnectHandle{}, err
+	}
+	conn, err := gDiskLib.ConnectEx(globalParams)
+	if err != nil {
+		gDiskLib.EndAccess(globalParams)
+		return gvddk_high.DiskReaderWriter{}, gvddk_high.DiskConnectHandle{}, err
+	}
+	dli, err := gDiskLib.Open(conn, globalParams)
+	if err != nil {
+		gDiskLib.Disconnect(conn)
+		gDiskLib.EndAccess(globalParams)
+		return gvddk_high.DiskReaderWriter{}, gvddk_high.DiskConnectHandle{}, err
+	}
+	info, err := gDiskLib.GetInfo(dli)
+	if err != nil {
+		gDiskLib.Disconnect(conn)
+		gDiskLib.EndAccess(globalParams)
+		return gvddk_high.DiskReaderWriter{}, gvddk_high.DiskConnectHandle{}, err
+	}
+	diskHandle := gvddk_high.NewDiskHandle(dli, conn, globalParams, info)
+	return gvddk_high.NewDiskReaderWriter(diskHandle, logger), diskHandle, nil
 }

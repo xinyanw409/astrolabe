@@ -5,7 +5,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/vmware/gvddk/gDiskLib"
 	"github.com/vmware/gvddk/gvddk-high"
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 )
@@ -35,46 +34,44 @@ func TestQueryAllocatedBlocks(t *testing.T) {
 		t.Errorf("Open failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
 	}
 
-	// Write to disk
-	fmt.Println("WriteAt start")
-	buf1 := make([]byte, 2 * gDiskLib.VIXDISKLIB_SECTOR_SIZE)
-	for i,_ := range(buf1) {
-		buf1[i] = 'E'
-	}
-	n, err1 := diskReaderWriter.WriteAt(buf1, 0)
-	require.Nil(t, err1)
-	fmt.Printf("Write byte n = %d\n", n)
+	queryAllocatedBlocks(diskReaderWriter, params)
+}
 
-	buffer2 := make([]byte, gDiskLib.VIXDISKLIB_SECTOR_SIZE)
-	n2, err5 := diskReaderWriter.ReadAt(buffer2, 0)
-	fmt.Printf("Read byte n = %d\n", n2)
-	fmt.Println(buffer2)
-	fmt.Println(err5)
+func queryAllocatedBlocks(diskReaderWriter gvddk_high.DiskReaderWriter, params gDiskLib.ConnectParams) {
+	var offset int64
+	var capacity int64 = 10240 // Disk size in MB
 
-	// Call QueryAllocatedBlocks
-	offset := 0
-	capacity := 10240
-	chunkSize := 2048
-	numChunk := capacity /chunkSize
-	var numChunkToQuery int
+	chunkSize := gDiskLib.VIXDISKLIB_MIN_CHUNK_SIZE
+	numChunk := capacity / int64(chunkSize)
+	var numChunkToQuery int64
+	var abFinal []gDiskLib.VixDiskLibBlock
 	for numChunk > 0 {
 		if numChunk > gDiskLib.VIXDISKLIB_MAX_CHUNK_NUMBER {
 			numChunkToQuery = gDiskLib.VIXDISKLIB_MAX_CHUNK_NUMBER
 		} else {
-			numChunkToQuery = numChunk
+			numChunkToQuery = int64(numChunk)
 		}
-		abList, err := diskReaderWriter.QueryAllocatedBlocks(gDiskLib.VixDiskLibSectorType(offset), gDiskLib.VixDiskLibSectorType(numChunkToQuery) * gDiskLib.VixDiskLibSectorType(chunkSize), gDiskLib.VixDiskLibSectorType(chunkSize))
+		abList, err := diskReaderWriter.QueryAllocatedBlocks(gDiskLib.VixDiskLibSectorType(offset), gDiskLib.VixDiskLibSectorType(numChunkToQuery)*gDiskLib.VixDiskLibSectorType(chunkSize), gDiskLib.VixDiskLibSectorType(chunkSize))
 		if err != nil {
 			gDiskLib.EndAccess(params)
-			t.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
+			fmt.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
+			return
 		}
 		fmt.Printf("Number of blocks: %d\n", len(abList))
 		fmt.Printf("Offset      Length\n")
 		for _, ab := range abList {
 			fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
+			abFinal = append(abFinal, ab)
 		}
 
 		numChunk = numChunk - numChunkToQuery
-		offset = offset + numChunkToQuery * chunkSize
+		offset = offset + numChunkToQuery*int64(chunkSize)
 	}
+
+	allocatedSize := 0
+	for _, ab := range abFinal {
+		fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
+		allocatedSize = allocatedSize + int(ab.Length())
+	}
+	fmt.Printf("Allocated size is %d / capacity %d", allocatedSize, capacity)
 }
