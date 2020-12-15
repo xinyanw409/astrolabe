@@ -32,18 +32,18 @@ func main() {
 		return
 	}
 
-	// Call QueryAllocatedBlocks at T1
-	abBefore, err := diskReaderWriter.QueryAllocatedBlocks(0, 2 * gDiskLib.VIXDISKLIB_SECTOR_SIZE, gDiskLib.VIXDISKLIB_SECTOR_SIZE)
-	if err != nil {
-		gDiskLib.EndAccess(params)
-		fmt.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
-		return
-	}
-	fmt.Printf("Number of blocks: %d\n", len(abBefore))
-	fmt.Printf("Offset Length\n")
-	for _, ab := range abBefore {
-		fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
-	}
+	//// Call QueryAllocatedBlocks at T1
+	//abBefore, err := diskReaderWriter.QueryAllocatedBlocks(0, 2 * gDiskLib.VIXDISKLIB_SECTOR_SIZE, gDiskLib.VIXDISKLIB_SECTOR_SIZE)
+	//if err != nil {
+	//	gDiskLib.EndAccess(params)
+	//	fmt.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
+	//	return
+	//}
+	//fmt.Printf("Number of blocks: %d\n", len(abBefore))
+	//fmt.Printf("Offset Length\n")
+	//for _, ab := range abBefore {
+	//	fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
+	//}
 
 	// Write to disk
 	fmt.Println("WriteAt start")
@@ -65,16 +65,43 @@ func main() {
 	fmt.Println(buffer2)
 	fmt.Println(err5)
 
-	// Call QueryAllocatedBlocks at T2
-	abLater, err := diskReaderWriter.QueryAllocatedBlocks(0, 2 * gDiskLib.VIXDISKLIB_SECTOR_SIZE, gDiskLib.VIXDISKLIB_SECTOR_SIZE)
-	if err != nil {
-		gDiskLib.EndAccess(params)
-		fmt.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
-		return
-	}
-	fmt.Printf("Number of blocks: %d\n", len(abLater))
-	fmt.Printf("Offset      Length\n")
-	for _, ab := range abLater {
-		fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
+	//// Call QueryAllocatedBlocks at T2
+	//abLater, err := diskReaderWriter.QueryAllocatedBlocks(0, 2 * gDiskLib.VIXDISKLIB_SECTOR_SIZE, gDiskLib.VIXDISKLIB_SECTOR_SIZE)
+	//if err != nil {
+	//	gDiskLib.EndAccess(params)
+	//	fmt.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
+	//	return
+	//}
+	//fmt.Printf("Number of blocks: %d\n", len(abLater))
+	//fmt.Printf("Offset      Length\n")
+	//for _, ab := range abLater {
+	//	fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
+	//}
+
+	offset := 0
+	capacity := 10240
+	chunkSize := 2048
+	numChunk := capacity /chunkSize
+	var numChunkToQuery int
+	for numChunk > 0 {
+		if numChunk > gDiskLib.VIXDISKLIB_MAX_CHUNK_NUMBER {
+			numChunkToQuery = gDiskLib.VIXDISKLIB_MAX_CHUNK_NUMBER
+		} else {
+			numChunkToQuery = numChunk
+		}
+		abList, err := diskReaderWriter.QueryAllocatedBlocks(gDiskLib.VixDiskLibSectorType(offset), gDiskLib.VixDiskLibSectorType(numChunkToQuery) * gDiskLib.VixDiskLibSectorType(chunkSize), gDiskLib.VixDiskLibSectorType(chunkSize))
+		if err != nil {
+			gDiskLib.EndAccess(params)
+			fmt.Errorf("QueryAllocatedBlocks failed, got error code: %d, error message: %s.", err.VixErrorCode(), err.Error())
+			return
+		}
+		fmt.Printf("Number of blocks: %d\n", len(abList))
+		fmt.Printf("Offset      Length\n")
+		for _, ab := range abList {
+			fmt.Printf("0x%012x  0x%012x\n", ab.Offset(), ab.Length())
+		}
+
+		numChunk = numChunk - numChunkToQuery
+		offset = offset + numChunkToQuery * chunkSize
 	}
 }
